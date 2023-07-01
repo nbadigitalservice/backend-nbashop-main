@@ -1,11 +1,20 @@
 const dayjs = require("dayjs");
 const axios = require('axios');
 const {OrderNBA} = require('../../models/cs.model/order.nba.model');
-const {OrderCs} = require('../../models/cs.model/order.cs.model')
+const {OrderCs} = require('../../models/cs.model/order.cs.model');
+const jwt = require('jsonwebtoken');
 
 exports.create = async(req, res)=>{
     try{
-        console.log(req.body);
+        //get user
+        const token = req.headers['auth-token'].replace(/^Bearer\s+/, "");
+        const decoded = jwt.verify(token,process.env.JWTPRIVATEKEY);
+        if(!decoded){
+            return res.status(401).send({message:'ไม่สามารถเข้าถึงได้'});
+        }
+
+
+
         const orderid = await genOrderId();
         const invoice = await invoiceNumber(req.body.shop_id, req.body.timestamp);
         const order_nba = {
@@ -21,11 +30,13 @@ exports.create = async(req, res)=>{
             image: req.body.image,
             date : dayjs(req.body.timestamp).format('YYYY-MM-DD'),
             time : dayjs(req.body.timestamp).format('HH:mm:ss'),
+            created_by: {name:decoded.name,phone:decoded.phone}
         }
         const order_cs = {
             ...req.body,company: "NBA",
             invoice : invoice,
-            detail : {...order_nba}
+            detail : {...order_nba},
+            created_by: decoded.name,
         }
         console.log(order_nba);
         console.log(order_cs);
@@ -40,7 +51,7 @@ exports.create = async(req, res)=>{
         //เพิ่มข้อมูลเข้า order_cs
     }catch(err){
         console.log(err);
-        return res.status(500).send({message: "มีบางอย่างผิดพลาด"})
+        return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
     }
 }
 
@@ -48,9 +59,9 @@ exports.getAll = async(req, res)=>{
     try{
         const order = await OrderNBA.find();
         if(order){
-            return res.status(200).send({status: true, data: order})
+            return res.status(200).send({status: true, data: order});
         }else{
-            return res.status(400).send({status: false, message: 'ดึงข้อมูลไม่สำเร็จ'})
+            return res.status(400).send({status: false, message: 'ดึงข้อมูลไม่สำเร็จ'});
         }
     }catch(err){
         console.log(err);
@@ -106,7 +117,15 @@ exports.getByInvoice = async(req,res)=>{
 exports.update=async(req, res)=>{
     try{
         const id = req.params.id;
-        const order = await OrderNBA.findByIdAndUpdate(id, req.body);
+
+         //get user
+         const token = req.headers['auth-token'].replace(/^Bearer\s+/, "");
+         const decoded = await jwt.verify(token,process.env.JWTPRIVATEKEY);
+         if(!decoded){
+             return res.status(401).send({message:'ไม่สามารถเข้าถึงได้'});
+         }
+
+        const order = await OrderNBA.findByIdAndUpdate(id,{...req.body,updated_by:decoded.name});
         if(order){
             return res.status(200).send({status: true, message: 'แก้ไขข้อมูลเรียบร้อยแล้ว'})
         }else{
@@ -117,7 +136,6 @@ exports.update=async(req, res)=>{
         return res.status(500).send({message: "มีบางอย่างผิดพลาด"})
     }
 }
-
 
 
 //สร้างorder รายการ

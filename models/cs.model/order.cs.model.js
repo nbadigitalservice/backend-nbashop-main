@@ -16,8 +16,10 @@ const OrderCsSchema = new mongoose.Schema({
     status: {type: Array, required : true},
     transid : {type : String, required: false, default :''},
     image : {type: String, required: false, default: ''},
-    timestamp: {type: Date, required: true}
-})
+    timestamp: {type: Date, required: true},
+    updated_by:{type:String, required: true, default:"ยังไม่มีการอัพเดท"},
+    created_by:{type:String, required: true, default:"ไม่ได้บันทึกผู้ทำรายการ"}
+},{timestamps:true})
 
 const OrderCs = mongoose.model('order_cs', OrderCsSchema);
 
@@ -38,7 +40,10 @@ const validate = (data)=>{
         status: Joi.array().required().label("ไม่ status"),
         transid : Joi.string().default(""),
         image : Joi.string().default(''),
-        timestamp : Joi.date().required().label("ไม่พบวันเวลาทำรายการ")
+        timestamp : Joi.date().required().label("ไม่พบวันเวลาทำรายการ"),
+        updated_by: Joi.string().required().allow(""),
+        created_by: Joi.string().required().allow(""),
+
     });
     return schema.validate(data);
 }

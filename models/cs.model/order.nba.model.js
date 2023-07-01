@@ -17,8 +17,13 @@ const OrderNBASchema = new mongoose.Schema({
     "image" : {type: String, required: false, default: ""}, //รูปภาพที่แนบมา
     "slip_path" : {type: String, required: false, default: ""}, //่หลักฐานการจ่าย
     "remark" : {type:String, required: false, default: ''},
-    "status" : {type: String, required: false, default: "wait"}
-});
+    "status" : {type: String, required: false, default: "wait"},
+    "updated_by":{type:String, required: true, default:"ยังไม่มีการอัพเดท"},
+    "created_by":{type:{
+        name:{type:String, required:true,default:"ไม่ได้บันทึกผู้ทำรายการ"},
+        phone:{type:String, required:true,default:"ไม่ได้บันทึกผู้ทำรายการ"}
+    }}
+},{timestamps:true});
 
 const OrderNBA = mongoose.model('order_nba', OrderNBASchema);
 

@@ -88,6 +88,7 @@ app.use(
 app.use(
   "/v1/nba-shop/artwork", require("./routes/artwork/index")
 )
+app.use("/v1/nba-shop/artwork/product-graphic",require("./routes/artwork/product.graphic"));
 
 //order
 app.use("/v1/nba-shop/order", require("./routes/pos/order"));
