@@ -22,9 +22,9 @@ const ProductNBASchema = new mongoose.Schema({
       level_owner: { type: Number, required: true, default: 0 },
     },
     terrestrial: {
-      district: { type: Number, required: true, default: 0 },
-      state: { type: Number, required: true, default: 0 },
-      province: { type: Number, required: true, default: 0 },
+      // district: { type: Number, required: true, default: 0 },
+      // state: { type: Number, required: true, default: 0 },
+      // province: { type: Number, required: true, default: 0 },
       bonus: { type: Number, required: true, default: 0 },
     },
     central: {
@@ -76,9 +76,9 @@ const validate = (data) => {
         level_owner: Joi.number().required().default(0),
       }),
       terrestrial: Joi.object({
-        district: Joi.number().required().default(0),
-        state: Joi.number().required().default(0),
-        province: Joi.number().required().default(0),
+        // district: Joi.number().required().default(0),
+        // state: Joi.number().required().default(0),
+        // province: Joi.number().required().default(0),
         bonus: Joi.number().required().default(0),
       }),
       central: Joi.object({

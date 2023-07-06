@@ -8,17 +8,7 @@ const ProductGraphicSchema = new mongoose.Schema({
     detail:{type:String,required:true},
     description:{type:String},
     imgUrl:{type:[String]},
-    prices:{type:[
-        {
-            size:{type:String},
-            price:{type:Number, required:true},
-            cost:{type:Number, required:true},
-            quantity_per_pack:{type:Number, required:true},
-            freight:{type:Number, required:true},
-            dealer_profit:{type:Number, required:true},
-            minimun:{type:Number,required:true},
-        }
-    ]},
+  
 
 });
 

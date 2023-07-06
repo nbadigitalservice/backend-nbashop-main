@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
 const OrderCsSchema = new mongoose.Schema({
-    shop_id : {type : String, required: true},
-    invoice : {type : String, required: false, default:"ไม่มี"},
+    shop_id : {type : String, required: true}, //shop ที่ทำรายการ
+    invoice : {type : String, required: false, default:"ไม่มี"}, //สร้างมา
     mobile : {type : String, required : false, default: "ไม่มี"}, //เบอร์โทรสำหรับสะสมแต้ม
     detail : {type: Object, required : false}, //ค่าตอบกับจาก partner API
     company : {type: String, required: false, default:""}, //บริษัทที่ทำการเชื่อมต่อ API 

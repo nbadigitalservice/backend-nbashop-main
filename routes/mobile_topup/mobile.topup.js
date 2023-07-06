@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const mobile_topup = require('../../controllers/mobile.topup.controller/mobile.topup.controller')
+const mobile_topup = require('../../controllers/mobile.topup.controller/mobile.topup.collection.controller')
 const authAdmin = require('../../lib/auth.admin')
 const auth = require('../../lib/auth');
 

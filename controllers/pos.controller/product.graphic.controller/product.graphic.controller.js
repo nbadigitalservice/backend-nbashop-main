@@ -52,7 +52,7 @@ module.exports.Create = async (req,res) => {
         console.log(reqFiles);
 
         //condition
-        const reqPrice = JSON.parse(req.body.prices);
+   
     
         const data = {
             name: req.body.name,
@@ -60,7 +60,7 @@ module.exports.Create = async (req,res) => {
             detail:req.body.detail,
             description:req.body.description,
             imgUrl:reqFiles,
-            prices:reqPrice,
+    
       
         }
 

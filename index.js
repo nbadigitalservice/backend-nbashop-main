@@ -129,7 +129,7 @@ app.use('/v1/nba-shop/more/platform', require('./routes/more/platform'))
 app.use('/v1/nba-shop/category', require("./routes/pos/category"));
 
 //เติมเงินเข้ากระเป๋าอิเล็กทรอนิกส์
-app.use('/v1/nba-shop/partner/wallet_topup', require('./routes/topup_wallet/index'))
+app.use('/v1/nba-shop/partner/wallet_topup', require('./routes/topup_wallet/collection'))
 app.use('/v1/nba-shop/partner/wallet_topup/slip', require('./routes/topup_wallet/slip'))  //สลิปโอนเงิน
 app.use('/v1/nba-shop/partner/wallet_topup/qrcode', require('./routes/topup_wallet/qrcode'));
 

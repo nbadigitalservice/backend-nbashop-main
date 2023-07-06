@@ -26,6 +26,36 @@ const storage = multer.diskStorage({
   },
 });
 
+
+//get All category
+module.exports.GetAll = async (req,res) =>{
+  try {
+    const category = await ProductGraphicCategory.find();
+    return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:category})
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message:"มีบางอย่างผิดพลาด",error:'server side error'})
+  }
+}
+
+//get category by id
+module.exports.GetCategoryById = async (req,res) => {
+  try {
+    const category = await ProductGraphicCategory.findById(req.params.id);
+    if(!category){
+      return res.status(403).send({status:false,message:'ไม่พบข้อมูล'});
+
+    }else{
+      return res.status(200).send({status:true,message:'ถึงข้อมูลสำเร็จ',data:category});
+    }
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({message:"มีบางอย่างผิดพลาด",error:"server side error"})
+  }
+}
+
 module.exports.Create = async (req,res) => {
     try {
 

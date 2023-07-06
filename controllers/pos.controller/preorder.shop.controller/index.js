@@ -126,6 +126,11 @@ exports.create = async (req, res) => {
 
     const result = await new PreOrderShop({
       ...req.body,
+
+      //เพิ่มข้อมูลการแบ่งปันตรงนี้
+
+
+      //end
     }).save();
     res.status(201).send({
       message: "เพิ่มข้อมูลสำเร็จ",
