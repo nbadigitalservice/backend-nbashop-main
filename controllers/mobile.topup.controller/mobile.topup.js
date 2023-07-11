@@ -34,6 +34,7 @@ exports.verify = async (req, res) => {
       price === undefined ||
       productid === undefined
     ) {
+      console.log('ข้อความไม่ครบถ้วน')
       return res.status(400).send({status: false, message: "ข้อมูลไม่ครบถ้วน"});
     }
 
@@ -51,12 +52,13 @@ exports.verify = async (req, res) => {
         config_agent
       )
       .catch((err) => {
-        console.log(err);
+        console.log('axios error',err);
         return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
       });
-
-    if (data) {
-      if (data.data.error_code === "E00") {
+      if (data) {
+      console.log('data',data);
+     
+      if (data && data.data.error_code === "E00") {
         const nba = 0.5;
         let percent = 3;
         if (productid === "p00003" || productid === "p00016") {
@@ -70,15 +72,16 @@ exports.verify = async (req, res) => {
           status: true,
           ...data.data,
           charge: parseFloat(data.data.charge.replace(/,/g, "")),
+          price:price,
           profit_nba: profit_nba,
           profit_shop: profit_shop,
           cost: cost,
         });
       } else {
-        return res.status(400).send({status: false, ...data.data});
+        return res.status(400).send({status: false,message:data.data.error_text, ...data.data});
       }
     } else {
-      return res.status(400).send({status: false, message: ""});
+      return res.status(400).send({status: false, message: 'error not response'});
     }
   } catch (err) {
     console.log(err);

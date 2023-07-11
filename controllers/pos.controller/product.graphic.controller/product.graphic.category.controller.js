@@ -105,6 +105,57 @@ module.exports.Create = async (req,res) => {
     }
 }
 
+//update category
+
+module.exports.Update = async (req,res) => {
+  try {
+    const id = req.params.id;
+    const dataUpdate = {
+      name: req.body.name,
+    }
+    console.log(dataUpdate)
+    ProductGraphicCategory.findByIdAndUpdate(id,dataUpdate,{returnDocument:'after'},(error,result)=>{
+      if(error){
+        return res.status(403).send({status:false,message:'ไม่สามารถบันทึกได้',data:error})
+      }
+      if(result){
+       return res.status(200).send({status:true,message:'บันทึกสำเร็จ',data:result});
+      }else{
+        return res.status(403).send({status:false,message:'อัพเดทไม่สำเร็จ หรือ ไม่มีการอัพเดท กรุณาลองใหม่อีกครั้ง'})
+      }
+     })
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message: "Internal Server Error"});
+  }
+}
+
+//change picture
+
+
+
+//delete category
+module.exports.deleteCategory = async (req,res) => {
+  try {
+    const id = req.params.id;
+    ProductGraphicCategory.findByIdAndDelete(id,{returnOriginal:true},(error,result)=>{
+      if(error){
+              return res.status(403).send({status:false,message:'ลบไม่สำเร็จ',data:error})
+            }
+      if(result){
+        return res.status(200).send({status:true,message:'ลบสำเร็จ'});
+      }else{
+        return res.status(403).send({status:false,message:'ลบไม่สำเร็จ กรุณาลองอีกครั้ง'});
+      }
+    })
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message: "Internal Server Error"});
+  }
+}
+
 
 async function uploadFileCreate(req, res, { i, reqFiles }) {
   const filePath = req[i].path;

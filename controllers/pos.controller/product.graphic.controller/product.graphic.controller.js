@@ -87,7 +87,7 @@ module.exports.Create = async (req,res) => {
     }
 }
 
-//get product graphic
+//get all product graphic
 module.exports.GetProductGraphic = async (req,res) => {
     try {
         const productGraphic = await ProductGraphic.find();
@@ -100,6 +100,65 @@ module.exports.GetProductGraphic = async (req,res) => {
         console.error(error);
         return res.status(500).send({message: "Internal Server Error"});
     }
+}
+
+//get product graphic by id
+module.exports.GetProductGraphicById = async (req,res) => {
+  try {
+    const productGraphic = await ProductGraphic.findById(req.params.id);
+    if(!productGraphic){
+        return res.status(403).send({message:'ยังไม่มีสินค้า'})
+    }
+    return res.status(200).send({status:true,message:'ค้นหาสำเร็จ',data:productGraphic});
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message: "Internal Server Error"});
+  }
+}
+
+//update product graphic by id
+module.exports.UpdateProductGraphicById = async (req,res) => {
+  try {
+    const id = req.params.id;
+    const dataUpdate = {
+      name:req.body.name?req.body.name:null,
+      category:req.body.category?req.body.category:null,
+      detail:req.body.detail?req.body.detail:null,
+      description:req.body.description?req.body.description:null,
+    }
+    console.log(dataUpdate);
+    ProductGraphic.findByIdAndUpdate(id,dataUpdate,{returnDocument:'after'},(err,result) => {
+      if(err){
+        return res.status(403).send({status:false,message:'ไม่สามารถบันทึกได้',data:err});
+      }
+      if(result){
+
+        return res.status(200).send({status:true,message:'บันทึกสำเร็จ',data:result});
+      }else{
+        return res.status(403).send({status:false,message:'บันทึกไม่สำเร็จ'});
+      }
+    });
+
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message: "Internal Server Error"});
+  }
+}
+
+//delete product graphic by id 
+module.exports.DeleteProductGraphicById = async ( req,res) => {
+  try {
+    const id = req.params.id;
+     const result = await ProductGraphic.findByIdAndDelete(id);
+
+     return res.status(200).send({status:true,message:'ลบสินค้าเรียบร้อยแล้ว',data:result})
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message: "Internal Server Error"});
+  }
 }
 
 //method
