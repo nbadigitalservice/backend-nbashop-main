@@ -28,6 +28,20 @@ module.exports.Create = async ( req,res ) => {
     }
 }
 
+//get all priceslist
+module.exports.getAllPriceList = async (req,res) => {
+    try {
+
+        const AllPrice = await ProductGraphicPrice.find();
+
+        return res.status(200).send({message:'ดึงข้อมูลสำเร็จ',data:AllPrice});
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({message:'มีบางอย่างผิดพลาด'});
+    }
+}
+
 module.exports.GetPrice = async (req,res) => {
     try {
         const productGraphicPrice = await ProductGraphicPrice.find({product_graphic_id:req.params.id});
@@ -94,3 +108,5 @@ module.exports.DeleteProductGraphicPriceList = async (req,res) => {
         return res.status(500).send({message:'Internal Server Error'});
     }
 }
+
+
