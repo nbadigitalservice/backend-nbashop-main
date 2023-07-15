@@ -139,12 +139,12 @@ exports.verify = async (req, res) => {
 
 exports.confirm = async (req, res) => {
   try {
-    const {error} = validate(req.body);
-    if (error) {
-      return res
-        .status(400)
-        .send({status: false, message: error.details[0].message});
-    }
+    // const {error} = validate(req.body);
+    // if (error) {
+    //   return res
+    //     .status(400)
+    //     .send({status: false, message: error.details[0].message});
+    // }
     if (req.body.transid === undefined) {
       return res.status(400).send({status: false, message: "ไม่พบ transid"});
     }
