@@ -17,8 +17,8 @@ const OrderCsSchema = new mongoose.Schema({
     transid : {type : String, required: false, default :''},
     image : {type: String, required: false, default: ''},
     timestamp: {type: Date, required: true},
-    updated_by:{type:String, required: true, default:"ยังไม่มีการอัพเดท"},
-    created_by:{type:String, required: true, default:"ไม่ได้บันทึกผู้ทำรายการ"}
+    updated_by:{type:String},
+    created_by:{type:String}
 },{timestamps:true})
 
 const OrderCs = mongoose.model('order_cs', OrderCsSchema);

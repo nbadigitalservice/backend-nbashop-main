@@ -7,13 +7,9 @@ const jwt = require('jsonwebtoken');
 exports.create = async(req, res)=>{
     try{
         //get user
-        const token = req.headers['auth-token'].replace(/^Bearer\s+/, "");
-        const decoded = jwt.verify(token,process.env.JWTPRIVATEKEY);
-        if(!decoded){
-            return res.status(401).send({message:'ไม่สามารถเข้าถึงได้'});
-        }
+       
 
-
+        console.log('body',req.body);
 
         const orderid = await genOrderId();
         const invoice = await invoiceNumber(req.body.shop_id, req.body.timestamp);
@@ -30,13 +26,13 @@ exports.create = async(req, res)=>{
             image: req.body.image,
             date : dayjs(req.body.timestamp).format('YYYY-MM-DD'),
             time : dayjs(req.body.timestamp).format('HH:mm:ss'),
-            created_by: {name:decoded.name,phone:decoded.phone}
+            created_by: {name:req.body.employee,phone:req.body.mobile}
         }
         const order_cs = {
             ...req.body,company: "NBA",
             invoice : invoice,
             detail : {...order_nba},
-            created_by: decoded.name,
+            created_by: req.body.employee
         }
         console.log(order_nba);
         console.log(order_cs);
@@ -48,6 +44,8 @@ exports.create = async(req, res)=>{
                 return res.status(200).send({status: true, data: cs})
             }
         }
+
+
         //เพิ่มข้อมูลเข้า order_cs
     }catch(err){
         console.log(err);

@@ -20,8 +20,8 @@ const OrderNBASchema = new mongoose.Schema({
     "status" : {type: String, required: false, default: "wait"},
     "updated_by":{type:String, required: true, default:"ยังไม่มีการอัพเดท"},
     "created_by":{type:{
-        name:{type:String, required:true,default:"ไม่ได้บันทึกผู้ทำรายการ"},
-        phone:{type:String, required:true,default:"ไม่ได้บันทึกผู้ทำรายการ"}
+        name:{type:String, },
+        phone:{type:String, }
     }}
 },{timestamps:true});
 

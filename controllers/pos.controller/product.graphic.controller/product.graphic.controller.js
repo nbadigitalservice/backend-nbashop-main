@@ -152,6 +152,7 @@ module.exports.DeleteProductGraphicById = async ( req,res) => {
   try {
     const id = req.params.id;
      const result = await ProductGraphic.findByIdAndDelete(id);
+     
 
      return res.status(200).send({status:true,message:'ลบสินค้าเรียบร้อยแล้ว',data:result})
     
