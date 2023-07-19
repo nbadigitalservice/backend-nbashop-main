@@ -107,32 +107,67 @@ module.exports.Create = async (req,res) => {
 
 //update category
 
-module.exports.Update = async (req,res) => {
-  try {
-    const id = req.params.id;
-    const dataUpdate = {
-      name: req.body.name,
-    }
-    console.log(dataUpdate)
-    ProductGraphicCategory.findByIdAndUpdate(id,dataUpdate,{returnDocument:'after'},(error,result)=>{
-      if(error){
-        return res.status(403).send({status:false,message:'ไม่สามารถบันทึกได้',data:error})
-      }
-      if(result){
-       return res.status(200).send({status:true,message:'บันทึกสำเร็จ',data:result});
-      }else{
-        return res.status(403).send({status:false,message:'อัพเดทไม่สำเร็จ หรือ ไม่มีการอัพเดท กรุณาลองใหม่อีกครั้ง'})
-      }
-     })
-    
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send({message: "Internal Server Error"});
-  }
-}
 
 //change picture
+module.exports.Update = async (req,res) => {
+  try {
+      const id = req.params.id;
+    
 
+      let upload = multer({ storage: storage }).array("imgCollection", 20);
+  upload(req, res, async function (err) {
+
+      const name = req.body.name;
+
+      if(err){
+          return res.status(403).send({message:'มีบางอย่างผิดพลาด',data:err});
+      }
+    const reqFiles = [];
+
+    if (!req.files) {
+      res.status(500).send({ message: "มีบางอย่างผิดพลาด",data:'No Request Files', status: false });
+    } else {
+      const url = req.protocol + "://" + req.get("host");
+      for (var i = 0; i < req.files.length; i++) {
+        await uploadFileCreate(req.files, res, { i, reqFiles });
+     
+          
+      }
+ 
+
+      //create collection
+
+      const data = {
+          name:name,
+          img_url:reqFiles[0],
+      }
+      ProductGraphicCategory.findByIdAndUpdate(id,data,{returnDocument:'after'},(err,result)=>{
+        if(err){
+          return res.status(403).send({message:'อัพเดทรูปภาพไม่สำเร็จ',data:err})
+        }
+
+        //delete old picture
+         //* -->
+
+        //return sucessful response
+ 
+          return res.status(200).send({message:'อัพเดทรูปภาพสำเร็จ',data:{id:result.img_url,name:result.name}})
+
+      })
+   
+
+      //end
+
+    }
+  });
+
+     
+      
+  } catch (error) {
+      console.error(error);
+      return res.status(500).send({message: "Internal Server Error"});
+  }
+}
 
 
 //delete category
@@ -155,6 +190,9 @@ module.exports.deleteCategory = async (req,res) => {
     return res.status(500).send({message: "Internal Server Error"});
   }
 }
+
+//update category image
+
 
 
 async function uploadFileCreate(req, res, { i, reqFiles }) {

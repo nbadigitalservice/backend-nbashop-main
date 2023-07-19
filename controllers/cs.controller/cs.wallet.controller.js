@@ -72,6 +72,7 @@ exports.verify = async (req, res) => {
           cost: cost,
         });
       } else {
+        console.log(data.data);
         return res.status(400).send({status: false, ...data.data});
       }
     } else {

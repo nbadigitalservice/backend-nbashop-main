@@ -1,4 +1,8 @@
 const { ProductGraphic } = require('../../../models/pos.models/product.graphic.model');
+const { ProductGraphicCategory } = require('../../../models/pos.models/product.graphic.category.model');
+const { ProductGraphicPrice } = require('../../../models/pos.models/product.graphic.price.model');
+const mongoose = require('mongoose');
+
 const multer = require("multer");
 const fs = require("fs");
 const { google } = require("googleapis");
@@ -117,10 +121,51 @@ module.exports.GetProductGraphicById = async (req,res) => {
   }
 }
 
+//get price list by category id
+module.exports.GetPricelistByCategoryId =  async (req,res) => {
+  try {
+      const categoryId = req.params.id;
+
+      if(!mongoose.isValidObjectId(categoryId)){
+        return res.status(403).send({message:"Invalid category id"});
+      }
+
+      const category= await ProductGraphicCategory.findById(categoryId);
+
+      if(!category){
+        return res.status(403).send({message:"category not found"});
+      }
+
+      console.log(category);
+
+      const productGraphic = await ProductGraphic.find({category:category.name});
+
+      console.log(productGraphic);
+
+      const productPrice = await ProductGraphicPrice.find();
+
+      const pricelist = productGraphic.map(el=>({
+        product:el,
+        pricelist:productPrice.filter(price=>price.product_graphic_id==el._id)}))
+
+  return res.status(200).send({message:"ดึงข้อมูลสำเร็จ",data:pricelist});
+      
+  } catch (error) {
+      console.error(error);
+      return res.status(500).send({message:'Internal Server Error'});
+  }
+}
+
+
 //update product graphic by id
 module.exports.UpdateProductGraphicById = async (req,res) => {
   try {
     const id = req.params.id;
+
+    if(!mongoose.isValidObjectId(id)){
+      return res.status(403).send({message:"Invalid id"});
+    }
+
     const dataUpdate = {
       name:req.body.name?req.body.name:null,
       category:req.body.category?req.body.category:null,
@@ -151,6 +196,12 @@ module.exports.UpdateProductGraphicById = async (req,res) => {
 module.exports.DeleteProductGraphicById = async ( req,res) => {
   try {
     const id = req.params.id;
+
+    if(!mongoose.isValidObjectId(id)){
+      return res.status(403).send({message:"Invalid id"});
+    }
+
+
      const result = await ProductGraphic.findByIdAndDelete(id);
      
 
@@ -161,6 +212,70 @@ module.exports.DeleteProductGraphicById = async ( req,res) => {
     return res.status(500).send({message: "Internal Server Error"});
   }
 }
+
+//change product graphic image by id
+module.exports.ChangeProductGraphicImage = async (req,res) => {
+  try {
+
+      const id = req.params.id;
+
+      if(!mongoose.isValidObjectId(id)){
+        return res.status(403).send({message:"Invalid id"});
+      }
+  
+
+      let upload = multer({ storage: storage }).array("imgCollection", 20);
+  upload(req, res, async function (err) {
+      if(err){
+          return res.status(403).send({message:'มีบางอย่างผิดพลาด',data:err});
+      }
+    const reqFiles = [];
+
+    if (!req.files) {
+      res.status(500).send({ message: "มีบางอย่างผิดพลาด",data:'No Request Files', status: false });
+    } else {
+
+      for (var i = 0; i < req.files.length; i++) {
+        await uploadFileCreate(req.files, res, { i, reqFiles });
+          
+      }
+
+      //create collection
+      
+      console.log(reqFiles);
+
+      //condition
+ 
+  
+      const data = {
+      
+          imgUrl:reqFiles,
+  
+    
+      }
+
+      console.log(data);
+
+    ProductGraphic.findByIdAndUpdate(id,data,{returnDocument:'after'},(err,result)=>{
+      if(err){
+        return res.status(403).send({message:'เปลี่ยนรูปภาพไม่สำเร็จ',data:err})
+      }
+      return res.status(200).send({message:'เปลี่ยนรูปภาพสำเร็จ',data:{imgUrl:result.imgUrl}});
+    })
+
+      //end
+
+    }
+
+  });
+
+  } catch (error) {
+      console.error(error);
+      return res.status(500).send({message: "Internal Server Error"});
+  }
+}
+
+
 
 //method
 

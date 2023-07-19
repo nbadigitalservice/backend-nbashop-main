@@ -42,6 +42,7 @@ module.exports.getAllPriceList = async (req,res) => {
     }
 }
 
+//get price by product graphic id
 module.exports.GetPrice = async (req,res) => {
     try {
         const productGraphicPrice = await ProductGraphicPrice.find({product_graphic_id:req.params.id});
@@ -58,6 +59,7 @@ module.exports.GetPrice = async (req,res) => {
         return res.status(500).send({message:'มีบางอย่างผิดพลาด'})
     }
 }
+
 
 //update price list
 module.exports.updatePriceList = async (req,res) => {

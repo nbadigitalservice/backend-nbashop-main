@@ -17,11 +17,14 @@ router.delete('/category/:id',auth,ProductGraphicCategory.deleteCategory);
 router.get('/',auth,ProductGraphic.GetProductGraphic);
 router.get('/:id',auth,ProductGraphic.GetProductGraphicById);
 router.post('/',authAdmin,ProductGraphic.Create);
-router.put('/:id',auth,ProductGraphic.UpdateProductGraphicById);
-router.delete('/:id',auth,ProductGraphic.DeleteProductGraphicById)
+router.put('/:id',authAdmin,ProductGraphic.UpdateProductGraphicById);
+router.delete('/:id',authAdmin,ProductGraphic.DeleteProductGraphicById);
+router.put('/:id/change-image',authAdmin,ProductGraphic.ChangeProductGraphicImage);
+router.get('/product/category/:id',auth,ProductGraphic.GetPricelistByCategoryId);
 
 //pricelist
 router.get('/price/all',authAdmin,ProductGraphicPrice.getAllPriceList);
+
 router.post('/price',authAdmin,ProductGraphicPrice.Create);
 router.get('/price/:id',auth,ProductGraphicPrice.GetPrice);
 router.put('/price/:id',auth,ProductGraphicPrice.updatePriceList);
