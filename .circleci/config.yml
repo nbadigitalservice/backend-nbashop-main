@@ -19,6 +19,6 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - ver-2.0.0
 
 
