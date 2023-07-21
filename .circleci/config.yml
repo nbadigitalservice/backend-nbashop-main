@@ -4,7 +4,7 @@ version: 2.1
 jobs:
   pull-and-build:
     docker:
-      - image: circleci/node:7.10
+      - image: arvindr226/subversion
     steps:
       - checkout
       - run: ssh -oStrictHostKeyChecking=no -v $DROPLET_USER@$DROPLET_IP "./deploy-backend-nbashop-main.sh"
