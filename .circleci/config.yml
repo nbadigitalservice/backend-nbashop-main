@@ -7,7 +7,7 @@ jobs:
       - image: arvindr226/alpine-ssh
     steps:
       - checkout
-      - run: ssh -oStrictHostKeyChecking=no -v $DROPLET_USER@$DROPLET_IP "./deploy-backend-nbashop-main.sh"
+      - run: ssh -oStrictHostKeyChecking=no -v $SERVER_USER@$SERVER_IP "./deploy-backend-nbashop-main.sh"
 
 # Orchestrate our job run sequence
 
