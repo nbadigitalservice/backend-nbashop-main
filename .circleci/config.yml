@@ -4,7 +4,7 @@ version: 2.1
 jobs:
   pull-and-build:
     docker:
-      - image: arvindr226/alpine-ssh
+      - image: arvindr226/alpine2-ssh
     steps:
       - checkout
       - run: ssh -oStrictHostKeyChecking=no -v $SERVER_USER@$SERVER_IP "./deploy-backend-nbashop-main.sh"
