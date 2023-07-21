@@ -6,10 +6,10 @@ const dayjs = require("dayjs");
 
 exports.create = async (req, res) => {
     try{
-        const {error} = validate(req.body);
-        if(error){
-            return res.status(400).send({status: false, message:error.details[0].message})
-        }
+        // const {error} = validate(req.body);
+        // if(error){
+        //     return res.status(400).send({status: false, message:error.details[0].message})
+        // }
         const invoice = await invoiceNumber();
         const poartwork = await PreorderArtwork.create({invoice: invoice, ...req.body});
         if(poartwork){

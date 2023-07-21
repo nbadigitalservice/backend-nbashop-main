@@ -19,4 +19,8 @@ router.delete("/preorder/:id", auth, poartwork.delete);
 //ขั้นต่อการสั่ง
 router.post('/check',auth, order_artwork.check);
 router.post('/confirm', auth, order_artwork.confirm);
+
+//create preorder for plateform
+router.post('/create-preorder',auth,poartwork.create);
+
 module.exports = router

@@ -24,7 +24,7 @@ router.get('/product/category/:id',auth,ProductGraphic.GetPricelistByCategoryId)
 
 //pricelist
 router.get('/price/all',authAdmin,ProductGraphicPrice.getAllPriceList);
-
+router.get('/price/byid/:id',auth,ProductGraphicPrice.GetPriceById)
 router.post('/price',authAdmin,ProductGraphicPrice.Create);
 router.get('/price/:id',auth,ProductGraphicPrice.GetPrice);
 router.put('/price/:id',auth,ProductGraphicPrice.updatePriceList);

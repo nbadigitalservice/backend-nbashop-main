@@ -42,6 +42,25 @@ module.exports.getAllPriceList = async (req,res) => {
     }
 }
 
+//get price by id
+
+module.exports.GetPriceById = async (req,res) => {
+    try {
+
+        const productGraphicPrice = await ProductGraphicPrice.findById(req.params.id);
+        
+        if(!productGraphicPrice){
+            return res.status(403).send({message:'ดึงข้อมูลราคาไม่สำเร็จ'})
+        }else{
+            return res.status(200).send({message:'ดึงข้อมูลราคาสำเร็จ',data:productGraphicPrice});
+        }
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({message:'Internal Server Error'});
+    }
+}
+
 //get price by product graphic id
 module.exports.GetPrice = async (req,res) => {
     try {
