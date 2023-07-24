@@ -21,8 +21,10 @@ const PreorderArtworkSchema = new mongoose.Schema({
     type : ประเภทของงานออกแบบ เช่น เป็นป้ายไวนิล "หน้าเดียว หรือ สองหน้า " เป็นต้น 
     detail :  รายละเอียดคร่าวๆ ถ้ามี
     price : ราคาต่อหน่วย
+    cost : ต้นทุนต่อหน่วย
     amount : จำนวนที่สั่ง
     total :  ยอดรวม
+    totalcost : ต้นทุนรวม
   */
   status: {type:Array, required: true},
   /*
