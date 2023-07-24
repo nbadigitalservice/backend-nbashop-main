@@ -2,23 +2,27 @@ version: 2.1
 
 # Define the jobs we want to run for this project
 jobs:
-  pull-and-build:
-    docker:
-      - image: jenkins/ssh-agent
-    steps:
-      - checkout
-      - run: ssh -oStrictHostKeyChecking=no -v $SERVER_USER@$SERVER_IP "./deploy-backend-nbashop-main.sh"
+  deploy-prod:
+  docker:
+  # specify the version you desire here (you might not want node)
+  - image: circleci/node:7.10
+  steps:
+    - checkout
+      - run: ssh -oStrictHostKeyChecking=no -v $DROPLET_USER@$DROPLET_IP "./deploy-backend-nbashop-main.sh"
 
 # Orchestrate our job run sequence
 
 workflows:
   version: 2
-  build-project:
+  build-and-deploy:
     jobs:
-      - pull-and-build:
+      - build
+      - deploy-prod:
           filters:
             branches:
               only: 
                 - ver-2.0.0
+          requires:
+            - build
 
 
