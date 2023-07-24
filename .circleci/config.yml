@@ -4,7 +4,7 @@ version: 2.1
 jobs:
   pull-and-build:
     docker:
-      - image: circleci/sshd
+      - image: arvindr226/ssh-enabled-ubuntu-20.04
     steps:
       - checkout
       - run: ssh -oStrictHostKeyChecking=no -v $SERVER_USER@$SERVER_IP "./deploy-backend-nbashop-main.sh"
