@@ -80,7 +80,7 @@ exports.delete = async(req, res)=>{
         if(product){
             return res.status(200).send({status: true, message :"ลบข้อมูลสำเร็จ"});
         }else{
-            return res.status(400).send({status: false, message : "ลบข้อมูลไม่สำเร็จ"})
+            return res.status(400).send({status: false, message : "ลบข้อมูลไม่สำเร็จ"});
         }
     }catch(err){
         return res.status(500).send({message: err._message});
