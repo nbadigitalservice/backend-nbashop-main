@@ -1,28 +1,38 @@
-version: 2.1
-
-# Define the jobs we want to run for this project
+version: 2.17
 jobs:
-  deploy-prod:
+  build:
+    working_directory: ~/backend-nbashop-main
     docker:
-  # specify the version you desire here (you might not want node)
-  - image: circleci/node:7.10
-  steps:
-    - checkout
-    - run: ssh -oStrictHostKeyChecking=no -v $DROPLET_USER@$DROPLET_IP "./deploy-backend-nbashop-main.sh"
-
-# Orchestrate our job run sequence
+      - image: circleci/node:8.11.1
+    steps:
+      - checkout
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: dependency-cache-{{checksum "package-lock.json"}}
+      - run:
+          name: install-npm
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{checksum "package-lock.json"}}
+          paths:
+            - ./node_modules
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - checkout
+      - run:
+          name: Deploy over SSH
+          command: ssh -p 22 circleci@143.198.204.72 "cd backend-nbashop-main;eval "$(ssh-agent -s)";ssh-add /home/circleci/.ssh/id_rsa_git; git pull origin ; npm i; pm2 restart index.js ; pm2 save;
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
       - build
-      - deploy-prod:
-          filters:
-            branches:
-              only: 
-                - ver-2.0.0
+      - deploy:
           requires:
             - build
-
 
