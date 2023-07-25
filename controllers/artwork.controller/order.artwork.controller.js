@@ -118,7 +118,7 @@ exports.confirm = async (req, res)=>{
 
 ตรวจสอบได้ที่ : https://shop-admin.nbadigitalservice.com
 
-*รีบๆ ตรวจสอบและส่งงานให้กราฟฟิกกันน๊าา*
+*รีบๆ ตรวจสอบและส่งงานให้กราฟฟิกกันน๊าาา*
 *ตั้งใจทำงานการนะคะ/ครับ*
 `
       await linenotify(message);
