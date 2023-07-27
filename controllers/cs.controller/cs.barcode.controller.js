@@ -24,6 +24,7 @@ if (process.env.SERVICE === "production") {
 }
 
 exports.check = async (req, res) => {
+  console.log('req')
   try {
     const {mobile, barcode} = req.body;
     if (
@@ -32,6 +33,7 @@ exports.check = async (req, res) => {
       mobile === "" ||
       barcode === ""
     ) {
+      
       return res
         .status(400)
         .send({status: false, message: "กรุณาส่งข้อมูลให้ครบถ้วน"});
@@ -54,13 +56,16 @@ exports.check = async (req, res) => {
         return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
       });
     if (data) {
+      
       if (data.data.error_code === "E00") {
         const amount = data.data.amount.replace(/,/g,'');
         return res
           .status(200)
           .send({status: true, ...data.data, amount: parseFloat(amount)});
       } else {
-        return res.status(400).send({status: false, ...data.data});
+        console.log('err')
+
+        return res.status(400).send({status: false,message:'ไม่สามารถชำระได้', ...data.data});
       }
     } else {
       return res.status(400).send({status: false, message: ""});
