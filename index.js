@@ -97,6 +97,8 @@ app.use("/v1/nba-shop/order", require("./routes/pos/order"));
 app.use('/v1/nba-shop/order_consignment', require('./routes/pos/order.consignment'))
 app.use("/v1/nba-shop/product/store", require("./routes/pos/product.store"))
 
+//facebook service
+app.use("/v1/nba-shop/facebookservice", require("./routes/facebookservice/index"))
 
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
