@@ -100,6 +100,9 @@ app.use("/v1/nba-shop/product/store", require("./routes/pos/product.store"))
 //facebook service
 app.use("/v1/nba-shop/facebookservice", require("./routes/facebookservice/index"))
 
+//website service
+app.use("/v1/nba-shop/websiteservice", require("./routes/websiteservice/index"))
+
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
 app.use("/v1/nba-shop/express", require("./routes/express/booking.shippop"));

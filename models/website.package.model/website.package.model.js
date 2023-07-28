@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
 
-const facebookPackage = new mongoose.Schema({
+const websitepackage = new mongoose.Schema({
     picture: {type: String, required: true},
     name: {type: String, required: true, unique: true},
     detail: {type:  String},
@@ -13,7 +13,7 @@ const facebookPackage = new mongoose.Schema({
     status: {type: String, default: 'เปิดให้บริการ'},
 })
 
-const FacebookPackage = new mongoose.model("facebookpackage",facebookPackage)
+const WebsitePackageModel = new mongoose.model("websitepackage",websitepackage)
 
 const validate = (data) => {
     const Schema = Joi.object({
@@ -29,4 +29,4 @@ const validate = (data) => {
     return Schema.validate(data);
 }
 
-module.exports = { FacebookPackage,validate }
+module.exports = { WebsitePackageModel,validate }
