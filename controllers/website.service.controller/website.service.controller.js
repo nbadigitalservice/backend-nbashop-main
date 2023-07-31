@@ -73,7 +73,7 @@ module.exports.create = async (req, res) => {
     }
 }
 
-//get All facebookservice
+//get All websitepackage
 module.exports.GetAll = async (req,res) =>{
     try {
       const websitepackage = await WebsitePackageModel.find();
@@ -85,7 +85,7 @@ module.exports.GetAll = async (req,res) =>{
     }
   }
 
-//get facebookservice by id
+//get websitepackage by id
 module.exports.GetById = async (req,res) => {
     try {
       const websitepackage = await WebsitePackageModel.findById(req.params.id);
