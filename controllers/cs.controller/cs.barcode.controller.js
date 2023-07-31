@@ -53,7 +53,7 @@ exports.check = async (req, res) => {
       )
       .catch((err) => {
         console.log(err);
-        return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+        return res.status(500).send({error:err, message: "มีบางอย่างผิดพลาด"});
       });
     if (data) {
       
@@ -65,7 +65,7 @@ exports.check = async (req, res) => {
       } else {
         console.log('err')
 
-        return res.status(400).send({status: false,message:'ไม่สามารถชำระได้', ...data.data});
+        return res.status(400).send({status: false,message:'ไม่สามารถชำระได้',...data.data});
       }
     } else {
       return res.status(400).send({status: false, message: ""});
