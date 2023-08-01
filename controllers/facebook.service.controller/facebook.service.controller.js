@@ -1,4 +1,4 @@
-const { FacebookPackage,validate } = require('../../models/facebook.model/facebook.package.model')
+const { FacebookPackage, validate } = require('../../models/facebook.model/facebook.package.model')
 const fs = require('fs')
 const multer = require('multer')
 const { google } = require("googleapis");

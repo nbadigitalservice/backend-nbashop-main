@@ -104,12 +104,10 @@ app.use("/v1/nba-shop/facebookservice", require("./routes/facebookservice/index"
 app.use("/v1/nba-shop/websiteservice", require("./routes/websiteservice/index"))
 
 //account service
-app.use("/v1/nba-shop/accountservice/category", require("./routes/accountservice/account.category"))
-app.use("/v1/nba-shop/accountservice/package", require("./routes/accountservice/account.package"))
+app.use("/v1/nba-shop/accountservice", require("./routes/accountservice/index"))
 
 //por ror bor service
-app.use("/v1/nba-shop/actlegalservice/category", require("./routes/actservice/act.category"))
-app.use("/v1/nba-shop/actlegalservice/package", require("./routes/actservice/act.package"))
+app.use("/v1/nba-shop/actlegalservice", require("./routes/actservice/index"))
 
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
