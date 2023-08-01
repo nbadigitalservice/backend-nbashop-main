@@ -1,4 +1,4 @@
-const { WebsitePackageModel,validate } = require('../../models/website.package.model/website.package.model')
+const { AccountCategoryModel, validate } = require('../../models/account.service.model/account.service.category.model')
 const multer = require('multer')
 const fs = require('fs')
 const { google } = require("googleapis");
@@ -49,15 +49,9 @@ module.exports.create = async (req, res) => {
         const data = {
             picture: reqFiles[0],
             name: req.body.name,
-            detail: req.body.detail,
-            price: Number(req.body.price),
-            cost: Number(req.body.cost),
-            profitbeforeallocate: Number(req.body.profitbeforeallocate),
-            nbaprofit: Number(req.body.nbaprofit),
-            plateformprofit: Number(req.body.plateformprofit)
         }
-        const websitepackage = new WebsitePackageModel(data);
-        websitepackage.save(error =>{
+        const accountcategory = new AccountCategoryModel(data);
+        accountcategory.save(error =>{
             if(error){
                 res.status(403).send({status:false,message:'ไม่สามารถบันทึกได้',data:error})
             }else{
@@ -76,8 +70,8 @@ module.exports.create = async (req, res) => {
 //get All websitepackage
 module.exports.GetAll = async (req,res) =>{
     try {
-      const websitepackage = await WebsitePackageModel.find();
-      return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:websitepackage})
+      const accountcategory = await AccountCategoryModel.find();
+      return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:accountcategory})
       
     } catch (error) {
       console.error(error);
@@ -88,12 +82,12 @@ module.exports.GetAll = async (req,res) =>{
 //get websitepackage by id
 module.exports.GetById = async (req,res) => {
     try {
-      const websitepackage = await WebsitePackageModel.findById(req.params.id);
-      if(!websitepackage){
+      const accountcategory = await AccountCategoryModel.findById(req.params.id);
+      if(!accountcategory){
         return res.status(403).send({status:false,message:'ไม่พบข้อมูล'});
   
       }else{
-        return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:websitepackage});
+        return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:accountcategory});
       }
       
     } catch (error) {
@@ -110,19 +104,12 @@ module.exports.update = async (req,res) => {
 
         const id = req.params.id;
 
-        const packageUpdate = await WebsitePackageModel.findById(id)
+        const categoryUpdate = await AccountCategoryModel.findById(id)
 
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
 
-        const name = req.body.name?req.body.name:packageUpdate.name
-        const detail = req.body.detail?req.body.detail:packageUpdate.detail
-        const price = req.body.price?Number(req.body.price):packageUpdate.price
-        const cost = req.body.cost?Number(req.body.cost):packageUpdate.cost
-        const profitbeforeallocate = req.body.profitbeforeallocate?Number(req.body.profitbeforeallocate):packageUpdate.profitbeforeallocate
-        const nbaprofit = req.body.nbaprofit?Number(req.body.nbaprofit):packageUpdate.nbaprofit
-        const plateformprofit = req.body.plateformprofit?Number(req.body.plateformprofit):packageUpdate.plateformprofit
-        const status = req.body.status?req.body.status:packageUpdate.status
+        const name = req.body.name?req.body.name:categoryUpdate.name
   
         if(err){
             return res.status(403).send({message:'มีบางอย่างผิดพลาด',data:err});
@@ -140,32 +127,18 @@ module.exports.update = async (req,res) => {
         //Update collection
         const data = {
             picture: reqFiles[0],
-            name: name,
-            detail: detail,
-            price: price,
-            cost: cost,
-            profitbeforeallocate: profitbeforeallocate,
-            nbaprofit: nbaprofit,
-            plateformprofit: plateformprofit,
-            status: status
-            
+            name: name    
         }
-        WebsitePackageModel.findByIdAndUpdate(id,data,{returnDocument:'after'},(err,result)=>{
+        AccountCategoryModel.findByIdAndUpdate(id,data,{returnDocument:'after'},(err,result)=>{
           if(err){
             return res.status(403).send({message:'อัพเดทรูปภาพไม่สำเร็จ',data:err})
           }
           //delete old picture
            //* -->
           //return sucessful response
-            return res.status(200).send({message:'อัพเดทรูปภาพสำเร็จ',data:{picture:result.picture,
+            return res.status(200).send({message:'อัพเดทสำเร็จ',data:{picture:result.picture,
                                                                         name:result.name,
-                                                                        detail:result.detail,
-                                                                        price:result.price,
-                                                                        cost:result.cost,
-                                                                        profitbeforeallocate:result.profitbeforeallocate,
-                                                                        nbaprofit:result.nbaprofit,
-                                                                        plateformprofit:result.plateformprofit,
-                                                                        status:result.status
+
                                                                         }})
         })
         //end
@@ -181,7 +154,7 @@ module.exports.update = async (req,res) => {
 module.exports.delete = async (req,res) => {
     try {
       const id = req.params.id;
-      WebsitePackageModel.findByIdAndDelete(id,{returnOriginal:true},(error,result)=>{
+      AccountCategoryModel.findByIdAndDelete(id,{returnOriginal:true},(error,result)=>{
         if(error){
                 return res.status(403).send({status:false,message:'ลบไม่สำเร็จ',data:error})
               }
@@ -203,7 +176,7 @@ async function uploadFileCreate(req, res, { i, reqFiles }) {
     const filePath = req[i].path;
     let fileMetaData = {
       name: req.originalname,
-      parents: [process.env.GOOGLE_DRIVE_IMAGE_WEBSITE_SERVICE],
+      parents: [process.env.GOOGLE_DRIVE_IMAGE_ACCOUNT_SERVICE],
     };
     let media = {
       body: fs.createReadStream(filePath),

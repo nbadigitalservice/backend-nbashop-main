@@ -1,4 +1,4 @@
-const { WebsitePackageModel,validate } = require('../../models/website.package.model/website.package.model')
+const { ActPackageModel, validate } = require('../../models/act.service.model/act.service.package.model')
 const multer = require('multer')
 const fs = require('fs')
 const { google } = require("googleapis");
@@ -47,7 +47,10 @@ module.exports.create = async (req, res) => {
 
         //create collection
         const data = {
+            categoryid: req.body.categoryid,
+            code: req.body.code,
             picture: reqFiles[0],
+            type: req.body.type,
             name: req.body.name,
             detail: req.body.detail,
             price: Number(req.body.price),
@@ -56,8 +59,8 @@ module.exports.create = async (req, res) => {
             nbaprofit: Number(req.body.nbaprofit),
             plateformprofit: Number(req.body.plateformprofit)
         }
-        const websitepackage = new WebsitePackageModel(data);
-        websitepackage.save(error =>{
+        const actpackage = new ActPackageModel(data);
+        actpackage.save(error =>{
             if(error){
                 res.status(403).send({status:false,message:'ไม่สามารถบันทึกได้',data:error})
             }else{
@@ -76,8 +79,8 @@ module.exports.create = async (req, res) => {
 //get All websitepackage
 module.exports.GetAll = async (req,res) =>{
     try {
-      const websitepackage = await WebsitePackageModel.find();
-      return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:websitepackage})
+      const actpackage = await ActPackageModel.find();
+      return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:actpackage})
       
     } catch (error) {
       console.error(error);
@@ -88,12 +91,12 @@ module.exports.GetAll = async (req,res) =>{
 //get websitepackage by id
 module.exports.GetById = async (req,res) => {
     try {
-      const websitepackage = await WebsitePackageModel.findById(req.params.id);
-      if(!websitepackage){
+      const actpackage = await ActPackageModel.findById(req.params.id);
+      if(!actpackage){
         return res.status(403).send({status:false,message:'ไม่พบข้อมูล'});
   
       }else{
-        return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:websitepackage});
+        return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:actpackage});
       }
       
     } catch (error) {
@@ -110,11 +113,13 @@ module.exports.update = async (req,res) => {
 
         const id = req.params.id;
 
-        const packageUpdate = await WebsitePackageModel.findById(id)
+        const packageUpdate = await ActPackageModel.findById(id)
 
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
 
+        const code = req.body.code?req.body.code:packageUpdate.code
+        const type = req.body.type?req.body.type:packageUpdate.type
         const name = req.body.name?req.body.name:packageUpdate.name
         const detail = req.body.detail?req.body.detail:packageUpdate.detail
         const price = req.body.price?Number(req.body.price):packageUpdate.price
@@ -139,7 +144,9 @@ module.exports.update = async (req,res) => {
    
         //Update collection
         const data = {
+            code: code,
             picture: reqFiles[0],
+            type: type,
             name: name,
             detail: detail,
             price: price,
@@ -150,14 +157,16 @@ module.exports.update = async (req,res) => {
             status: status
             
         }
-        WebsitePackageModel.findByIdAndUpdate(id,data,{returnDocument:'after'},(err,result)=>{
+        ActPackageModel.findByIdAndUpdate(id,data,{returnDocument:'after'},(err,result)=>{
           if(err){
             return res.status(403).send({message:'อัพเดทรูปภาพไม่สำเร็จ',data:err})
           }
           //delete old picture
            //* -->
           //return sucessful response
-            return res.status(200).send({message:'อัพเดทรูปภาพสำเร็จ',data:{picture:result.picture,
+            return res.status(200).send({message:'อัพเดทสำเร็จ',data:{code:result.code,
+                                                                        picture:result.picture,
+                                                                        type:result.type,
                                                                         name:result.name,
                                                                         detail:result.detail,
                                                                         price:result.price,
@@ -181,7 +190,7 @@ module.exports.update = async (req,res) => {
 module.exports.delete = async (req,res) => {
     try {
       const id = req.params.id;
-      WebsitePackageModel.findByIdAndDelete(id,{returnOriginal:true},(error,result)=>{
+      ActPackageModel.findByIdAndDelete(id,{returnOriginal:true},(error,result)=>{
         if(error){
                 return res.status(403).send({status:false,message:'ลบไม่สำเร็จ',data:error})
               }
@@ -203,7 +212,7 @@ async function uploadFileCreate(req, res, { i, reqFiles }) {
     const filePath = req[i].path;
     let fileMetaData = {
       name: req.originalname,
-      parents: [process.env.GOOGLE_DRIVE_IMAGE_WEBSITE_SERVICE],
+      parents: [process.env.GOOGLE_DRIVE_IMAGE_ACT_SERVICE],
     };
     let media = {
       body: fs.createReadStream(filePath),
