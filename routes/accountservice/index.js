@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const AccountServiceCategory = require('../../controllers/account.service.controller/account.service.category.controller')
 const AccountServicePackage = require('../../controllers/account.service.controller/account.service.package.controller')
+const AccountOrder = require('../../controllers/account.service.controller/account.service.order.controller')
 const auth = require("../../lib/auth");
 const authAdmin = require('../../lib/auth.admin');
 
@@ -17,5 +18,8 @@ router.get("/package/list", auth, AccountServicePackage.GetAll);
 router.get("/package/list/:id", auth, AccountServicePackage.GetById);
 router.put("/package/update/:id", authAdmin, AccountServicePackage.update);
 router.delete("/package/delete/:id", authAdmin, AccountServicePackage.delete);
+
+//order
+router.post("/order", auth, AccountOrder.order)
 
 module.exports = router

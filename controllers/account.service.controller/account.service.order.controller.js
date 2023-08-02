@@ -1,4 +1,4 @@
-const { FacebookPackage } = require('../../models/facebook.model/facebook.package.model')
+const { AccountPackageModel } = require('../../models/account.service.model/account.service.package.model')
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
 const { Shop } = require('../../models/pos.models/shop.model')
 const { Partners } = require('../../models/pos.models/partner.model')
@@ -23,25 +23,25 @@ module.exports.order = async (req, res) => {
             .status(400)
             .send({status: false, message: error.details[0].message});
         }
-        const facebookpackage = await FacebookPackage.findOne({ _id: req.body.packageid });
-        console.log(facebookpackage);
-        if (facebookpackage) {
+        const accountpackage = await AccountPackageModel.findOne({ _id: req.body.packageid });
+        console.log(accountpackage);
+        if (accountpackage) {
 
             let token = req.headers['auth-token'];
             token = token.replace(/^Bearer\s+/, "");
             const decoded = jwt.verify(token, process.env.JWTPRIVATEKEY)
 
-            const checkuser = await Employee.findOne({ _id:decoded._id });
+            const checkuser = await Employee.findOne({ _id: decoded._id });
             if (!checkuser) {
                 // create order
                 const data ={
                     partnername: 'platform',
-                    servicename: 'Facebook Service', 
+                    servicename: 'Account Service',
                     shopid: decoded._id,
-                    packageid: facebookpackage._id,
+                    packageid: accountpackage._id,
                     quantity: req.body.quantity,
-                    price: facebookpackage.price,
-                    totalprice: facebookpackage.price * req.body.quantity
+                    price: accountpackage.price,
+                    totalprice: accountpackage.price * req.body.quantity
                 }
                 const order = new OrderServiceModel(data)
                       order.save(error => {
@@ -57,23 +57,23 @@ module.exports.order = async (req, res) => {
                 } else {
                     const partner = await Partners.findById({ _id: findshop.shop_partner_id })
                     //check partner wallet
-                    if(partner.partner_wallet < facebookpackage.price){
+                    if(partner.partner_wallet < accountpackage.price){
                         return res.status(400).send({status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ'})
                       } else {
 
                         //ตัดเงิน
-                        const price = facebookpackage.price * req.body.quantity
+                        const price = accountpackage.price * req.body.quantity
                         const newwallet = partner.partner_wallet - price
                         await Partners.findByIdAndUpdate(partner._id, {partner_wallet: newwallet });
 
                         //create order
                         const data ={
                             partnername: 'shop',
-                            servicename: 'Facebook Service',
+                            servicename: 'Account Service',
                             shopid: findshop._id,
-                            packageid: facebookpackage._id,
+                            packageid: accountpackage._id,
                             quantity: req.body.quantity,
-                            price: facebookpackage.price,
+                            price: accountpackage.price,
                             totalprice: price
                         }
         

@@ -36,10 +36,12 @@ module.exports.order = async (req, res) => {
                 // create order
                 const data ={
                     partnername: 'platform',
-                    servicename: 'website service',
+                    servicename: 'Website Service',
+                    shopid: decoded._id,
                     packageid: websitepackage._id,
                     quantity: req.body.quantity,
-                    price: websitepackage.price
+                    price: websitepackage.price,
+                    totalprice: websitepackage.price * req.body.quantity
                 }
                 const order = new OrderServiceModel(data)
                       order.save(error => {
@@ -67,12 +69,14 @@ module.exports.order = async (req, res) => {
                         //create order
                         const data ={
                             partnername: 'shop',
-                            servicename: 'website service',
+                            servicename: 'Website Service',
+                            shopid: findshop._id,
                             packageid: websitepackage._id,
                             quantity: req.body.quantity,
-                            price: websitepackage.price
+                            price: websitepackage.price,
+                            totalprice: price
                         }
-        
+                        console.log(data)
                         const order = new OrderServiceModel(data)
                               order.save((error,data) => {
                                 if(error){
