@@ -29,9 +29,11 @@ module.exports.order = async (req, res) => {
 
             let token = req.headers['auth-token'];
             token = token.replace(/^Bearer\s+/, "");
+            console.log(token)
             const decoded = jwt.verify(token, process.env.JWTPRIVATEKEY)
-
+            console.log(decoded)
             const checkuser = await Employee.findOne({ _id:decoded._id });
+            console.log(checkuser)
             if (!checkuser) {
                 // create order
                 const data ={
