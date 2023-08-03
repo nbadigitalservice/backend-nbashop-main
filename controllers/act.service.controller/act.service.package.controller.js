@@ -88,7 +88,7 @@ module.exports.GetAll = async (req,res) =>{
     }
   }
 
-//get websitepackage by id
+//get act package by id
 module.exports.GetById = async (req,res) => {
     try {
       const actpackage = await ActPackageModel.findById(req.params.id);
@@ -104,6 +104,24 @@ module.exports.GetById = async (req,res) => {
       res.status(500).send({message:"มีบางอย่างผิดพลาด",error:"server side error"})
     }
   }
+
+//get act package by category id
+module.exports.GetByCateId = async (req,res) => {
+  try {
+    const actpackage = await ActPackageModel.find({ categoryid: req.params.id });
+    console.log(actpackage)
+    if(!actpackage){
+      return res.status(403).send({status:false,message:'ไม่พบข้อมูล'});
+
+    }else{
+      return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:actpackage});
+    }
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({message:"มีบางอย่างผิดพลาด",error:"server side error"})
+  }
+}
 
 //Update
 

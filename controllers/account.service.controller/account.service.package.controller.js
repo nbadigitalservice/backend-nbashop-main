@@ -86,10 +86,28 @@ module.exports.GetAll = async (req,res) =>{
     }
   }
 
-//get websitepackage by id
+//get account package by id
 module.exports.GetById = async (req,res) => {
     try {
       const accountpackage = await AccountPackageModel.findById(req.params.id);
+      if(!accountpackage){
+        return res.status(403).send({status:false,message:'ไม่พบข้อมูล'});
+  
+      }else{
+        return res.status(200).send({status:true,message:'ดึงข้อมูลสำเร็จ',data:accountpackage});
+      }
+      
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({message:"มีบางอย่างผิดพลาด",error:"server side error"})
+    }
+  }
+  
+//get account package by category id
+module.exports.GetByCateId = async (req,res) => {
+    try {
+      const accountpackage = await AccountPackageModel.find({ categoryid: req.params.id });
+      console.log(accountpackage)
       if(!accountpackage){
         return res.status(403).send({status:false,message:'ไม่พบข้อมูล'});
   

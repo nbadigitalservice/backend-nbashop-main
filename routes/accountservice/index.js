@@ -16,6 +16,7 @@ router.delete("/category/delete/:id", authAdmin, AccountServiceCategory.delete);
 router.post("/package/create", authAdmin, AccountServicePackage.create);
 router.get("/package/list", auth, AccountServicePackage.GetAll);
 router.get("/package/list/:id", auth, AccountServicePackage.GetById);
+router.get("/package/listbycate/:id", auth, AccountServicePackage.GetByCateId);
 router.put("/package/update/:id", authAdmin, AccountServicePackage.update);
 router.delete("/package/delete/:id", authAdmin, AccountServicePackage.delete);
 
