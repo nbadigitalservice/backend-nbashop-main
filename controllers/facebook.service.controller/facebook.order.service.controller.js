@@ -4,20 +4,11 @@ const { Shop } = require('../../models/pos.models/shop.model')
 const { Partners } = require('../../models/pos.models/partner.model')
 const { Employee } = require('../../models/pos.models/employee.model')
 const jwt = require('jsonwebtoken')
-const Joi = require('joi')
 
 module.exports.order = async (req, res) => {
 
-  const vali = (data) => {
-    const schema = Joi.object({
-      packageid: Joi.string().required().label("ไม่มีข้อมูลแพ็คเกจไอดี"),
-      quantity: Joi.number().required().label("ไม่พบจำนวนของสินค้า"),
-    });
-
-    return schema.validate(data);
-  };
   try {
-    const { error } = vali(req.body);
+    const { error } = validate(req.body);
     if (error) {
       return res
         .status(400)
@@ -38,9 +29,12 @@ module.exports.order = async (req, res) => {
             } else {
               // create order
               let data = {
+                customer_name: req.body.customer_name,
+                customer_tel: req.body.customer_tel,
+                customer_address: req.body.customer_address,
                 partnername: 'platform',
                 servicename: 'Facebook Service',
-                shopid: partner_decoded.partner_name,
+                shopid: req.body.shopid,
                 packageid: facebookpackage._id,
                 quantity: req.body.quantity,
                 price: facebookpackage.price,
@@ -79,6 +73,9 @@ module.exports.order = async (req, res) => {
 
                 //create order
                 const data = {
+                  customer_name: req.body.customer_name,
+                  customer_tel: req.body.customer_tel,
+                  customer_address: req.body.customer_address,
                   partnername: 'shop',
                   servicename: 'Facebook Service',
                   shopid: findshop._id,
@@ -111,4 +108,24 @@ module.exports.order = async (req, res) => {
     console.log(err);
     return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
+}
+
+module.exports.confirm = async (req, res) => {
+  const updateStatus = await OrderServiceModel.findOne({ _id: req.body.orderid });
+  console.log(updateStatus);
+  if (updateStatus) {
+    await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'กำลังดำเนินการ'})
+  } else {
+    return res.status(403).send({ message: 'เกิดข้อผิดพลาด' })
+  } return res.status(200).send({ message: 'คอนเฟิร์มออร์เดอร์สำเร็จ' })
+}
+
+module.exports.complete = async (req, res) => {
+  const updateStatus = await OrderServiceModel.findOne({ _id: req.body.orderid });
+  console.log(updateStatus);
+  if (updateStatus) {
+    await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'เสร็จสิ้นการดำเนินการ'})
+  } else {
+    return res.status(403).send({ message: 'เกิดข้อผิดพลาด' })
+  } return res.status(200).send({ message: 'ส่งออร์เดอร์สำเร็จ' })
 }

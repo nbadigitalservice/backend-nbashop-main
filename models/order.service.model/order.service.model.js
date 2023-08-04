@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const Joi = require("joi");
 
 const orderservice = new mongoose.Schema({
+    customer_name: {type: String},
+    customer_tel: {type: String},
+    customer_address: {type: String},
     partnername: {type: String, required: true},
     servicename: {type: String, required: true},
     shopid: {type: String, required: true},
@@ -17,7 +20,7 @@ const OrderServiceModel = new mongoose.model("orderservice",orderservice)
 
 const validate = (data) => {
     const Schema = Joi.object({
-        servicename: Joi.string().required().label("โปรดกรอกชื่อเซอร์วิสต์"),
+        shopid: Joi.string().required().allow("").label("โปรดกรอกidลูกค้า"),
         packageid: Joi.string().required().label("โปรดกรอกไอดีแพ็คเกจ"),
         quantity: Joi.string().required().label("โปรดกรอกจำนวนสินค้า")
     })

@@ -12,5 +12,8 @@ router.delete("/delete/:id", authAdmin, facebookService.delete);
 
 //order
 router.post("/order", auth, facebookOrder.order)
+router.put("/order/confirm", authAdmin, facebookOrder.confirm)
+router.put("/order/complete", authAdmin, facebookOrder.complete)
+
 
 module.exports = router
