@@ -109,6 +109,9 @@ app.use("/v1/nba-shop/accountservice", require("./routes/accountservice/index"))
 //por ror bor service
 app.use("/v1/nba-shop/actlegalservice", require("./routes/actservice/index"))
 
+// service order controller
+app.use("/v1/nba-shop/orderservice", require("./routes/order.service/order.service.router"))
+
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
 app.use("/v1/nba-shop/express", require("./routes/express/booking.shippop"));

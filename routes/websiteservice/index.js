@@ -12,7 +12,5 @@ router.delete("/delete/:id", authAdmin, WebsiteService.delete)
 
 //order
 router.post("/order", auth, WebsiteServiceOrder.order)
-router.put("/order/confirm", authAdmin, WebsiteServiceOrder.confirm)
-router.put("/order/complete", authAdmin, WebsiteServiceOrder.complete)
 
 module.exports = router
