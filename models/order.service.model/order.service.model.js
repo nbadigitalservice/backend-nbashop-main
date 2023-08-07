@@ -25,7 +25,7 @@ const validate = (data) => {
         customer_address: Joi.string().required().allow("").label("โปรดกรอกที่ลูกค้า"),
         shopid: Joi.string().required().allow("").label("โปรดกรอกidลูกค้า"),
         packageid: Joi.string().required().label("โปรดกรอกไอดีแพ็คเกจ"),
-        quantity: Joi.string().required().label("โปรดกรอกจำนวนสินค้า")
+        quantity: Joi.number().required().label("โปรดกรอกจำนวนสินค้า")
     })
     return Schema.validate(data);
 }
