@@ -136,6 +136,9 @@ module.exports.update = async (req,res) => {
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
 
+        const customer_name = req.body.customer_name?req.body.customer_name:packageUpdate.customer_name
+        const customer_tel = req.body.customer_tel?req.body.customer_tel:packageUpdate.customer_tel
+        const customer_address = req.body.customer_address?req.body.customer_address:packageUpdate.customer_address
         const code = req.body.code?req.body.code:packageUpdate.code
         const type = req.body.type?req.body.type:packageUpdate.type
         const name = req.body.name?req.body.name:packageUpdate.name
@@ -162,6 +165,9 @@ module.exports.update = async (req,res) => {
    
         //Update collection
         const data = {
+            customer_name: customer_name,
+            customer_tel: customer_tel,
+            customer_address: customer_address,
             code: code,
             picture: reqFiles[0],
             type: type,
@@ -182,18 +188,21 @@ module.exports.update = async (req,res) => {
           //delete old picture
            //* -->
           //return sucessful response
-            return res.status(200).send({message:'อัพเดทสำเร็จ',data:{code:result.code,
-                                                                        picture:result.picture,
-                                                                        type:result.type,
-                                                                        name:result.name,
-                                                                        detail:result.detail,
-                                                                        price:result.price,
-                                                                        cost:result.cost,
-                                                                        profitbeforeallocate:result.profitbeforeallocate,
-                                                                        nbaprofit:result.nbaprofit,
-                                                                        plateformprofit:result.plateformprofit,
-                                                                        status:result.status
-                                                                        }})
+            return res.status(200).send({message:'อัพเดทสำเร็จ',data:{customer_name:result.customer_name,
+                                                                    customer_tel:result.customer_tel,
+                                                                    customer_address:resultcustomer_address,
+                                                                    code:result.code,
+                                                                    picture:result.picture,
+                                                                    type:result.type,
+                                                                    name:result.name,
+                                                                    detail:result.detail,
+                                                                    price:result.price,
+                                                                    cost:result.cost,
+                                                                    profitbeforeallocate:result.profitbeforeallocate,
+                                                                    nbaprofit:result.nbaprofit,
+                                                                    plateformprofit:result.plateformprofit,
+                                                                    status:result.status
+                                                                    }})
         })
         //end
       }
