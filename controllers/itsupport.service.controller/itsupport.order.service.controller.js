@@ -1,4 +1,4 @@
-const { ActPackageModel } = require('../../models/act.service.model/act.service.package.model')
+const { ItsupportPackage } = require('../../models/itsupport.model/itsupport.package.model')
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
 const { Shop } = require('../../models/pos.models/shop.model')
 const { Partners } = require('../../models/pos.models/partner.model')
@@ -14,13 +14,15 @@ module.exports.order = async (req, res) => {
         .status(400)
         .send({ status: false, message: error.details[0].message });
     }
-    const actpackage = await ActPackageModel.findOne({ _id: req.body.packageid });
-    console.log(actpackage);
-    if (actpackage) {
-
+    const itsupportpackage = await ItsupportPackage.findOne({ _id: req.body.packageid });
+    console.log(itsupportpackage);
+    if (itsupportpackage) {
       let token = req.headers['auth-token'];
+      console.log('token', token)
       token = token.replace(/^Bearer\s+/, "");
+      console.log
       jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
+        console.log(decoded)
         if (err) {
           jwt.verify(token, process.env.API_PARTNER_KEY, (err, partner_decoded) => {
             console.log(partner_decoded)
@@ -33,12 +35,12 @@ module.exports.order = async (req, res) => {
                 customer_tel: req.body.customer_tel,
                 customer_address: req.body.customer_address,
                 partnername: 'platform',
-                servicename: 'Act of legislation Service(พรบ. ภาษี ประกัน)',
+                servicename: 'IT Support Service',
                 shopid: req.body.shopid,
-                packageid: actpackage._id,
+                packageid: itsupportpackage._id,
                 quantity: req.body.quantity,
-                price: actpackage.price,
-                totalprice: actpackage.price * req.body.quantity
+                price: itsupportpackage.price,
+                totalprice: itsupportpackage.price * req.body.quantity
               }
               const order = new OrderServiceModel(data)
               order.save(error => {
@@ -63,11 +65,11 @@ module.exports.order = async (req, res) => {
             } else {
               const partner = await Partners.findById({ _id: findshop.shop_partner_id });
               //check partner wallet
-              if (partner.partner_wallet < actpackage.price) {
+              if (partner.partner_wallet < itsupportpackage.price) {
                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
               } else {
                 //ตัดเงิน
-                const price = actpackage.price * req.body.quantity
+                const price = itsupportpackage.price * req.body.quantity
                 const newwallet = partner.partner_wallet - price
                 await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
 
@@ -77,11 +79,11 @@ module.exports.order = async (req, res) => {
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,
                   partnername: 'shop',
-                  servicename: 'Act of legislation Service(พรบ. ภาษี ประกัน)',
+                  servicename: 'IT Support Service',
                   shopid: findshop._id,
-                  packageid: actpackage._id,
+                  packageid: itsupportpackage._id,
                   quantity: req.body.quantity,
-                  price: actpackage.price,
+                  price: itsupportpackage.price,
                   totalprice: price
                 }
                 console.log(data)

@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken')
 module.exports.order = async (req, res) => {
 
   try {
-    const { error } = validate(req.body);
+    const { error } = validate({...req.body,shopid:""});
     if (error) {
       return res
         .status(400)
