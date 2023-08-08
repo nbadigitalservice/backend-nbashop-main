@@ -13,7 +13,7 @@ const ShopSchema = new mongoose.Schema({
   shop_state: { type: String, required: true }, //อำเภอ
   shop_province: { type: String, required: true }, //จังหวัด
   shop_postcode: { type: String, required: true }, //รหัสไปรษณีย์
-  shop_branch_id : {type: String, required: false, default: dayjs(Date.now()).format('DDMMYYYYmmss')}, // รหัสสาขา KERRY SHOP
+  shop_branch_id : {type: String, required: false, default: dayjs(Date.now()).format('YYYYMMDDmmss')}, // รหัสสาขา KERRY SHOP
   shop_latitude : {type:Number, required : false, default:0},
   shop_longtitude : {type:Number, required: false, default: 0},
   shop_number: { type: String, required: true },
@@ -43,7 +43,7 @@ const validate = (data) => {
     shop_state: Joi.string().required().label("กรุณากรอกอำเภอด้วย"),
     shop_province: Joi.string().required().label("กรุณากรอกจังหวัดด้วย"),
     shop_postcode: Joi.string().required().label("กรุณากรอกรหัสไปรษณีย์ด้วย"),
-    shop_branch_id: Joi.string().default(dayjs(Date.now()).format('DDMMYYYYmmss')),
+    shop_branch_id: Joi.string().default(dayjs(Date.now()).format('YYYYMMDDmmss')),
     shop_latitude : Joi.number().default(0),
     shop_longtitude : Joi.number().default(0),
     shop_number: Joi.string().required().label("กรุณากรอกรหัสร้านด้วย"),

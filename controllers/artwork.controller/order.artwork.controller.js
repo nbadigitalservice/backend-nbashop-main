@@ -10,6 +10,7 @@ const { default: axios } = require("axios");
 const { Partners } = require("../../models/pos.models/partner.model");
 const { MoneyHistory } = require("../../models/more.model/money.history.model");
 const { linenotify } = require("../../lib/line.notify");
+const { OrderServiceModel } = require('../../models/order.service.model/order.service.model')
 
 exports.check = async (req, res) => {
   //เงื่อนไขตรวจสอบข้อมูลเข้ามา
@@ -89,6 +90,23 @@ exports.confirm = async (req, res)=>{
     // const share = await marketShare(req.body.total);
     const invoice = await invoiceNumber(req.body.timestamp);
     const poartwork = await PreorderArtwork.create({invoice:invoice, ...req.body});
+
+    //บันทึก orders
+    const data = {
+      customer_name: req.body.customer_name,
+      customer_tel: req.body.customer_tel,
+      customer_address: req.body.customer_address,
+      partnername: partner.partner_name,
+      servicename: 'ออกแบบสื่อสิ่งพิมพ์',
+      shopid: shop._id,
+      packageid: req.body.packageid,
+      quantity: req.body.quantity,
+      price: req.body.price,
+      totalprice: req.body.quantity * req.body.price,
+      status: 'รอดำเนินการ',
+      timestamp: dayjs(Date.now())
+    }
+    console.log(data)
     
     if(poartwork){
       //หักเงินและบันทึกเงิน partner

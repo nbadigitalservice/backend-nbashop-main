@@ -19,6 +19,7 @@ exports.findAll = async (req, res) => {
     res.status(500).send({ message: "มีบางอย่างผิดพลาด", status: false });
   }
 };
+
 exports.findOne = async (req, res) => {
   const id = req.params.id;
   try {
@@ -135,6 +136,7 @@ exports.update = async (req, res) => {
     res.status(500).send({ message: "มีบางอย่างผิดพลาด", status: false });
   }
 };
+
 exports.create = async (req, res) => {
   console.log("is body", req.body);
   try {
@@ -163,6 +165,7 @@ exports.create = async (req, res) => {
     }).save();
     res.status(201).send({ message: "สร้างข้อมูลสำเร็จ", status: true });
   } catch (error) {
+    console.log(error)
     res.status(500).send({ message: "มีบางอย่างผิดพลาด", status: false });
   }
 };

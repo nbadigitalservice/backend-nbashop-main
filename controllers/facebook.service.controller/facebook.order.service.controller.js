@@ -8,13 +8,13 @@ const jwt = require('jsonwebtoken')
 module.exports.order = async (req, res) => {
 
   try {
-    const { error } = validate({...req.body,shopid:""});
-    if (error) {
-      return res
-        .status(400)
-        .send({ status: false, message: error.details[0].message });
-    }
-    const facebookpackage = await FacebookPackage.findOne({ _id: req.body.packageid });
+    // const { error } = validate({...req.body,shopid:""});
+    // if (error) {
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: error.details[0].message });
+    // }
+    const facebookpackage = await FacebookPackage.findOne({ _id: req.body.product_detail[0].packageid });
     console.log(facebookpackage);
     if (facebookpackage) {
       let token = req.headers['auth-token'];
@@ -35,9 +35,11 @@ module.exports.order = async (req, res) => {
                 partnername: 'platform',
                 servicename: 'Facebook Service',
                 shopid: req.body.shopid,
-                packageid: facebookpackage._id,
-                quantity: req.body.quantity,
-                price: facebookpackage.price,
+                product_detail: [{
+                  packageid: facebookpackage._id,
+                  quantity: req.body.quantity,
+                  price: facebookpackage.price,
+                }],
                 totalprice: facebookpackage.price * req.body.quantity
               }
               const order = new OrderServiceModel(data)
@@ -66,12 +68,32 @@ module.exports.order = async (req, res) => {
               if (partner.partner_wallet < facebookpackage.price) {
                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
               } else {
-                //ตัดเงิน
-                const price = facebookpackage.price * req.body.quantity
-                const newwallet = partner.partner_wallet - price
-                await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
+                
 
                 //create order
+                //getorder
+                console.log('product detail',req.body.product_detail);
+                const orders = []
+                for ( let item of req.body.product_detail ) {
+                const container = await FacebookPackage.findOne({ _id: item.packageid })
+                if (container) {
+                  orders.push({
+                    packageid: container._id,
+                    quantity: item.quantity,
+                    price: container.price,
+                  })
+                }
+                }
+
+                console.log('orders',orders);
+                const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
+
+                console.log(totalprice);
+                //ตัดเงิน
+                const price = totalprice
+                const newwallet = partner.partner_wallet - price
+                await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
+                //
                 const data = {
                   customer_name: req.body.customer_name,
                   customer_tel: req.body.customer_tel,
@@ -79,10 +101,8 @@ module.exports.order = async (req, res) => {
                   partnername: 'shop',
                   servicename: 'Facebook Service',
                   shopid: findshop._id,
-                  packageid: facebookpackage._id,
-                  quantity: req.body.quantity,
-                  price: facebookpackage.price,
-                  totalprice: price
+                  product_detail: orders,
+                  totalprice: totalprice
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)

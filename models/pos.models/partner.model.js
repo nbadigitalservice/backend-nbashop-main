@@ -34,7 +34,8 @@ const PartnersSchema = new mongoose.Schema({
   partner_promise :{
     status: {type: Boolean, required: false, default : false},
     timestamp : {type: Date, required: false, default : dayjs(Date.now()).format()}
-  }
+  },
+  partner_type: { type: String, enum: ['One Stop Shop', 'One Stop Service'], require: true }
 });
 
 PartnersSchema.methods.generateAuthToken = function () {
@@ -76,7 +77,8 @@ const validate = (data) => {
     partner_promise : Joi.object({
       status: Joi.boolean().default(false),
       timestamp: Joi.date().default(dayjs(Date.now()).format())
-    })
+    }),
+    partner_type: Joi.string().required().label("กรุณาระบุประเภทของพาร์ทเนอร์")
   });
   return schema.validate(data);
 };

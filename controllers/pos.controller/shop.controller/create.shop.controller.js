@@ -2,8 +2,9 @@ const multer = require("multer");
 const fs = require("fs");
 const { Shop, validate } = require("../../../models/pos.models/shop.model");
 const { google } = require("googleapis");
-const { date } = require("joi");
+const { date, object } = require("joi");
 const dayjs = require('dayjs')
+const { Partners } = require('../../../models/pos.models/partner.model')
 const CLIENT_ID = process.env.GOOGLE_DRIVE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
 const REDIRECT_URI = process.env.GOOGLE_DRIVE_REDIRECT_URI;
@@ -28,8 +29,17 @@ const storage = multer.diskStorage({
 
 exports.create = async (req, res) => {
   try {
+    
     let upload = multer({ storage: storage }).single("shop_logo");
     upload(req, res, async function (err) {
+
+      const checkPartner = Partners.findOne({ _id: req.body.shop_partner_id })
+      if (checkPartner.partner_type == 'One Stop Shop') {
+        req.body.shop_function[0] = {name: 'POS', status: true}
+      } else if (checkPartner.partner_type == 'One Stop Service'){
+        req.body.shop_function[0] = {name: 'POS', status: false}
+      }
+
       if (!req.file) {
         const { error } = validate(req.body);
         // const shopFunction = JSON.parse(req.body.shop_function);
@@ -75,7 +85,7 @@ exports.create = async (req, res) => {
         }).save();
         res
           .status(201)
-          .send({ message: "สร้างรายงานใหม่เเล้ว", status: true, shop: shop });
+          .send({ message: "สร้างร้านใหม่เเล้ว", status: true, shop: shop });
       } catch (error) {
         res
           .status(500)
