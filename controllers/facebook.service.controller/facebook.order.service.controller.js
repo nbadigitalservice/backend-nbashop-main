@@ -4,6 +4,7 @@ const { Shop } = require('../../models/pos.models/shop.model')
 const { Partners } = require('../../models/pos.models/partner.model')
 const { Employee } = require('../../models/pos.models/employee.model')
 const jwt = require('jsonwebtoken')
+const dayjs = require('dayjs')
 
 module.exports.order = async (req, res) => {
 
@@ -92,8 +93,12 @@ module.exports.order = async (req, res) => {
                 const price = totalprice
                 const newwallet = partner.partner_wallet - price
                 await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
-                
+
+                //generate recipt number
+                const reciptnumber = await GenerateRiciptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
+
                 const data = {
+                  reciptnumber: reciptnumber,
                   customer_name: req.body.customer_name,
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,
@@ -104,7 +109,7 @@ module.exports.order = async (req, res) => {
                   branch_name: findshop.shop_name,
                   branch_id: findshop.shop_branch_id,
                   product_detail: orders,
-                  totalprice: totalprice
+                  totalprice: price
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)
@@ -130,4 +135,24 @@ module.exports.order = async (req, res) => {
     console.log(err);
     return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
+}
+
+async function GenerateRiciptNumber(shop_partner_type, branch_id) {
+  const pipeline = [
+    {
+      $match: {
+        $and: [
+          { "shop_partner_type": shop_partner_type },
+          { "branch_id": branch_id }
+        ]
+      }
+    },
+    {
+      $group: { _id: 0, count: { $sum: 1 } }
+    }
+  ]
+  const count = await OrderServiceModel.aggregate(pipeline);
+  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${count[0].count.toString().padStart(5,'0')}`;
+  console.log(count)
+  return data
 }

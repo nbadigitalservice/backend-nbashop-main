@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Joi = require("joi");
 
 const orderservice = new mongoose.Schema({
+    reciptnumber: { type: String, required: true},
     customer_name: { type: String },
     customer_tel: { type: String },
     customer_address: { type: String },
