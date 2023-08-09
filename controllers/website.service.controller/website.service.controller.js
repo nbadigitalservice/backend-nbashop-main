@@ -115,9 +115,6 @@ module.exports.update = async (req,res) => {
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
 
-        const customer_name = req.body.customer_name?req.body.customer_name:packageUpdate.customer_name
-        const customer_tel = req.body.customer_tel?req.body.customer_tel:packageUpdate.customer_tel
-        const customer_address = req.body.customer_address?req.body.customer_address:packageUpdate.customer_address
         const name = req.body.name?req.body.name:packageUpdate.name
         const detail = req.body.detail?req.body.detail:packageUpdate.detail
         const price = req.body.price?Number(req.body.price):packageUpdate.price
@@ -142,9 +139,6 @@ module.exports.update = async (req,res) => {
    
         //Update collection
         const data = {
-            customer_name: customer_name,
-            customer_tel: customer_tel,
-            customer_address: customer_address,
             picture: reqFiles[0],
             name: name,
             detail: detail,
@@ -163,9 +157,7 @@ module.exports.update = async (req,res) => {
           //delete old picture
            //* -->
           //return sucessful response
-            return res.status(200).send({message:'อัพเดทรูปภาพสำเร็จ',data:{customer_name:result.customer_name,
-                                                                        customer_tel:result.customer_tel,
-                                                                        customer_address:resultcustomer_address,
+            return res.status(200).send({message:'อัพเดทรูปภาพสำเร็จ',data:{
                                                                         picture:result.picture,
                                                                         name:result.name,
                                                                         detail:result.detail,
