@@ -134,6 +134,7 @@ module.exports.update = async (req,res) => {
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
 
+        const categoryid = req.body.categoryid?req.body.categoryid:packageUpdate.categoryid
         const name = req.body.name?req.body.name:packageUpdate.name
         const detail = req.body.detail?req.body.detail:packageUpdate.detail
         const price = req.body.price?Number(req.body.price):packageUpdate.price
@@ -158,6 +159,7 @@ module.exports.update = async (req,res) => {
    
         //Update collection
         const data = {
+            categoryid: categoryid,
             picture: reqFiles[0],
             name: name,
             detail: detail,
@@ -177,6 +179,7 @@ module.exports.update = async (req,res) => {
            //* -->
           //return sucessful response
             return res.status(200).send({message:'อัพเดทสำเร็จ',data:{
+                                                                    categoryid:result.categoryid,
                                                                     picture:result.picture,
                                                                     name:result.name,
                                                                     detail:result.detail,
