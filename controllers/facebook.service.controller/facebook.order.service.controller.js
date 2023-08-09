@@ -37,10 +37,10 @@ module.exports.order = async (req, res) => {
                 shopid: req.body.shopid,
                 product_detail: [{
                   packageid: facebookpackage._id,
-                  quantity: req.body.quantity,
+                  quantity: req.body.product_detail[0].quantity,
                   price: facebookpackage.price,
                 }],
-                totalprice: facebookpackage.price * req.body.quantity
+                totalprice: facebookpackage.price * req.body.product_detail[0].quantity
               }
               const order = new OrderServiceModel(data)
               order.save(error => {
@@ -48,8 +48,9 @@ module.exports.order = async (req, res) => {
                   console.error(error)
                   return res.status(403).send({ message: 'ไม่สามารถบันทึกได้' })
                 }
+                return res.status(200).send({ message: 'เพิ่มข้อมูลสำเร็จ', data: data })
               })
-              return res.status(200).send({ message: 'เพิ่มข้อมูลสำเร็จ', data: data })
+
             }
           })
         } else {
@@ -59,6 +60,7 @@ module.exports.order = async (req, res) => {
           } else {
             //find shop
             const findshop = await Shop.findOne({ _id: checkuser.employee_shop_id });
+            console.log('shopshopshopshop', findshop)
             if (!findshop) {
 
               return res.status(400).send({ status: false, message: "ไม่พบ shop" });
@@ -68,24 +70,20 @@ module.exports.order = async (req, res) => {
               if (partner.partner_wallet < facebookpackage.price) {
                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
               } else {
-                
 
-                //create order
                 //getorder
-                console.log('product detail',req.body.product_detail);
                 const orders = []
-                for ( let item of req.body.product_detail ) {
-                const container = await FacebookPackage.findOne({ _id: item.packageid })
-                if (container) {
-                  orders.push({
-                    packageid: container._id,
-                    quantity: item.quantity,
-                    price: container.price,
-                  })
+                for (let item of req.body.product_detail) {
+                  const container = await FacebookPackage.findOne({ _id: item.packageid })
+                  if (container) {
+                    orders.push({
+                      packageid: container._id,
+                      quantity: item.quantity,
+                      price: container.price,
+                    })
+                  }
                 }
-                }
-
-                console.log('orders',orders);
+                console.log('orders', orders);
                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
 
                 console.log(totalprice);
@@ -93,7 +91,7 @@ module.exports.order = async (req, res) => {
                 const price = totalprice
                 const newwallet = partner.partner_wallet - price
                 await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
-                //
+                
                 const data = {
                   customer_name: req.body.customer_name,
                   customer_tel: req.body.customer_tel,
@@ -101,6 +99,9 @@ module.exports.order = async (req, res) => {
                   partnername: 'shop',
                   servicename: 'Facebook Service',
                   shopid: findshop._id,
+                  shop_partner_type: findshop.shop_partner_type,
+                  branch_name: findshop.shop_name,
+                  branch_id: findshop.shop_branch_id,
                   product_detail: orders,
                   totalprice: totalprice
                 }

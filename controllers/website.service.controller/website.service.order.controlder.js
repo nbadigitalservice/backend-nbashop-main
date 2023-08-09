@@ -35,10 +35,12 @@ module.exports.order = async (req, res) => {
                 partnername: 'platform',
                 servicename: 'Website Service',
                 shopid: req.body.shopid,
-                packageid: websitepackage._id,
-                quantity: req.body.quantity,
-                price: websitepackage.price,
-                totalprice: websitepackage.price * req.body.quantity
+                product_detail: [{
+                  packageid: websitepackage._id,
+                  quantity: req.body.product_detail[0].quantity,
+                  price: websitepackage.price,
+                }],
+                totalprice: websitepackage.price * req.body.product_detail[0].quantity
               }
               const order = new OrderServiceModel(data)
               order.save(error => {
@@ -66,8 +68,24 @@ module.exports.order = async (req, res) => {
               if (partner.partner_wallet < websitepackage.price) {
                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
               } else {
+
+                //getorder
+                const orders = []
+                for (let item of req.body.product_detail) {
+                  const container = await WebsitePackageModel.findOne({ _id: item.packageid })
+                  if (container) {
+                    orders.push({
+                      packageid: container._id,
+                      quantity: item.quantity,
+                      price: container.price,
+                    })
+                  }
+                }
+                console.log('orders', orders);
+                const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
+
                 //ตัดเงิน
-                const price = websitepackage.price * req.body.quantity
+                const price = totalprice
                 const newwallet = partner.partner_wallet - price
                 await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
 
@@ -79,9 +97,10 @@ module.exports.order = async (req, res) => {
                   partnername: 'shop',
                   servicename: 'Website Service',
                   shopid: findshop._id,
-                  packageid: websitepackage._id,
-                  quantity: req.body.quantity,
-                  price: websitepackage.price,
+                  shop_partner_type: findshop.shop_partner_type,
+                  branch_name: findshop.shop_name,
+                  branch_id: findshop.shop_branch_id,
+                  product_detail: orders,
                   totalprice: price
                 }
                 console.log(data)

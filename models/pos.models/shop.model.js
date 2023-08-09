@@ -4,6 +4,7 @@ const dayjs = require('dayjs')
 
 const ShopSchema = new mongoose.Schema({
   shop_partner_id: { type: String, required: true }, // Partner
+  shop_partner_type: { type: String, enum: ['One Stop Shop', 'One Stop Service'], required: true }, // Partner
   shop_credit: { type: Number, required: true },
   shop_debit: { type: Number, required: false, default: 0 },
   shop_name: { type: String, required: true }, //ชื่อ

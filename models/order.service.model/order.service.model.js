@@ -8,10 +8,13 @@ const orderservice = new mongoose.Schema({
     partnername: { type: String, required: true },
     servicename: { type: String, required: true },
     shopid: { type: String },
+    shop_partner_type: { type: String, required: true },
+    branch_name: { type: String },
+    branch_id: { type: String },
     product_detail: {
         type: [{
             packageid: { type: String, required: true },
-            quantity: { type: String, required: true },
+            quantity: { type: Number, required: true },
             price: { type: Number, required: true },
         }]
     },
