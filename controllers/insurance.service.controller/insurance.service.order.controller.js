@@ -35,7 +35,7 @@ module.exports.order = async (req, res) => {
                 partnername: 'platform',
                 servicename: 'Insurance Service(ประกัน)',
                 shopid: req.body.shopid,
-                packageid: insurancepackage._id,
+                shop_partner_type: req.body.shop_partner_type,
                 product_detail: [{
                   packageid: insurancepackage._id,
                   quantity: req.body.product_detail[0].quantity,
