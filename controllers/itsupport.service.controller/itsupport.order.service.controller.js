@@ -14,7 +14,7 @@ module.exports.order = async (req, res) => {
     //     .status(400)
     //     .send({ status: false, message: error.details[0].message });
     // }
-    const itsupportpackage = await ItsupportPackage.findOne({ _id: req.body.packageid });
+    const itsupportpackage = await ItsupportPackage.findOne({ _id: req.body.product_detail[0].packageid });
     console.log(itsupportpackage);
     if (itsupportpackage) {
       let token = req.headers['auth-token'];

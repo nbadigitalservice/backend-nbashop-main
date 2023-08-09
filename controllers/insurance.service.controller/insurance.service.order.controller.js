@@ -1,4 +1,4 @@
-const { WebsitePackageModel } = require('../../models/website.package.model/website.package.model')
+const { InsurancePackageModel } = require('../../models/insurance.model/insurance.package.model')
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
 const { Shop } = require('../../models/pos.models/shop.model')
 const { Partners } = require('../../models/pos.models/partner.model')
@@ -8,17 +8,17 @@ const jwt = require('jsonwebtoken')
 module.exports.order = async (req, res) => {
 
   try {
-    const { error } = validate({...req.body,shopid:""});
-    if (error) {
-      return res
-        .status(400)
-        .send({ status: false, message: error.details[0].message });
-    }
-    const websitepackage = await WebsitePackageModel.findOne({ _id: req.body.product_detail[0].packageid });
-    console.log(websitepackage);
-    if (websitepackage) {
+    // const { error } = validate({...req.body,shopid:""});
+    // if (error) {
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: error.details[0].message });
+    // }
+    const insurancepackage = await InsurancePackageModel.findOne({ _id: req.body.product_detail[0].packageid });
+    console.log(insurancepackage);
+    if (insurancepackage) {
+
       let token = req.headers['auth-token'];
-      console.log(token)
       token = token.replace(/^Bearer\s+/, "");
       jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
         if (err) {
@@ -33,20 +33,21 @@ module.exports.order = async (req, res) => {
                 customer_tel: req.body.customer_tel,
                 customer_address: req.body.customer_address,
                 partnername: 'platform',
-                servicename: 'Website Service',
+                servicename: 'Insurance Service(ประกัน)',
                 shopid: req.body.shopid,
+                packageid: insurancepackage._id,
                 product_detail: [{
-                  packageid: websitepackage._id,
+                  packageid: insurancepackage._id,
                   quantity: req.body.product_detail[0].quantity,
-                  price: websitepackage.price,
+                  price: insurancepackage.price,
                 }],
-                totalprice: websitepackage.price * req.body.product_detail[0].quantity
+                totalprice: insurancepackage.price * req.body.product_detail[0].quantity
               }
               const order = new OrderServiceModel(data)
               order.save(error => {
                 if (error) {
                   console.error(error)
-                  return res.status(403).send({ message: 'ไม่สามารถบันทึกได้'})
+                  return res.status(403).send({ message: 'ไม่สามารถบันทึกได้' })
                 }
               })
               return res.status(200).send({ message: 'เพิ่มข้อมูลสำเร็จ', data: data })
@@ -65,14 +66,14 @@ module.exports.order = async (req, res) => {
             } else {
               const partner = await Partners.findById({ _id: findshop.shop_partner_id });
               //check partner wallet
-              if (partner.partner_wallet < websitepackage.price) {
+              if (partner.partner_wallet < insurancepackage.price) {
                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
               } else {
 
                 //getorder
                 const orders = []
                 for (let item of req.body.product_detail) {
-                  const container = await WebsitePackageModel.findOne({ _id: item.packageid })
+                  const container = await InsurancePackageModel.findOne({ _id: item.packageid })
                   if (container) {
                     orders.push({
                       packageid: container._id,
@@ -95,7 +96,7 @@ module.exports.order = async (req, res) => {
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,
                   partnername: 'shop',
-                  servicename: 'Website Service',
+                  servicename: 'Insurance Service(ประกัน)',
                   shopid: findshop._id,
                   shop_partner_type: findshop.shop_partner_type,
                   branch_name: findshop.shop_name,

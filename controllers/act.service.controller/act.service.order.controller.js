@@ -14,7 +14,7 @@ module.exports.order = async (req, res) => {
     //     .status(400)
     //     .send({ status: false, message: error.details[0].message });
     // }
-    const actpackage = await ActPackageModel.findOne({ _id: req.body.packageid });
+    const actpackage = await ActPackageModel.findOne({ _id: req.body.product_detail[0].packageid });
     console.log(actpackage);
     if (actpackage) {
 
@@ -33,7 +33,7 @@ module.exports.order = async (req, res) => {
                 customer_tel: req.body.customer_tel,
                 customer_address: req.body.customer_address,
                 partnername: 'platform',
-                servicename: 'Act of legislation Service(พรบ. ภาษี ประกัน)',
+                servicename: 'Act of legislation Service(พรบ.)',
                 shopid: req.body.shopid,
                 packageid: actpackage._id,
                 product_detail: [{
@@ -96,7 +96,7 @@ module.exports.order = async (req, res) => {
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,
                   partnername: 'shop',
-                  servicename: 'Act of legislation Service(พรบ. ภาษี ประกัน)',
+                  servicename: 'Act of legislation Service(พรบ.)',
                   shopid: findshop._id,
                   shop_partner_type: findshop.shop_partner_type,
                   branch_name: findshop.shop_name,

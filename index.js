@@ -109,6 +109,9 @@ app.use("/v1/nba-shop/accountservice", require("./routes/accountservice/index"))
 //por ror bor service
 app.use("/v1/nba-shop/actlegalservice", require("./routes/actservice/index"))
 
+//insurance service
+app.use("/v1/nba-shop/insuranceservice", require("./routes/insurance/index"))
+
 // service order controller
 app.use("/v1/nba-shop/orderservice", require("./routes/order.service/order.service.router"))
 
