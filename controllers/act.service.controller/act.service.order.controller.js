@@ -91,11 +91,11 @@ module.exports.order = async (req, res) => {
                 await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
 
                 //generate recipt number
-                const reciptnumber = await GenerateRiciptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
+                const receiptnumber = await GenerateRiciptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
 
                 //create order
                 const data = {
-                  reciptnumber: reciptnumber,
+                  receiptnumber: receiptnumber,
                   customer_name: req.body.customer_name,
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,

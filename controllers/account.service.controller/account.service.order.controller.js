@@ -94,7 +94,7 @@ module.exports.order = async (req, res) => {
 
                 //create order
                 const data = {
-                  reciptnumber: reciptnumber,
+                  receiptnumber: receiptnumber,
                   customer_name: req.body.customer_name,
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,

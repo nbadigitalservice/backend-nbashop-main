@@ -98,7 +98,7 @@ module.exports.order = async (req, res) => {
                 const reciptnumber = await GenerateRiciptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
 
                 const data = {
-                  reciptnumber: reciptnumber,
+                  receiptnumber: reciptnumber,
                   customer_name: req.body.customer_name,
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,
