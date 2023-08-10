@@ -9,12 +9,12 @@ const dayjs = require('dayjs')
 module.exports.order = async (req, res) => {
 
   try {
-    const { error } = validate({...req.body,shopid:""});
-    if (error) {
-      return res
-        .status(400)
-        .send({ status: false, message: error.details[0].message });
-    }
+    // const { error } = validate({...req.body,shopid:""});
+    // if (error) {
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: error.details[0].message });
+    // }
     const accountpackage = await AccountPackageModel.findOne({ _id: req.body.product_detail[0].packageid });
     console.log(accountpackage);
     if (accountpackage) {
