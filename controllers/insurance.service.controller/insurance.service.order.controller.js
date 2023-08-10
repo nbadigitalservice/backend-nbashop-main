@@ -91,7 +91,22 @@ module.exports.order = async (req, res) => {
                 await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
 
                 //generate recipt number
-                const receiptnumber = await GenerateRiciptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
+                const receiptnumber = await GenerateRiceiptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
+                if (findshop.shop_partner_type && receiptnumber == 'One Stop Service') {
+                  const pipeline = [
+                    {
+                      $match: { shop_partner_type: shop_partner_type }
+                    },
+                    {
+                      $group: { _id: 0, count: { $sum: 1 } }
+                    }
+                  ]
+                  const count = await OrderServiceModel.aggregate(pipeline);
+                  const countValue = count.length > 0 ? count[0].count + 1 : 1
+                  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5,'0')}`;
+                  console.log(count)
+                  return data
+                }
 
                 //create order
                 const data = {
@@ -134,7 +149,7 @@ module.exports.order = async (req, res) => {
   }
 }
 
-async function GenerateRiciptNumber(shop_partner_type, branch_id) {
+async function GenerateRiceiptNumber(shop_partner_type, branch_id) {
   const pipeline = [
     {
       $match: {
@@ -149,7 +164,8 @@ async function GenerateRiciptNumber(shop_partner_type, branch_id) {
     }
   ]
   const count = await OrderServiceModel.aggregate(pipeline);
-  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${count[0].count.toString().padStart(5,'0')}`;
+  const countValue = count.length > 0 ? count[0].count + 1 : 1
+  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5,'0')}`;
   console.log(count)
   return data
 }
