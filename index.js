@@ -118,6 +118,9 @@ app.use("/v1/nba-shop/orderservice", require("./routes/order.service/order.servi
 //facebook service
 app.use("/v1/nba-shop/itsupportservice", require("./routes/itsupportservice/index"))
 
+//get member team
+app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"))
+
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
 app.use("/v1/nba-shop/express", require("./routes/express/booking.shippop"));
