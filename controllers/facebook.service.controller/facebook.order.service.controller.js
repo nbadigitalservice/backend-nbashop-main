@@ -164,62 +164,61 @@ module.exports.order = async (req, res) => {
 
                     const getteammember = await getmemberteam.GetTeamMember(req.body.customer_tel);
                     const level = getteammember.data;
-                    const validLevel = level.filter(item => item.level !== '-');
+                    const validLevel = level.filter(item => item !== null);
 
                     const storeData = [];
 
                     for (const TeamMemberData of validLevel) {
                       let integratedData;
 
-                      if (TeamMemberData.level === 'owner') {
+                      if (TeamMemberData.level == 'owner') {
                         integratedData = {
                           lv: TeamMemberData.level,
                           iden: TeamMemberData.iden,
                           name: TeamMemberData.name,
-                          address: JSON.stringify({ ...TeamMemberData.address }),
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
                           tel: TeamMemberData.tel,
                           commission_amount: owner,
                           vat3percent: ownervat,
                           remainding_commission: ownercommission
                         };
                       }
-                      if (TeamMemberData.level === '1') {
+                      if (TeamMemberData.level == '1') {
                         integratedData = {
                           lv: TeamMemberData.level,
                           iden: TeamMemberData.iden,
                           name: TeamMemberData.name,
-                          address: JSON.stringify({ ...TeamMemberData.address }),
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
                           tel: TeamMemberData.tel,
                           commission_amount: lv1,
                           vat3percent: lv1vat,
                           remainding_commission: lv1commission
                         };
                       }
-                      if (TeamMemberData.level === '2') {
+                      if (TeamMemberData.level == '2') {
                         integratedData = {
                           lv: TeamMemberData.level,
                           iden: TeamMemberData.iden,
                           name: TeamMemberData.name,
-                          address: JSON.stringify({ ...TeamMemberData.address }),
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
                           tel: TeamMemberData.tel,
                           commission_amount: lv2,
                           vat3percent: lv2vat,
                           remainding_commission: lv2commission
                         };
                       }
-                      if (TeamMemberData.level === '3') {
+                      if (TeamMemberData.level == '3') {
                         integratedData = {
                           lv: TeamMemberData.level,
                           iden: TeamMemberData.iden,
                           name: TeamMemberData.name,
-                          address: JSON.stringify({ ...TeamMemberData.address }),
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
                           tel: TeamMemberData.tel,
                           commission_amount: lv3,
                           vat3percent: lv2vat,
                           remainding_commission: lv3commission
                         };
                       }
-
                       if (integratedData) {
                         storeData.push(integratedData);
                       }
