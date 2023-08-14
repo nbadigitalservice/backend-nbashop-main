@@ -18,15 +18,12 @@ module.exports.order = async (req, res) => {
     //     .send({ status: false, message: error.details[0].message });
     // }
     const facebookpackage = await FacebookPackage.findOne({ _id: req.body.product_detail[0].packageid });
-    console.log(facebookpackage);
     if (facebookpackage) {
       let token = req.headers['auth-token'];
-      console.log('token', token)
       token = token.replace(/^Bearer\s+/, "");
       jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
         if (err) {
           jwt.verify(token, process.env.API_PARTNER_KEY, (err, partner_decoded) => {
-            console.log(partner_decoded)
             if (err) {
               return res.status(403).send({ message: 'Not have permission ' })
             } else {
@@ -78,20 +75,22 @@ module.exports.order = async (req, res) => {
 
                 //getorder
                 const orders = []
+
                 for (let item of req.body.product_detail) {
                   const container = await FacebookPackage.findOne({ _id: item.packageid })
                   if (container) {
                     orders.push({
                       packageid: container._id,
                       quantity: item.quantity,
+                      plateformprofit: container.plateformprofit,
                       price: container.price,
                     })
                   }
                 }
-                console.log('orders', orders);
                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
+                const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
 
-                console.log(totalprice);
+
                 //ตัดเงิน
                 const price = totalprice
                 const newwallet = partner.partner_wallet - price
@@ -111,13 +110,14 @@ module.exports.order = async (req, res) => {
                   const count = await OrderServiceModel.aggregate(pipeline);
                   const countValue = count.length > 0 ? count[0].count + 1 : 1
                   const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-                  console.log(count)
                   return data
                 }
 
                 //commission
+                //total profit
+
                 //calculation from 100%
-                const commission = facebookpackage.plateformprofit
+                const commission = totalplateformprofit
                 const platformCommission = (commission * 80) / 100
                 const bonus = (commission * 5) / 100 //bonus
                 const allSale = (commission * 15) / 100 //all sale
@@ -158,91 +158,101 @@ module.exports.order = async (req, res) => {
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)
-                order.save(async (error, data) => {
-                  if (data) {
-                    const findorderid = await OrderServiceModel.findById({ _id: data._id });
+                const getteammember = await getmemberteam.GetTeamMember(req.body.customer_tel);
 
-                    const getteammember = await getmemberteam.GetTeamMember(req.body.customer_tel);
-                    const level = getteammember.data;
-                    const validLevel = level.filter(item => item !== null);
+                if (getteammember.status === false) {
 
-                    const storeData = [];
+                  return res.status(403).send({ message: 'ไม่พบข้อมมูลลูกค้า' })
 
-                    for (const TeamMemberData of validLevel) {
-                      let integratedData;
+                } else {
 
-                      if (TeamMemberData.level == 'owner') {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: owner,
-                          vat3percent: ownervat,
-                          remainding_commission: ownercommission
-                        };
+                  order.save(async (error, data) => {
+
+                    if (data) {
+                      const findorderid = await OrderServiceModel.findById({ _id: data._id });
+
+                      const level = getteammember.data;
+
+                      const validLevel = level.filter(item => item !== null);
+
+                      const storeData = [];
+
+                      for (const TeamMemberData of validLevel) {
+                        let integratedData;
+
+                        if (TeamMemberData.level == 'owner') {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: owner,
+                            vat3percent: ownervat,
+                            remainding_commission: ownercommission
+                          };
+                        }
+                        if (TeamMemberData.level == '1') {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: lv1,
+                            vat3percent: lv1vat,
+                            remainding_commission: lv1commission
+                          };
+                        }
+                        if (TeamMemberData.level == '2') {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: lv2,
+                            vat3percent: lv2vat,
+                            remainding_commission: lv2commission
+                          };
+                        }
+                        if (TeamMemberData.level == '3') {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: lv3,
+                            vat3percent: lv2vat,
+                            remainding_commission: lv3commission
+                          };
+                        }
+                        if (integratedData) {
+                          storeData.push(integratedData);
+                        }
                       }
-                      if (TeamMemberData.level == '1') {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: lv1,
-                          vat3percent: lv1vat,
-                          remainding_commission: lv1commission
-                        };
-                      }
-                      if (TeamMemberData.level == '2') {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: lv2,
-                          vat3percent: lv2vat,
-                          remainding_commission: lv2commission
-                        };
-                      }
-                      if (TeamMemberData.level == '3') {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: lv3,
-                          vat3percent: lv2vat,
-                          remainding_commission: lv3commission
-                        };
-                      }
-                      if (integratedData) {
-                        storeData.push(integratedData);
-                      }
+
+                      const commissionData = {
+                        data: storeData,
+                        bonus: bonus,
+                        allSale: allSale,
+                        orderid: findorderid._id
+                      };
+                      const commission = new Commission(commissionData)
+                      commission.save((error, data) => {
+                        if (error) {
+                          console.log(error)
+                          return res.status(403).send({ message: 'ไม่สามารถบันทึกได้', data: data })
+                        }
+                      })
+                      return res.status(200).send({ status: true, data: data, ยอดเงินคงเหลือ: newwallet });
+                    } else {
+                      console.error(error)
+                      return res.status(400).send({ message: 'ไม่สามารถบันทึกได้', error: error.message })
                     }
-
-                    const commissionData = {
-                      data: storeData,
-                      bonus: bonus,
-                      allSale: allSale,
-                      orderid: findorderid._id
-                    };
-                    const commission = new Commission(commissionData)
-                    commission.save((error, data) => {
-                      if (error) {
-                        console.log(error)
-                        return res.status(403).send({ message: 'ไม่สามารถบันทึกได้', data: data })
-                      }
-                    })
-                    return res.status(200).send({ status: true, data: data, ยอดเงินคงเหลือ: newwallet });
-                  } else {
-                    console.error(error)
-                    return res.status(400).send({ message: 'ไม่สามารถบันทึกได้', error: error.message })
-                  }
-                })
+                  })
+                }
               }
             }
           }
