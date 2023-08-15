@@ -124,6 +124,9 @@ app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"))
 // commission
 app.use("/v1/nba-shop/commission", require("./routes/commission.router"))
 
+// exchange point
+app.use("/v1/nba-shop/exchangepoint", require("./routes/exchangepoint/index"))
+
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
 app.use("/v1/nba-shop/express", require("./routes/express/booking.shippop"));
