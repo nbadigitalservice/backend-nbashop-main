@@ -48,3 +48,35 @@ module.exports.GetById = async (req, res) => {
     res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
   }
 }
+
+module.exports.GetTotalPriceSumByTel = async (req, res) => {
+  try {
+      const tel = req.params.tel
+      console.log(tel)
+      const pipeline = [
+          {
+              $match: { customer_tel: tel }
+          },
+          {
+              $group: {
+                  _id: '$customer_tel',
+                  userAllsale: { $sum: '$totalprice' }
+              }
+          },
+          {
+              $project: {
+                  _id: 0,
+                  customer_tel: '$_id',
+                  userAllsale: 1
+              }
+          }
+      ];
+
+      const result = await OrderServiceModel.aggregate(pipeline);
+
+      return res.status(200).send({ message: 'ดึงข้อมูลสำเร็จ', data: result });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', data: error.data });
+  }
+}

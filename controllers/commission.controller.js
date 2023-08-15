@@ -79,3 +79,55 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
         return res.status(500).send({ message: 'เกิดข้อผิดพลาดบางอย่าง', data: error.data })
     }
 }
+
+module.exports.GetTotalBonus = async (req, res) => {
+    try {
+        const pipeline = [
+            {
+                $group: {
+                    _id: null,
+                    totalBonus: { $sum: '$bonus' }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    totalBonus: 1
+                }
+            }
+        ];
+
+        const result = await Commission.aggregate(pipeline);
+
+        return res.status(200).send({ message: 'ดึงข้อมูลสำเร็จ', data: result });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', data: error.data });
+    }
+}
+
+module.exports.GetTotalAllSale = async (req, res) => {
+    try {
+        const pipeline = [
+            {
+                $group: {
+                    _id: null,
+                    totalAllSale: { $sum: '$allSale' }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    totalAllSale: 1
+                }
+            }
+        ];
+
+        const result = await Commission.aggregate(pipeline);
+
+        return res.status(200).send({ message: 'ดึงข้อมูลสำเร็จ', data: result });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', data: error.data });
+    }
+};
