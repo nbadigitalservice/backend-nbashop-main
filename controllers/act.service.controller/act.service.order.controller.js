@@ -43,6 +43,8 @@ module.exports.order = async (req, res) => {
                 shop_partner_type: req.body.shop_partner_type,
                 product_detail: [{
                   packageid: actpackage._id,
+                  packagename: actpackage.name,
+                  packagedetail: actpackage.detail,
                   quantity: req.body.product_detail[0].quantity,
                   price: actpackage.price,
                 }],
@@ -82,7 +84,10 @@ module.exports.order = async (req, res) => {
                   if (container) {
                     orders.push({
                       packageid: container._id,
+                      packagename: container.name,
+                      packagedetail: container.detail,
                       quantity: item.quantity,
+                      plateformprofit: container.plateformprofit,
                       price: container.price,
                     })
                   }

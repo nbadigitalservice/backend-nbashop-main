@@ -121,6 +121,9 @@ app.use("/v1/nba-shop/itsupportservice", require("./routes/itsupportservice/inde
 //get member team
 app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"))
 
+// commission
+app.use("/v1/nba-shop/commission", require("./routes/commission.router"))
+
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
 app.use("/v1/nba-shop/express", require("./routes/express/booking.shippop"));

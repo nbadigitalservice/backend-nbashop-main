@@ -17,6 +17,8 @@ const orderservice = new mongoose.Schema({
     product_detail: {
         type: [{
             packageid: { type: String, required: true },
+            packagename: { type: String, required: true },
+            packagedetail: { type: String, required: true },
             quantity: { type: Number, required: true },
             price: { type: Number, required: true },
         }]
