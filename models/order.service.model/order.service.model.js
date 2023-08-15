@@ -23,7 +23,10 @@ const orderservice = new mongoose.Schema({
             price: { type: Number, required: true },
         }]
     },
+    paymenttype: { type: String, enum: ['เงินสด', 'เงินโอน', 'บัตรเครดิต', 'อื่นๆ'], required: true },
+    moneyreceive: { type: Number, required: true },
     totalprice: { type: Number, required: true },
+    change: { type: Number, required: true },
     status: { type: String, enum: ['รอดำเนินการ', 'กำลังดำเนินการ', 'เสร็จสิ้นการดำเนินการ'], default: 'รอดำเนินการ' },
     timestamp: { type: Date, default: Date.now }
 }, { timestamps: true })

@@ -32,6 +32,8 @@ module.exports.order = async (req, res) => {
             if (err) {
               return res.status(403).send({ message: 'Not have permission ' })
             } else {
+              const totalprice = itsupportpackage.price * req.body.product_detail[0].quantity
+              const change = req.body.moneyreceive - totalprice
               // create order
               let data = {
                 customer_name: req.body.customer_name,
@@ -50,7 +52,10 @@ module.exports.order = async (req, res) => {
                   quantity: req.body.product_detail[0].quantity,
                   price: itsupportpackage.price,
                 }],
-                totalprice: itsupportpackage.price * req.body.product_detail[0].quantity
+                paymenttype: req.body.paymenttype,
+                moneyreceive: req.body.moneyreceive,
+                totalprice: totalprice,
+                change: change
               }
               const order = new OrderServiceModel(data)
               order.save(error => {
@@ -146,6 +151,9 @@ module.exports.order = async (req, res) => {
                 const lv2commission = lv2 - lv2vat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
                 const lv3commission = lv3 - lv3vat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
 
+                //คำนวนเงินทอน
+                const change = req.body.moneyreceive - price
+
                 //create order
                 const data = {
                   receiptnumber: receiptnumber,
@@ -161,7 +169,10 @@ module.exports.order = async (req, res) => {
                   branch_name: findshop.shop_name,
                   branch_id: findshop.shop_branch_id,
                   product_detail: orders,
-                  totalprice: totalprice
+                  paymenttype: req.body.paymenttype,
+                  moneyreceive: req.body.moneyreceive,
+                  totalprice: price,
+                  change: change
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)

@@ -27,6 +27,8 @@ module.exports.order = async (req, res) => {
             if (err) {
               return res.status(403).send({ message: 'Not have permission ' })
             } else {
+              const totalprice = facebookpackage.price * req.body.product_detail[0].quantity
+              const change = req.body.moneyreceive - totalprice
               // create order
               let data = {
                 customer_name: req.body.customer_name,
@@ -45,7 +47,10 @@ module.exports.order = async (req, res) => {
                   quantity: req.body.product_detail[0].quantity,
                   price: facebookpackage.price,
                 }],
-                totalprice: facebookpackage.price * req.body.product_detail[0].quantity
+                paymenttype: req.body.paymenttype,
+                moneyreceive: req.body.moneyreceive,
+                totalprice: totalprice,
+                change: change
               }
               const order = new OrderServiceModel(data)
               order.save(error => {
@@ -144,6 +149,9 @@ module.exports.order = async (req, res) => {
                 const lv2commission = lv2 - lv2vat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
                 const lv3commission = lv3 - lv3vat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
 
+                //คำนวนเงินทอน
+                const change = req.body.moneyreceive - price
+
                 const data = {
                   receiptnumber: receiptnumber,
                   customer_name: req.body.customer_name,
@@ -158,7 +166,10 @@ module.exports.order = async (req, res) => {
                   branch_name: findshop.shop_name,
                   branch_id: findshop.shop_branch_id,
                   product_detail: orders,
-                  totalprice: price
+                  paymenttype: req.body.paymenttype,
+                  moneyreceive: req.body.moneyreceive,
+                  totalprice: price,
+                  change: change
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)
