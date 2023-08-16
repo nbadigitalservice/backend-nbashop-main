@@ -3,6 +3,7 @@ const Joi = require("joi");
 
 const orderservice = new mongoose.Schema({
     receiptnumber: { type: String, required: true},
+    customer_contact: { type: String, required: true},
     customer_name: { type: String },
     customer_tel: { type: String },
     customer_address: { type: String },
@@ -27,7 +28,7 @@ const orderservice = new mongoose.Schema({
     moneyreceive: { type: Number, required: true },
     totalprice: { type: Number, required: true },
     change: { type: Number, required: true },
-    status: { type: String, enum: ['รอดำเนินการ', 'กำลังดำเนินการ', 'เสร็จสิ้นการดำเนินการ'], default: 'รอดำเนินการ' },
+    status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'เรียบร้อย'], default: 'รอการตรวจสอบ' },
     timestamp: { type: Date, default: Date.now }
 }, { timestamps: true })
 

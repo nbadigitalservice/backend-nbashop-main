@@ -12,6 +12,6 @@ router.put('/update/:id', authAdmin, exchangepointCRUD.update)
 router.delete('/delete/:id', authAdmin, exchangepointCRUD.delete)
 
 // exchange
-router.get('/exchange', auth, exchange.exchange)
+router.post('/exchange', auth, exchange.exchange)
 
 module.exports = router

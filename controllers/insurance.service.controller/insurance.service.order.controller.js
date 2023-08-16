@@ -34,6 +34,7 @@ module.exports.order = async (req, res) => {
               const change = req.body.moneyreceive - totalprice
               // create order
               let data = {
+                customer_contact: req.body.customer_contact,
                 customer_name: req.body.customer_name,
                 customer_tel: req.body.customer_tel,
                 customer_address: req.body.customer_address,
@@ -155,6 +156,7 @@ module.exports.order = async (req, res) => {
                 //create order
                 const data = {
                   receiptnumber: receiptnumber,
+                  customer_contact: req.body.customer_contact,
                   customer_name: req.body.customer_name,
                   customer_tel: req.body.customer_tel,
                   customer_address: req.body.customer_address,
