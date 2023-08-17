@@ -21,7 +21,7 @@ const PartnersSchema = new mongoose.Schema({
   partner_password: { type: String, required: true }, //รหัส
   partner_wallet: { type: Number, required: false, default: 0 },
   partner_money: { type: Number, required: false, default: 0 },
-  partner_phone: { type: String, required: true },
+  partner_phone: { type: String, required: true, unique: true },
   partner_level_note: { type: String, required: false, default: "ไม่มี" },
   partner_district: { type: String, required: true },
   partner_state: { type: String, required: true },

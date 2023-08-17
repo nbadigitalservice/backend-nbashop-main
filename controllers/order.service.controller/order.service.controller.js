@@ -1,4 +1,12 @@
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
+const { OrderCanceled } = require('../../models/order.service.model/order.canceled.model')
+const { AccountPackageModel } = require('../../models/account.service.model/account.service.package.model')
+const { ActPackageModel } = require('../../models/act.service.model/act.service.package.model')
+const { FacebookPackage } = require('../../models/facebook.model/facebook.package.model')
+const { InsurancePackageModel } = require('../../models/insurance.model/insurance.package.model')
+const { ItsupportPackage } = require('../../models/itsupport.model/itsupport.package.model')
+const { WebsitePackageModel } = require('../../models/website.package.model/website.package.model')
+const { Partners } = require('../../models/pos.models/partner.model')
 
 module.exports.confirm = async (req, res) => {
   const updateStatus = await OrderServiceModel.findOne({ _id: req.body.orderid })
@@ -51,31 +59,122 @@ module.exports.GetById = async (req, res) => {
 
 module.exports.GetTotalPriceSumByTel = async (req, res) => {
   try {
-      const tel = req.params.tel
-      const pipeline = [
-          {
-              $match: { customer_tel: tel }
-          },
-          {
-              $group: {
-                  _id: '$customer_tel',
-                  userAllsale: { $sum: '$totalprice' }
-              }
-          },
-          {
-              $project: {
-                  _id: 0,
-                  customer_tel: '$_id',
-                  userAllsale: 1
-              }
-          }
-      ];
+    const tel = req.params.tel
+    const pipeline = [
+      {
+        $match: { customer_tel: tel }
+      },
+      {
+        $group: {
+          _id: '$customer_tel',
+          userAllsale: { $sum: '$totalprice' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          customer_tel: '$_id',
+          userAllsale: 1
+        }
+      }
+    ];
 
-      const result = await OrderServiceModel.aggregate(pipeline)
+    const result = await OrderServiceModel.aggregate(pipeline)
 
-      return res.status(200).send({ message: 'ดึงข้อมูลสำเร็จ', data: result })
+    return res.status(200).send({ message: 'ดึงข้อมูลสำเร็จ', data: result })
   } catch (error) {
-      console.error(error);
-      return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', data: error.data })
+    console.error(error);
+    return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', data: error.data })
   }
+}
+
+module.exports.cancel = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await OrderServiceModel.findOne({ _id: orderId });
+
+    if (!order) {
+      return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
+    }
+
+    await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'ถูกยกเลิก' });
+
+    // Calculate total refund amount using the modified getProductPackageModel function
+    const totalRefundAmount = await getProductPackageModel(order.servicename, order.product_detail);
+
+    // Create an entry in the 'ordercanceled' schema
+    const canceledOrder = new OrderCanceled({
+      orderid: order._id,
+      receiptnumber: order.receiptnumber,
+      cost: totalRefundAmount,
+      customer_name: order.customer_name,
+      customer_tel: order.customer_contact,
+      refund_amount: totalRefundAmount,
+      reason: req.body.reason,
+      admin_id: req.decoded._id,
+      admin_name: req.decoded.name,
+    });
+
+    await canceledOrder.save();
+
+    // Find the partner using their ID
+    const partner = await Partners.findOne({ partner_phone: order.customer_tel });
+
+    if (!partner) {
+      return res.status(403).send({ message: 'ไม่พบข้อมูลพาร์ทเนอร์' });
+    }
+
+    // Update the partner's wallet by adding the refund amount
+    partner.partner_wallet += totalRefundAmount;
+    await partner.save();
+
+    return res.status(200).send({ message: 'ยกเลิกออร์เดอร์และบันทึกข้อมูลสำเร็จ', data: canceledOrder });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', error: error.message });
+  }
+}
+
+
+
+async function getProductPackageModel(servicename, product_detail) {
+  let packageModel;
+  let totalRefundAmount = 0;
+
+  switch (servicename) {
+    case 'Account Service':
+      packageModel = AccountPackageModel;
+      break;
+    case 'Act of legislation Service(พรบ.)':
+      packageModel = ActPackageModel;
+      break;
+    case 'Facebook Service':
+      packageModel = FacebookPackage;
+      break;
+    case 'Insurance Service(ประกัน)':
+      packageModel = InsurancePackageModel;
+      break;
+    case 'IT Support Service':
+      packageModel = ItsupportPackage;
+      break;
+    case 'Website Service':
+      packageModel = WebsitePackageModel;
+      break;
+    default:
+      throw new Error('ไม่สามารถระบุแพ็คเกจที่ถูกยกเลิกได้');
+  }
+
+  // Calculate total refund amount based on quantity and package cost
+  for (const product of product_detail) {
+    const packageData = await packageModel.findOne({ _id: product.packageid });
+
+    if (!packageData) {
+      throw new Error('ไม่พบข้อมูลแพ็คเกจ');
+    }
+
+    totalRefundAmount += product.quantity * packageData.cost;
+  }
+
+  return totalRefundAmount;
 }
