@@ -25,15 +25,35 @@ module.exports.order = async (req, res) => {
       token = token.replace(/^Bearer\s+/, "");
       jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
         if (err) {
-          jwt.verify(token, process.env.API_PARTNER_KEY, (err, partner_decoded) => {
-            console.log(partner_decoded)
+          jwt.verify(token, process.env.API_PARTNER_KEY, async (err, partner_decoded) => {
             if (err) {
               return res.status(403).send({ message: 'Not have permission ' })
             } else {
               const totalprice = insurancepackage.price * req.body.product_detail[0].quantity
               const change = req.body.moneyreceive - totalprice
+
+              //generate receipt number
+              const shop_partner_type = req.body.shop_partner_type
+              const receiptnumber = await GenerateRiceiptNumber(shop_partner_type)
+              console.log(receiptnumber)
+              if (shop_partner_type && receiptnumber == 'One Stop Service') {
+                const pipeline = [
+                  {
+                    $match: { shop_partner_type: req.body.shop_partner_type }
+                  },
+                  {
+                    $group: { _id: 0, count: { $sum: 1 } }
+                  }
+                ]
+                const count = await OrderServiceModel.aggregate(pipeline);
+                const countValue = count.length > 0 ? count[0].count + 1 : 1
+                const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+                return data
+              }
+
               // create order
               let data = {
+                receiptnumber: receiptnumber,
                 customer_contact: req.body.customer_contact,
                 customer_name: req.body.customer_name,
                 customer_tel: req.body.customer_tel,
@@ -44,6 +64,8 @@ module.exports.order = async (req, res) => {
                 servicename: 'Insurance Service(ประกัน)',
                 shopid: req.body.shopid,
                 shop_partner_type: req.body.shop_partner_type,
+                branch_name: req.body.branch_name,
+                branch_id: req.body.branch_id,
                 product_detail: [{
                   packageid: insurancepackage._id,
                   packagename: insurancepackage.name,
@@ -305,6 +327,22 @@ async function GenerateRiceiptNumber(shop_partner_type, branch_id) {
   const count = await OrderServiceModel.aggregate(pipeline);
   const countValue = count.length > 0 ? count[0].count + 1 : 1
   const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5,'0')}`;
+  console.log(count)
+  return data
+}
+
+async function GenerateRiceiptNumber(shop_partner_type) {
+  const pipeline = [
+    {
+      $match: { "shop_partner_type": shop_partner_type }
+    },
+    {
+      $group: { _id: 0, count: { $sum: 1 } }
+    }
+  ]
+  const count = await OrderServiceModel.aggregate(pipeline);
+  const countValue = count.length > 0 ? count[0].count + 1 : 1
+  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
   console.log(count)
   return data
 }

@@ -130,4 +130,21 @@ module.exports.GetTotalAllSale = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', data: error.data });
     }
-};
+}
+
+module.exports.GetCommissionByOrderId = async (req, res) => {
+    try {
+        const commission = await Commission.find({ orderid: req.params.id });
+        console.log(commission)
+        if (!commission) {
+            return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
+
+        } else {
+            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: commission });
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
+    }
+}

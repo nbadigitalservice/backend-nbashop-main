@@ -43,6 +43,8 @@ const validate = (data) => {
         customer_line: Joi.string().required().allow("").label("โปรดกรอกไลน์ลูกค้า"),
         shopid: Joi.string().required().allow("").label("โปรดกรอกidลูกค้า"),
         shop_partner_type: Joi.string().required().allow("").label("โปรดกรอกประเภทของพาร์ทเนอร์"),
+        branch_name: Joi.string().required().allow("").label("โปรดกรอกชื่อสาขา"),
+        branch_id: Joi.string().required().allow("").label("โปรดกรอกidสาขา"),
         packageid: Joi.string().required().label("โปรดกรอกไอดีแพ็คเกจ"),
         quantity: Joi.number().required().label("โปรดกรอกจำนวนสินค้า")
     })
