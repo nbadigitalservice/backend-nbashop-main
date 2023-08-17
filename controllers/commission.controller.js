@@ -148,3 +148,15 @@ module.exports.GetCommissionByOrderId = async (req, res) => {
         res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
     }
 }
+
+//get All order
+module.exports.GetAll = async (req, res) => {
+    try {
+      const commission = await Commission.find()
+      return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: commission })
+  
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: 'server side error' })
+    }
+  }
