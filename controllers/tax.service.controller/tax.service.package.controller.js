@@ -1,11 +1,11 @@
-const { InsurancePackageModel, validate } = require('../../models/insurance.model/insurance.package.model')
+const { TaxPackageModel, validate } = require('../../models/tax.service.model/tax.service.package.model')
 const multer = require('multer')
 const fs = require('fs')
-const { google } = require("googleapis");
-const CLIENT_ID = process.env.GOOGLE_DRIVE_CLIENT_ID;
-const CLIENT_SECRET = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
-const REDIRECT_URI = process.env.GOOGLE_DRIVE_REDIRECT_URI;
-const REFRESH_TOKEN = process.env.GOOGLE_DRIVE_REFRESH_TOKEN;
+const { google } = require("googleapis")
+const CLIENT_ID = process.env.GOOGLE_DRIVE_CLIENT_ID
+const CLIENT_SECRET = process.env.GOOGLE_DRIVE_CLIENT_SECRET
+const REDIRECT_URI = process.env.GOOGLE_DRIVE_REDIRECT_URI
+const REFRESH_TOKEN = process.env.GOOGLE_DRIVE_REFRESH_TOKEN
 
 const oauth2Client = new google.auth.OAuth2(
     CLIENT_ID,
@@ -13,18 +13,18 @@ const oauth2Client = new google.auth.OAuth2(
     REDIRECT_URI
 );
 
-oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN })
 const drive = google.drive({
     version: "v3",
     auth: oauth2Client,
-});
+})
 
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
-        cb(null, Date.now() + "-" + file.originalname);
+        cb(null, Date.now() + "-" + file.originalname)
         // console.log(file.originalname);
     },
-});
+})
 
 //Create
 module.exports.create = async (req, res) => {
@@ -52,14 +52,14 @@ module.exports.create = async (req, res) => {
                     type: req.body.type,
                     name: req.body.name,
                     detail: req.body.detail,
-                    price: Number(req.body.price),
-                    cost: Number(req.body.cost),
-                    profitbeforeallocate: Number(req.body.profitbeforeallocate),
-                    nbaprofit: Number(req.body.nbaprofit),
-                    plateformprofit: Number(req.body.plateformprofit)
+                    price: 0,
+                    cost: 0,
+                    profitbeforeallocate: 0,
+                    nbaprofit: 0,
+                    plateformprofit: 0
                 }
-                const insurancepackage = new InsurancePackageModel(data);
-                insurancepackage.save(error => {
+                const taxpackage = new TaxPackageModel(data);
+                taxpackage.save(error => {
                     if (error) {
                         res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: error })
                     } else {
@@ -78,8 +78,8 @@ module.exports.create = async (req, res) => {
 //get All websitepackage
 module.exports.GetAll = async (req, res) => {
     try {
-        const insurancepackage = await InsurancePackageModel.find();
-        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: insurancepackage })
+        const taxpackage = await TaxPackageModel.find();
+        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: taxpackage })
 
     } catch (error) {
         console.error(error);
@@ -90,12 +90,12 @@ module.exports.GetAll = async (req, res) => {
 //get act package by id
 module.exports.GetById = async (req, res) => {
     try {
-        const insurancepackage = await InsurancePackageModel.findById(req.params.id);
-        if (!insurancepackage) {
+        const taxpackage = await TaxPackageModel.findById(req.params.id);
+        if (!taxpackage) {
             return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
 
         } else {
-            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: insurancepackage });
+            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: taxpackage });
         }
 
     } catch (error) {
@@ -107,13 +107,13 @@ module.exports.GetById = async (req, res) => {
 //get act package by category id
 module.exports.GetByCateId = async (req, res) => {
     try {
-        const insurancepackage = await InsurancePackageModel.find({ categoryid: req.params.id });
-        console.log(insurancepackage)
-        if (!insurancepackage) {
+        const taxpackage = await TaxPackageModel.find({ categoryid: req.params.id });
+        console.log(taxpackage)
+        if (!taxpackage) {
             return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
 
         } else {
-            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: insurancepackage });
+            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: taxpackage });
         }
 
     } catch (error) {
@@ -129,7 +129,7 @@ module.exports.update = async (req, res) => {
 
         const id = req.params.id;
 
-        const packageUpdate = await InsurancePackageModel.findById(id)
+        const packageUpdate = await TaxPackageModel.findById(id)
 
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
@@ -173,7 +173,7 @@ module.exports.update = async (req, res) => {
                     status: status
 
                 }
-                InsurancePackageModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
+                TaxPackageModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
                     if (err) {
                         return res.status(403).send({ message: 'อัพเดทรูปภาพไม่สำเร็จ', data: err })
                     }
@@ -209,7 +209,7 @@ module.exports.update = async (req, res) => {
 module.exports.delete = async (req, res) => {
     try {
         const id = req.params.id;
-        InsurancePackageModel.findByIdAndDelete(id, { returnOriginal: true }, (error, result) => {
+        TaxPackageModel.findByIdAndDelete(id, { returnOriginal: true }, (error, result) => {
             if (error) {
                 return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ', data: error })
             }

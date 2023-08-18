@@ -17,7 +17,7 @@ const connection = require("./config/db");
 connection();
 
 
-app.use(bodyParser.json({limit: '50mb', type: 'application/json'}));
+app.use(bodyParser.json({ limit: '50mb', type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
@@ -90,7 +90,7 @@ app.use(
 app.use(
   "/v1/nba-shop/artwork", require("./routes/artwork/index")
 )
-app.use("/v1/nba-shop/artwork/product-graphic",require("./routes/artwork/product.graphic"));
+app.use("/v1/nba-shop/artwork/product-graphic", require("./routes/artwork/product.graphic"));
 
 //order
 app.use("/v1/nba-shop/order", require("./routes/pos/order"));
@@ -111,6 +111,9 @@ app.use("/v1/nba-shop/actlegalservice", require("./routes/actservice/index"))
 
 //insurance service
 app.use("/v1/nba-shop/insuranceservice", require("./routes/insurance/index"))
+
+// tax service
+app.use("/v1/nba-shop/taxservice", require("./routes/taxservice/index"))
 
 // service order controller
 app.use("/v1/nba-shop/orderservice", require("./routes/order.service/order.service.router"))
@@ -173,7 +176,7 @@ app.use('/v1/nba-shop/thailand', require('./routes/thailand'));
 app.use('/v1/nba-shop/public', require('./routes/public'))
 
 //api partner
-app.use('/v1/nba-shop/api/',require('./routes/api'));
+app.use('/v1/nba-shop/api/', require('./routes/api'));
 
 
 const port = process.env.PORT || 9030;

@@ -28,7 +28,9 @@ const orderservice = new mongoose.Schema({
     moneyreceive: { type: Number, required: true },
     totalprice: { type: Number, required: true },
     change: { type: Number, required: true },
-    status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
+    status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
+    responsible_id: { type: String },
+    responsible_name: { type: String },
     timestamp: { type: Date, default: Date.now }
 }, { timestamps: true })
 

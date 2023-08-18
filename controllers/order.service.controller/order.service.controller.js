@@ -9,7 +9,7 @@ const { WebsitePackageModel } = require('../../models/website.package.model/webs
 const { Partners } = require('../../models/pos.models/partner.model')
 
 module.exports.confirm = async (req, res) => {
-  const updateStatus = await OrderServiceModel.findOne({ _id: req.body.orderid })
+  const updateStatus = await OrderServiceModel.findOne({ _id: req.params.orderid })
   console.log(updateStatus);
   if (updateStatus) {
     await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'กำลังดำเนินการ' })
@@ -18,19 +18,10 @@ module.exports.confirm = async (req, res) => {
   } return res.status(200).send({ message: 'คอนเฟิร์มออร์เดอร์สำเร็จ' })
 }
 
-module.exports.complete = async (req, res) => {
-  const updateStatus = await OrderServiceModel.findOne({ _id: req.body.orderid })
-  console.log(updateStatus);
-  if (updateStatus) {
-    await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'เรียบร้อย' })
-  } else {
-    return res.status(403).send({ message: 'เกิดข้อผิดพลาด' })
-  } return res.status(200).send({ message: 'ส่งออร์เดอร์สำเร็จ' })
-}
-
 //get All order
 module.exports.GetAll = async (req, res) => {
   try {
+    console.log(req.decoded)
     const orderservice = await OrderServiceModel.find()
     return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: orderservice })
 
@@ -177,4 +168,27 @@ async function getProductPackageModel(servicename, product_detail) {
   }
 
   return totalRefundAmount;
+}
+
+module.exports.acceptTask = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await OrderServiceModel.findOne({ _id: orderId });
+
+    if (!order) {
+      return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
+    }
+
+    await OrderServiceModel.findByIdAndUpdate(orderId, {
+      status: req.body.status,
+      responsible_id: req.body._id,
+      responsible_name: req.body.name,
+    });
+
+    return res.status(200).send({ message: 'รับงานแล้ว', data: order });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', error: error.message });
+  }
 }

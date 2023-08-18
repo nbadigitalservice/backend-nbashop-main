@@ -1,7 +1,7 @@
-const { InsurancePackageModel, validate } = require('../../models/insurance.model/insurance.package.model')
+const { TaxCategoryModel, validate } = require('../../models/tax.service.model/tax.service.category.model')
 const multer = require('multer')
 const fs = require('fs')
-const { google } = require("googleapis");
+const { google } = require("googleapis")
 const CLIENT_ID = process.env.GOOGLE_DRIVE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
 const REDIRECT_URI = process.env.GOOGLE_DRIVE_REDIRECT_URI;
@@ -13,7 +13,7 @@ const oauth2Client = new google.auth.OAuth2(
     REDIRECT_URI
 );
 
-oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN })
 const drive = google.drive({
     version: "v3",
     auth: oauth2Client,
@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + "-" + file.originalname);
         // console.log(file.originalname);
     },
-});
+})
 
 //Create
 module.exports.create = async (req, res) => {
@@ -47,19 +47,11 @@ module.exports.create = async (req, res) => {
 
                 //create collection
                 const data = {
-                    categoryid: req.body.categoryid,
                     picture: reqFiles[0],
-                    type: req.body.type,
                     name: req.body.name,
-                    detail: req.body.detail,
-                    price: Number(req.body.price),
-                    cost: Number(req.body.cost),
-                    profitbeforeallocate: Number(req.body.profitbeforeallocate),
-                    nbaprofit: Number(req.body.nbaprofit),
-                    plateformprofit: Number(req.body.plateformprofit)
                 }
-                const insurancepackage = new InsurancePackageModel(data);
-                insurancepackage.save(error => {
+                const taxcategory = new TaxCategoryModel(data);
+                taxcategory.save(error => {
                     if (error) {
                         res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: error })
                     } else {
@@ -78,8 +70,8 @@ module.exports.create = async (req, res) => {
 //get All websitepackage
 module.exports.GetAll = async (req, res) => {
     try {
-        const insurancepackage = await InsurancePackageModel.find();
-        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: insurancepackage })
+        const taxcategory = await TaxCategoryModel.find();
+        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: taxcategory })
 
     } catch (error) {
         console.error(error);
@@ -87,15 +79,15 @@ module.exports.GetAll = async (req, res) => {
     }
 }
 
-//get act package by id
+//get websitepackage by id
 module.exports.GetById = async (req, res) => {
     try {
-        const insurancepackage = await InsurancePackageModel.findById(req.params.id);
-        if (!insurancepackage) {
+        const taxcategory = await TaxCategoryModel.findById(req.params.id);
+        if (!taxcategory) {
             return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
 
         } else {
-            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: insurancepackage });
+            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: taxcategory });
         }
 
     } catch (error) {
@@ -104,46 +96,18 @@ module.exports.GetById = async (req, res) => {
     }
 }
 
-//get act package by category id
-module.exports.GetByCateId = async (req, res) => {
-    try {
-        const insurancepackage = await InsurancePackageModel.find({ categoryid: req.params.id });
-        console.log(insurancepackage)
-        if (!insurancepackage) {
-            return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
-
-        } else {
-            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: insurancepackage });
-        }
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
-    }
-}
-
-//Update
 //change picture
 module.exports.update = async (req, res) => {
     try {
 
         const id = req.params.id;
 
-        const packageUpdate = await InsurancePackageModel.findById(id)
+        const taxcategory = await TaxCategoryModel.findById(id)
 
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
 
-            const categoryid = req.body.categoryid ? req.body.categoryid : packageUpdate.categoryid
-            const type = req.body.type ? req.body.type : packageUpdate.type
-            const name = req.body.name ? req.body.name : packageUpdate.name
-            const detail = req.body.detail ? req.body.detail : packageUpdate.detail
-            const price = req.body.price ? Number(req.body.price) : packageUpdate.price
-            const cost = req.body.cost ? Number(req.body.cost) : packageUpdate.cost
-            const profitbeforeallocate = req.body.profitbeforeallocate ? Number(req.body.profitbeforeallocate) : packageUpdate.profitbeforeallocate
-            const nbaprofit = req.body.nbaprofit ? Number(req.body.nbaprofit) : packageUpdate.nbaprofit
-            const plateformprofit = req.body.plateformprofit ? Number(req.body.plateformprofit) : packageUpdate.plateformprofit
-            const status = req.body.status ? req.body.status : packageUpdate.status
+            const name = req.body.name ? req.body.name : taxcategory.name
 
             if (err) {
                 return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
@@ -160,20 +124,10 @@ module.exports.update = async (req, res) => {
 
                 //Update collection
                 const data = {
-                    categoryid: categoryid,
                     picture: reqFiles[0],
-                    type: type,
-                    name: name,
-                    detail: detail,
-                    price: price,
-                    cost: cost,
-                    profitbeforeallocate: profitbeforeallocate,
-                    nbaprofit: nbaprofit,
-                    plateformprofit: plateformprofit,
-                    status: status
-
+                    name: name
                 }
-                InsurancePackageModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
+                TaxCategoryModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
                     if (err) {
                         return res.status(403).send({ message: 'อัพเดทรูปภาพไม่สำเร็จ', data: err })
                     }
@@ -182,17 +136,8 @@ module.exports.update = async (req, res) => {
                     //return sucessful response
                     return res.status(200).send({
                         message: 'อัพเดทสำเร็จ', data: {
-                            categoryid: result.categoryid,
                             picture: result.picture,
-                            type: result.type,
                             name: result.name,
-                            detail: result.detail,
-                            price: result.price,
-                            cost: result.cost,
-                            profitbeforeallocate: result.profitbeforeallocate,
-                            nbaprofit: result.nbaprofit,
-                            plateformprofit: result.plateformprofit,
-                            status: result.status
                         }
                     })
                 })
@@ -209,7 +154,7 @@ module.exports.update = async (req, res) => {
 module.exports.delete = async (req, res) => {
     try {
         const id = req.params.id;
-        InsurancePackageModel.findByIdAndDelete(id, { returnOriginal: true }, (error, result) => {
+        TaxCategoryModel.findByIdAndDelete(id, { returnOriginal: true }, (error, result) => {
             if (error) {
                 return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ', data: error })
             }
