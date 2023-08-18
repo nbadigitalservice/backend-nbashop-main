@@ -3,6 +3,9 @@ const Joi = require("joi");
 
 const orderservice = new mongoose.Schema({
     receiptnumber: { type: String, required: true},
+    picture: [{
+        type: String,
+    }],
     customer_contact: { type: String, required: true},
     customer_name: { type: String },
     customer_tel: { type: String },

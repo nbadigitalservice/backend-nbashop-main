@@ -22,5 +22,6 @@ router.delete("/package/delete/:id", authAdmin, InsuranceServicePackage.delete);
 
 //order
 router.post("/order", auth, InsuranceOrder.order)
+router.put("/order/updatepicture/:id", auth, InsuranceOrder.updatePictures)
 
 module.exports = router
