@@ -9,7 +9,8 @@ const { WebsitePackageModel } = require('../../models/website.package.model/webs
 const { Partners } = require('../../models/pos.models/partner.model')
 
 module.exports.confirm = async (req, res) => {
-  const updateStatus = await OrderServiceModel.findOne({ _id: req.params.orderid })
+
+  const updateStatus = await OrderServiceModel.findOne({ _id: req.params.id })
   console.log(updateStatus);
   if (updateStatus) {
     await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'กำลังดำเนินการ' })
