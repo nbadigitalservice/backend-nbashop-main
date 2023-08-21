@@ -19,8 +19,6 @@ const ShopSchema = new mongoose.Schema({
   shop_longtitude : {type:Number, required: false, default: 0},
   shop_number: { type: String, required: true },
   shop_status: { type: Boolean, required: false, default: true },
-  shop_level_name: { type: String, required: false, default: "ระดับตำบล" },
-  shop_level_note: { type: String, required: false, default: "ไม่มี" },
   shop_function: { type: Array, required: false, default: [] },
   shop_status_tax: { type: String, required: false, default: "ไม่มี" },
   shop_tax_name: { type: String, required: false, default: "ไม่มี" },
@@ -49,8 +47,6 @@ const validate = (data) => {
     shop_longtitude : Joi.number().default(0),
     shop_number: Joi.string().required().label("กรุณากรอกรหัสร้านด้วย"),
     shop_status: Joi.boolean().default(true),
-    shop_level_name: Joi.string().default("ระดับตำบล"),
-    shop_level_note: Joi.string().default("ไม่มี"),
     shop_function: Joi.array().default([]), // เปิดการใช้งานบริการ
 
     shop_status_tax: Joi.string().default("ไม่มี"), // ลงทะเบียนพาณิย์, เป็นผู้เสียภาษี
