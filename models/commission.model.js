@@ -12,6 +12,7 @@ const commission = new mongoose.Schema({
         vat3percent: {type: Number},
         remainding_commission: {type: Number}
     }] },
+    platformcommission: { type: Number },
     bonus: { type: Number },
     allSale: { type: Number },
     orderid: { type: String }

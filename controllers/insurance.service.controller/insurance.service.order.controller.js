@@ -301,6 +301,7 @@ module.exports.order = async (req, res) => {
 
                       const commissionData = {
                         data: storeData,
+                        platformcommission: platformCommission,
                         bonus: bonus,
                         allSale: allSale,
                         orderid: findorderid._id
