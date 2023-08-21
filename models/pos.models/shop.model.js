@@ -33,6 +33,7 @@ const Shop = mongoose.model("shop", ShopSchema);
 const validate = (data) => {
   const schema = Joi.object({
     shop_partner_id: Joi.string().required().label("กรุณากรอกไอดีเจ้าของด้วย"),
+    shop_partner_type: Joi.string().required().label("กรุณากรอกประเภทเจ้าของด้วย"),
     shop_credit: Joi.number().required().label("กรุณากรอกเครดิตเริ่มต้นด้วย"),
     shop_debit: Joi.number().default(0),
     shop_name: Joi.string().required().label("กรุณากรอกชื่อร้านด้วย"),
