@@ -118,31 +118,34 @@ module.exports.order = async (req, res) => {
                                         }
                                     }
                                 }
-                                
+
                                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
                                 const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
-                                console.log('totalplateformprofittotalplateformprofittotalplateformprofit',totalplateformprofit)
+                                console.log('totalplateformprofittotalplateformprofittotalplateformprofit', totalplateformprofit)
 
                                 // debitdata
                                 const debitData = [];
-                                for (const debitItem of req.body.debit) {
-                                    debitData.push({
-                                        debitname: debitItem.debitname,
-                                        debitnumber: debitItem.debitnumber,
-                                        debitamount: debitItem.debitamount,
-                                    });
+                                if (req.body.debit && Array.isArray(req.body.debit)) {
+                                    for (const debitItem of req.body.debit) {
+                                        debitData.push({
+                                            debitname: debitItem.debitname,
+                                            debitnumber: debitItem.debitnumber,
+                                            debitamount: debitItem.debitamount,
+                                        });
+                                    }
                                 }
 
                                 // creditdata
                                 const creditData = [];
-                                for (const creditItem of req.body.credit) {
-                                    creditData.push({
-                                        creditname: creditItem.creditname,
-                                        creditnumber: creditItem.creditnumber,
-                                        creditamount: creditItem.creditamount,
-                                    });
+                                if (req.body.credit && Array.isArray(req.body.credit)) {
+                                    for (const creditItem of req.body.credit) {
+                                        creditData.push({
+                                            creditname: creditItem.creditname,
+                                            creditnumber: creditItem.creditnumber,
+                                            creditamount: creditItem.creditamount,
+                                        });
+                                    }
                                 }
-
 
                                 //ตัดเงิน
                                 const price = totalprice
@@ -321,36 +324,36 @@ module.exports.order = async (req, res) => {
 
 async function GenerateRiceiptNumber(shop_partner_type, branch_id) {
     if (shop_partner_type === 'One Stop Service') {
-      const pipeline = [
-        {
-          $match: { shop_partner_type: shop_partner_type }
-        },
-        {
-          $group: { _id: 0, count: { $sum: 1 } }
-        }
-      ];
-      const count = await OrderServiceModel.aggregate(pipeline);
-      const countValue = count.length > 0 ? count[0].count + 1 : 1;
-      const data = `REP${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-      return data;
+        const pipeline = [
+            {
+                $match: { shop_partner_type: shop_partner_type }
+            },
+            {
+                $group: { _id: 0, count: { $sum: 1 } }
+            }
+        ];
+        const count = await OrderServiceModel.aggregate(pipeline);
+        const countValue = count.length > 0 ? count[0].count + 1 : 1;
+        const data = `REP${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+        return data;
     } else {
-      const pipeline = [
-        {
-          $match: {
-            $and: [
-              { "shop_partner_type": shop_partner_type },
-              { "branch_id": branch_id }
-            ]
-          }
-        },
-        {
-          $group: { _id: 0, count: { $sum: 1 } }
-        }
-      ];
-      const count = await OrderServiceModel.aggregate(pipeline);
-      const countValue = count.length > 0 ? count[0].count + 1 : 1;
-      const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-      console.log(count);
-      return data;
+        const pipeline = [
+            {
+                $match: {
+                    $and: [
+                        { "shop_partner_type": shop_partner_type },
+                        { "branch_id": branch_id }
+                    ]
+                }
+            },
+            {
+                $group: { _id: 0, count: { $sum: 1 } }
+            }
+        ];
+        const count = await OrderServiceModel.aggregate(pipeline);
+        const countValue = count.length > 0 ? count[0].count + 1 : 1;
+        const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+        console.log(count);
+        return data;
     }
-  }
+}

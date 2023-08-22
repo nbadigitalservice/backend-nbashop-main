@@ -114,22 +114,26 @@ module.exports.order = async (req, res) => {
 
                 // debitdata
                 const debitData = [];
-                for (const debitItem of req.body.debit) {
-                  debitData.push({
-                    debitname: debitItem.debitname,
-                    debitnumber: debitItem.debitnumber,
-                    debitamount: debitItem.debitamount,
-                  });
+                if (req.body.debit && Array.isArray(req.body.debit)) {
+                  for (const debitItem of req.body.debit) {
+                    debitData.push({
+                      debitname: debitItem.debitname,
+                      debitnumber: debitItem.debitnumber,
+                      debitamount: debitItem.debitamount,
+                    });
+                  }
                 }
 
                 // creditdata
                 const creditData = [];
-                for (const creditItem of req.body.credit) {
-                  creditData.push({
-                    creditname: creditItem.creditname,
-                    creditnumber: creditItem.creditnumber,
-                    creditamount: creditItem.creditamount,
-                  });
+                if (req.body.credit && Array.isArray(req.body.credit)) {
+                  for (const creditItem of req.body.credit) {
+                    creditData.push({
+                      creditname: creditItem.creditname,
+                      creditnumber: creditItem.creditnumber,
+                      creditamount: creditItem.creditamount,
+                    });
+                  }
                 }
 
                 //ตัดเงิน
