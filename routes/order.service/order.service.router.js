@@ -10,4 +10,9 @@ router.get("/list", auth, OrderStatus.GetAll)
 router.get("/list/:id", auth, OrderStatus.GetById)
 router.get("/allsale/:tel", auth, OrderStatus.GetTotalPriceSumByTel)
 
+// canceled order
+router.get("/cancelorder/list", auth, OrderStatus.GetAllCanceledOrder)
+router.get("/cancelorder/list/:id", auth, OrderStatus.GetCanceledOrderById)
+router.get("/cancelorder/listbytel/:tel", auth, OrderStatus.GetCanceledOrderByTel)
+
 module.exports = router

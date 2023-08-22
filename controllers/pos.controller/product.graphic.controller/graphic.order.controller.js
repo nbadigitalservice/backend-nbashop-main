@@ -37,22 +37,7 @@ module.exports.order = async (req, res) => {
 
                             //generate receipt number
                             const shop_partner_type = req.body.shop_partner_type
-                            const receiptnumber = await GenerateRiceiptNumber(shop_partner_type)
-                            console.log(receiptnumber)
-                            if (shop_partner_type && receiptnumber == 'One Stop Service') {
-                                const pipeline = [
-                                    {
-                                        $match: { shop_partner_type: req.body.shop_partner_type }
-                                    },
-                                    {
-                                        $group: { _id: 0, count: { $sum: 1 } }
-                                    }
-                                ]
-                                const count = await OrderServiceModel.aggregate(pipeline);
-                                const countValue = count.length > 0 ? count[0].count + 1 : 1
-                                const data = `REP${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-                                return data
-                            }
+                            const receiptnumber = await GenerateRiceiptNumber(shop_partner_type, req.body.shop_branch_id)
 
                             // create order
                             let data = {
@@ -109,7 +94,7 @@ module.exports.order = async (req, res) => {
                                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
                             } else {
 
-                                
+
                                 //getorder
                                 const orders = []
 
@@ -118,7 +103,7 @@ module.exports.order = async (req, res) => {
                                     if (container) {
                                         const productgraphic = await ProductGraphic.findOne({ _id: container.product_graphic_id });
                                         if (productgraphic) {
-                                            const plateformprofit = container.price - ( container.profit_NBA + container.cost_NBA )
+                                            const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
                                             orders.push({
                                                 packageid: container._id,
                                                 packagename: productgraphic.name,
@@ -135,6 +120,27 @@ module.exports.order = async (req, res) => {
                                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
                                 const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
 
+                                // debitdata
+                                const debitData = [];
+                                for (const debitItem of req.body.debit) {
+                                    debitData.push({
+                                        debitname: debitItem.debitname,
+                                        debitnumber: debitItem.debitnumber,
+                                        debitamount: debitItem.debitamount,
+                                    });
+                                }
+
+                                // creditdata
+                                const creditData = [];
+                                for (const creditItem of req.body.credit) {
+                                    creditData.push({
+                                        creditname: creditItem.creditname,
+                                        creditnumber: creditItem.creditnumber,
+                                        creditamount: creditItem.creditamount,
+                                    });
+                                }
+
+
                                 //ตัดเงิน
                                 const price = totalprice
                                 const newwallet = partner.partner_wallet - price
@@ -142,20 +148,6 @@ module.exports.order = async (req, res) => {
 
                                 //generate receipt number
                                 const receiptnumber = await GenerateRiceiptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
-                                if (findshop.shop_partner_type && receiptnumber == 'One Stop Service') {
-                                    const pipeline = [
-                                        {
-                                            $match: { shop_partner_type: shop_partner_type }
-                                        },
-                                        {
-                                            $group: { _id: 0, count: { $sum: 1 } }
-                                        }
-                                    ]
-                                    const count = await OrderServiceModel.aggregate(pipeline);
-                                    const countValue = count.length > 0 ? count[0].count + 1 : 1
-                                    const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-                                    return data
-                                }
 
                                 //commission
                                 //total profit
@@ -202,6 +194,8 @@ module.exports.order = async (req, res) => {
                                     branch_name: findshop.shop_name,
                                     branch_id: findshop.shop_branch_id,
                                     product_detail: orders,
+                                    debit: debitData,
+                                    credit: creditData,
                                     paymenttype: req.body.paymenttype,
                                     moneyreceive: req.body.moneyreceive,
                                     totalprice: price,
@@ -323,38 +317,37 @@ module.exports.order = async (req, res) => {
 }
 
 async function GenerateRiceiptNumber(shop_partner_type, branch_id) {
-    const pipeline = [
+    if (shop_partner_type === 'One Stop Service') {
+      const pipeline = [
         {
-            $match: {
-                $and: [
-                    { "shop_partner_type": shop_partner_type },
-                    { "branch_id": branch_id }
-                ]
-            }
+          $match: { shop_partner_type: shop_partner_type }
         },
         {
-            $group: { _id: 0, count: { $sum: 1 } }
+          $group: { _id: 0, count: { $sum: 1 } }
         }
-    ]
-    const count = await OrderServiceModel.aggregate(pipeline);
-    const countValue = count.length > 0 ? count[0].count + 1 : 1
-    const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-    console.log(count)
-    return data
-}
-
-async function GenerateRiceiptNumber(shop_partner_type) {
-    const pipeline = [
+      ];
+      const count = await OrderServiceModel.aggregate(pipeline);
+      const countValue = count.length > 0 ? count[0].count + 1 : 1;
+      const data = `REP${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+      return data;
+    } else {
+      const pipeline = [
         {
-            $match: { "shop_partner_type": shop_partner_type }
+          $match: {
+            $and: [
+              { "shop_partner_type": shop_partner_type },
+              { "branch_id": branch_id }
+            ]
+          }
         },
         {
-            $group: { _id: 0, count: { $sum: 1 } }
+          $group: { _id: 0, count: { $sum: 1 } }
         }
-    ]
-    const count = await OrderServiceModel.aggregate(pipeline);
-    const countValue = count.length > 0 ? count[0].count + 1 : 1
-    const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-    console.log(count)
-    return data
-}
+      ];
+      const count = await OrderServiceModel.aggregate(pipeline);
+      const countValue = count.length > 0 ? count[0].count + 1 : 1;
+      const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+      console.log(count);
+      return data;
+    }
+  }

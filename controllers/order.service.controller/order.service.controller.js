@@ -215,3 +215,51 @@ module.exports.acceptTask = async (req, res) => {
     return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', error: error.message });
   }
 }
+
+//get All canceled order
+module.exports.GetAllCanceledOrder = async (req, res) => {
+  try {
+    console.log(req.decoded)
+    const ordercanceled = await OrderCanceled.find()
+    return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: ordercanceled })
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: 'server side error' })
+  }
+}
+
+//get canceled order by id
+module.exports.GetCanceledOrderById = async (req, res) => {
+  try {
+    const ordercanceled = await OrderCanceled.findById(req.params.id)
+    if (!ordercanceled) {
+      return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' })
+
+    } else {
+      return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: ordercanceled })
+    }
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
+  }
+}
+
+//get canceled order by tel
+module.exports.GetCanceledOrderByTel = async (req, res) => {
+  try {
+    const tel = req.params.tel
+    const ordercanceled = await OrderCanceled.find({ customer_tel: tel })
+    if (!ordercanceled) {
+      return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' })
+
+    } else {
+      return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: ordercanceled })
+    }
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
+  }
+}
