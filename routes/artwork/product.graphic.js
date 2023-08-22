@@ -3,6 +3,7 @@ var ProductGraphicCategory = require("../../controllers/pos.controller/product.g
 var ProductGraphic= require("../../controllers/pos.controller/product.graphic.controller/product.graphic.controller");
 var ProductGraphicPrice = require("../../controllers/pos.controller/product.graphic.controller/product.graphic.price.controller");
 var ProductGraphicOrder = require('../../controllers/pos.controller/product.graphic.controller/product.graphic.order.controller');
+const graphicorder = require('../../controllers/pos.controller/product.graphic.controller/graphic.order.controller')
 const auth = require("../../lib/auth");
 const authAdmin = require('../../lib/auth.admin');
 
@@ -32,5 +33,7 @@ router.delete('/price/:id',auth,ProductGraphicPrice.DeleteProductGraphicPriceLis
 
 //preorder
 router.post('/preorder',authAdmin,ProductGraphicOrder.PreOrderProductGraphic)
+router.post('/order', auth, graphicorder.order)
+
 
 module.exports = router

@@ -27,7 +27,6 @@ exports.update = async (req, res) => {
   try {
     let upload = multer({ storage: storage }).single("shop_logo");
     upload(req, res, async function (err) {
-      console.log(req.file);
       if (!req.file) {
         if (!req.body) {
           return res.status(400).send({

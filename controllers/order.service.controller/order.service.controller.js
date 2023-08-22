@@ -6,6 +6,7 @@ const { FacebookPackage } = require('../../models/facebook.model/facebook.packag
 const { InsurancePackageModel } = require('../../models/insurance.model/insurance.package.model')
 const { ItsupportPackage } = require('../../models/itsupport.model/itsupport.package.model')
 const { WebsitePackageModel } = require('../../models/website.package.model/website.package.model')
+const { ProductGraphicPrice } = require('../../models/pos.models/product.graphic.price.model')
 const { Partners } = require('../../models/pos.models/partner.model')
 
 module.exports.confirm = async (req, res) => {
@@ -90,10 +91,17 @@ module.exports.cancel = async (req, res) => {
       return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
     }
 
+    // Check if the order is already cancelled
+    if (order.status === 'ถูกยกเลิก') {
+      return res.status(200).send({ message: 'ออร์เดอร์ถูกยกเลิกแล้ว' });
+    }
+
+    // Mark the order as cancelled
     await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'ถูกยกเลิก' });
 
     // Calculate total refund amount using the modified getProductPackageModel function
     const totalRefundAmount = await getProductPackageModel(order.servicename, order.product_detail);
+    console.log('totalRefundAmounttotalRefundAmounttotalRefundAmounttotalRefundAmount', totalRefundAmount)
 
     // Create an entry in the 'ordercanceled' schema
     const canceledOrder = new OrderCanceled({
@@ -153,19 +161,33 @@ async function getProductPackageModel(servicename, product_detail) {
     case 'Website Service':
       packageModel = WebsitePackageModel;
       break;
+    case 'Artwork':
+      packageModel = ProductGraphicPrice;
+      break;
     default:
       throw new Error('ไม่สามารถระบุแพ็คเกจที่ถูกยกเลิกได้');
   }
 
   // Calculate total refund amount based on quantity and package cost
   for (const product of product_detail) {
-    const packageData = await packageModel.findOne({ _id: product.packageid });
+    let packageData;
+
+    if (servicename === 'Artwork') {
+      packageData = await ProductGraphicPrice.findOne({ _id: product.packageid });
+    } else {
+      packageData = await packageModel.findOne({ _id: product.packageid });
+    }
 
     if (!packageData) {
       throw new Error('ไม่พบข้อมูลแพ็คเกจ');
     }
 
-    totalRefundAmount += product.quantity * packageData.cost;
+    if (servicename === 'Artwork') {
+      const cost = packageData.cost_NBA;
+      totalRefundAmount += product.quantity * cost;
+    } else {
+      totalRefundAmount += product.quantity * packageData.cost;
+    }
   }
 
   return totalRefundAmount;
