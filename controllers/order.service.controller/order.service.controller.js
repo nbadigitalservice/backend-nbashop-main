@@ -183,7 +183,7 @@ async function getProductPackageModel(servicename, product_detail) {
     }
 
     if (servicename === 'Artwork') {
-      const cost = packageData.cost_NBA;
+      const cost = packageData.price - (packageData.cost_NBA + packageData.profit_NBA);
       totalRefundAmount += product.quantity * cost;
     } else {
       totalRefundAmount += product.quantity * packageData.cost;

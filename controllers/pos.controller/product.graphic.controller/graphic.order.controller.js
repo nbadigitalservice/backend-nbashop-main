@@ -57,7 +57,7 @@ module.exports.order = async (req, res) => {
                                 product_detail: [{
                                     packageid: graphicpackage._id,
                                     packagename: productgraphic.name,
-                                    packagedetail: req.body.size,
+                                    packagedetail: req.body.product_detail[0].size,
                                     quantity: req.body.product_detail[0].quantity,
                                     price: graphicpackage.price,
                                 }],
@@ -103,22 +103,25 @@ module.exports.order = async (req, res) => {
                                     if (container) {
                                         const productgraphic = await ProductGraphic.findOne({ _id: container.product_graphic_id });
                                         if (productgraphic) {
-                                            const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
+                                            const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA);
+                                            const packagedetail = item.size + ' ' + productgraphic.description
                                             orders.push({
                                                 packageid: container._id,
                                                 packagename: productgraphic.name,
-                                                packagedetail: item.size,
+                                                packagedetail: packagedetail,
                                                 quantity: item.quantity,
                                                 plateformprofit: plateformprofit,
                                                 price: container.price,
                                             });
                                         } else {
-                                            return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' })
+                                            return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' });
                                         }
                                     }
                                 }
+                                
                                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
                                 const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
+                                console.log('totalplateformprofittotalplateformprofittotalplateformprofit',totalplateformprofit)
 
                                 // debitdata
                                 const debitData = [];
