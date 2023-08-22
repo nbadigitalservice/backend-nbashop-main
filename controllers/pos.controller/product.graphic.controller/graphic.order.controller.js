@@ -50,7 +50,7 @@ module.exports.order = async (req, res) => {
                                 ]
                                 const count = await OrderServiceModel.aggregate(pipeline);
                                 const countValue = count.length > 0 ? count[0].count + 1 : 1
-                                const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+                                const data = `REP${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
                                 return data
                             }
 

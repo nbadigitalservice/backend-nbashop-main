@@ -61,22 +61,7 @@ module.exports.order = async (req, res) => {
 
               //generate receipt number
               const shop_partner_type = req.body.shop_partner_type
-              const receiptnumber = await GenerateRiceiptNumber(shop_partner_type)
-              console.log(receiptnumber)
-              if (shop_partner_type && receiptnumber == 'One Stop Service') {
-                const pipeline = [
-                  {
-                    $match: { shop_partner_type: req.body.shop_partner_type }
-                  },
-                  {
-                    $group: { _id: 0, count: { $sum: 1 } }
-                  }
-                ]
-                const count = await OrderServiceModel.aggregate(pipeline);
-                const countValue = count.length > 0 ? count[0].count + 1 : 1
-                const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-                return data
-              }
+              const receiptnumber = await GenerateRiceiptNumber(shop_partner_type, req.body.shop_branch_id)
 
               // create order
               let data = {
@@ -151,6 +136,26 @@ module.exports.order = async (req, res) => {
                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
                 const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
 
+                // debitdata
+                const debitData = [];
+                for (const debitItem of req.body.debit) {
+                  debitData.push({
+                    debitname: debitItem.debitname,
+                    debitnumber: debitItem.debitnumber,
+                    debitamount: debitItem.debitamount,
+                  });
+                }
+
+                // creditdata
+                const creditData = [];
+                for (const creditItem of req.body.credit) {
+                  creditData.push({
+                    creditname: creditItem.creditname,
+                    creditnumber: creditItem.creditnumber,
+                    creditamount: creditItem.creditamount,
+                  });
+                }
+
                 //ตัดเงิน
                 const price = totalprice
                 const newwallet = partner.partner_wallet - price
@@ -158,21 +163,6 @@ module.exports.order = async (req, res) => {
 
                 //generate recipt number
                 const receiptnumber = await GenerateRiceiptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
-                if (findshop.shop_partner_type && receiptnumber == 'One Stop Service') {
-                  const pipeline = [
-                    {
-                      $match: { shop_partner_type: shop_partner_type }
-                    },
-                    {
-                      $group: { _id: 0, count: { $sum: 1 } }
-                    }
-                  ]
-                  const count = await OrderServiceModel.aggregate(pipeline);
-                  const countValue = count.length > 0 ? count[0].count + 1 : 1
-                  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-                  console.log(count)
-                  return data
-                }
 
                 //commission
                 //calculation from 100%
@@ -218,6 +208,8 @@ module.exports.order = async (req, res) => {
                   branch_name: findshop.shop_name,
                   branch_id: findshop.shop_branch_id,
                   product_detail: orders,
+                  debit: debitData,
+                  credit: creditData,
                   paymenttype: req.body.paymenttype,
                   moneyreceive: req.body.moneyreceive,
                   totalprice: price,
@@ -340,96 +332,94 @@ module.exports.order = async (req, res) => {
 
 module.exports.updatePictures = async (req, res) => {
   try {
-      const id = req.params.id;
+    const id = req.params.id;
 
-      let upload = multer({ storage: storage }).array("imgCollection", 20);
-      upload(req, res, async function (err) {
+    let upload = multer({ storage: storage }).array("imgCollection", 20);
+    upload(req, res, async function (err) {
+      if (err) {
+        return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
+      }
+
+      const reqFiles = [];
+
+      if (!req.files) {
+        return res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
+      }
+
+      const url = req.protocol + "://" + req.get("host");
+      for (var i = 0; i < req.files.length; i++) {
+        await uploadFileCreate(req.files, res, { i, reqFiles });
+      }
+
+      const orderService = await OrderServiceModel.findById(id);
+      if (!orderService) {
+        return res.status(404).send({ message: 'Order service not found' });
+      }
+
+      if (!orderService.picture) {
+        orderService.picture = [];
+      }
+
+      const newPictures = orderService.picture.concat(reqFiles);
+
+      OrderServiceModel.findByIdAndUpdate(
+        id,
+        { picture: newPictures },
+        { returnDocument: 'after' },
+        (err, result) => {
           if (err) {
-              return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
+            return res.status(403).send({ message: 'อัพเดทรูปภาพไม่สำเร็จ', data: err });
           }
 
-          const reqFiles = [];
-
-          if (!req.files) {
-              return res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
-          }
-
-          const url = req.protocol + "://" + req.get("host");
-          for (var i = 0; i < req.files.length; i++) {
-              await uploadFileCreate(req.files, res, { i, reqFiles });
-          }
-
-          const orderService = await OrderServiceModel.findById(id);
-          if (!orderService) {
-              return res.status(404).send({ message: 'Order service not found' });
-          }
-
-          if (!orderService.picture) {
-              orderService.picture = [];
-          }
-
-          const newPictures = orderService.picture.concat(reqFiles);
-
-          OrderServiceModel.findByIdAndUpdate(
-              id,
-              { picture: newPictures },
-              { returnDocument: 'after' },
-              (err, result) => {
-                  if (err) {
-                      return res.status(403).send({ message: 'อัพเดทรูปภาพไม่สำเร็จ', data: err });
-                  }
-
-                  return res.status(200).send({
-                      message: 'อัพเดทรูปภาพสำเร็จ',
-                      data: {
-                          picture: result.picture
-                      }
-                  });
-              }
-          );
-      });
+          return res.status(200).send({
+            message: 'อัพเดทรูปภาพสำเร็จ',
+            data: {
+              picture: result.picture
+            }
+          });
+        }
+      );
+    });
   } catch (error) {
-      console.error(error);
-      return res.status(500).send({ message: "Internal Server Error" });
+    console.error(error);
+    return res.status(500).send({ message: "Internal Server Error" });
   }
 };
 
 async function GenerateRiceiptNumber(shop_partner_type, branch_id) {
-  const pipeline = [
-    {
-      $match: {
-        $and: [
-          { "shop_partner_type": shop_partner_type },
-          { "branch_id": branch_id }
-        ]
+  if (shop_partner_type === 'One Stop Service') {
+    const pipeline = [
+      {
+        $match: { shop_partner_type: shop_partner_type }
+      },
+      {
+        $group: { _id: 0, count: { $sum: 1 } }
       }
-    },
-    {
-      $group: { _id: 0, count: { $sum: 1 } }
-    }
-  ]
-  console.log(pipeline)
-  const count = await OrderServiceModel.aggregate(pipeline);
-  const countValue = count.length > 0 ? count[0].count + 1 : 1
-  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-  console.log(count)
-  return data
-}
-
-async function GenerateRiceiptNumber(shop_partner_type) {
-  const pipeline = [
-    {
-      $match: { "shop_partner_type": shop_partner_type }
-    },
-    {
-      $group: { _id: 0, count: { $sum: 1 } }
-    }
-  ]
-  const count = await OrderServiceModel.aggregate(pipeline);
-  const countValue = count.length > 0 ? count[0].count + 1 : 1
-  const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-  console.log(count)
-  return data
+    ];
+    const count = await OrderServiceModel.aggregate(pipeline);
+    const countValue = count.length > 0 ? count[0].count + 1 : 1;
+    const data = `REP${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+    return data;
+  } else {
+    const pipeline = [
+      {
+        $match: {
+          $and: [
+            { "shop_partner_type": shop_partner_type },
+            { "branch_id": branch_id }
+          ]
+        }
+      },
+      {
+        $group: { _id: 0, count: { $sum: 1 } }
+      }
+    ];
+    const count = await OrderServiceModel.aggregate(pipeline);
+    const countValue = count.length > 0 ? count[0].count + 1 : 1;
+    const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
+    console.log(count);
+    return data;
+  }
 }
 
 //update image

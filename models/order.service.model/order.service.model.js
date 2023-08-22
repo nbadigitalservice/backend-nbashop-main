@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const Joi = require("joi");
 
 const orderservice = new mongoose.Schema({
-    receiptnumber: { type: String, required: true},
+    receiptnumber: { type: String, required: true },
     picture: [{
         type: String,
     }],
-    customer_contact: { type: String, required: true},
+    customer_contact: { type: String, required: true },
     customer_name: { type: String },
     customer_tel: { type: String },
     customer_address: { type: String },
@@ -29,6 +29,17 @@ const orderservice = new mongoose.Schema({
     },
     paymenttype: { type: String, enum: ['เงินสด', 'เงินโอน', 'บัตรเครดิต', 'อื่นๆ'], required: true },
     moneyreceive: { type: Number, required: true },
+    debit: [{
+        debitname: { type: String, required: true },
+        debitnumber: { type: Number, required: true },
+        debitamount: { type: Number, required: true }
+    }],
+
+    credit: [{
+        creditname: { type: String, required: true },
+        creditnumber: { type: Number, required: true },
+        creditamount: { type: Number, required: true }
+    }],
     totalprice: { type: Number, required: true },
     change: { type: Number, required: true },
     status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
