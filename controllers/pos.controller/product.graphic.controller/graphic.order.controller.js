@@ -101,27 +101,42 @@ module.exports.order = async (req, res) => {
                                 for (let item of req.body.product_detail) {
                                     const container = await ProductGraphicPrice.findOne({ _id: item.packageid });
                                     if (container) {
-                                        const productgraphic = await ProductGraphic.findOne({ _id: container.product_graphic_id });
+                                        const productgraphic = await ProductGraphic.findOne({ _id: container.product_graphic_id })
                                         if (productgraphic) {
-                                            const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA);
-                                            const packagedetail = item.size + ' ' + productgraphic.description
+                                            const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
+                                            let packagedetail = productgraphic.description
+                                            let pricecalculate = container.price
+                                            let calculatefreight = 0
+                                
+                                            if ((item.width / 100) * (item.hight / 100) > 2) {
+                                                calculatefreight = (((item.width / 100) * (item.hight / 100) * item.quantity) - 1) * 10;
+                                            }
+                                
+                                            if (productgraphic.category === "ไวนิล (vinyl)") {
+                                                packagedetail = `${item.width}*${item.hight} ${productgraphic.description}`
+                                                pricecalculate *= (item.width / 100) * (item.hight / 100)
+                                            }
+                                
+                                            const freight = productgraphic.category === "ไวนิล (vinyl)" ? container.freight + calculatefreight : container.freight
+                                            const totalPriceWithoutFreight = pricecalculate * item.quantity;
+                                            const totalPriceWithFreight = totalPriceWithoutFreight + freight;
+                                
                                             orders.push({
                                                 packageid: container._id,
                                                 packagename: productgraphic.name,
                                                 packagedetail: packagedetail,
                                                 quantity: item.quantity,
                                                 plateformprofit: plateformprofit,
-                                                price: container.price,
+                                                price: totalPriceWithFreight,
                                             });
+                                
                                         } else {
-                                            return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' });
+                                            return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' })
                                         }
                                     }
-                                }
-
-                                const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
-                                const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
-                                console.log('totalplateformprofittotalplateformprofittotalplateformprofit', totalplateformprofit)
+                                }                                
+                                const totalprice = orders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0)
+                                const totalplateformprofit = orders.reduce((accumulator, currentValue) => accumulator + (currentValue.plateformprofit * currentValue.quantity), 0)
 
                                 // debitdata
                                 const debitData = [];
