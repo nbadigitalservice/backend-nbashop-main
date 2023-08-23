@@ -137,6 +137,7 @@ module.exports.order = async (req, res) => {
                                             if (productgraphic.category === "ไวนิล (vinyl)") {
                                                 packagedetail = `${item.width}*${item.hight} ${productgraphic.description}`
                                                 pricecalculate *= (item.width / 100) * (item.hight / 100)
+                                                totalCost += ((container.cost_NBA + container.profit_NBA) * ((item.width / 100) * (item.hight / 100))) * item.quantity
                                             }
 
                                             const freight = productgraphic.category === "ไวนิล (vinyl)" ? container.freight + calculatefreight : container.freight
