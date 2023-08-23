@@ -119,7 +119,7 @@ module.exports.order = async (req, res) => {
 
                                 //getorder
                                 const orders = []
-
+                                let totalCost = 0
                                 for (let item of req.body.product_detail) {
                                     const container = await ProductGraphicPrice.findOne({ _id: item.packageid });
                                     if (container) {
@@ -151,8 +151,8 @@ module.exports.order = async (req, res) => {
                                                 plateformprofit: plateformprofit,
                                                 price: totalPriceWithFreight,
                                                 freight: freight
-                                            });
-
+                                            })
+                                            totalCost += (container.cost_NBA + container.profit_NBA) * item.quantity
                                         } else {
                                             return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' })
                                         }
@@ -244,6 +244,7 @@ module.exports.order = async (req, res) => {
                                     credit: creditData,
                                     paymenttype: req.body.paymenttype,
                                     moneyreceive: req.body.moneyreceive,
+                                    totalCost: totalCost,
                                     totalprice: price,
                                     totalFreight: totalFreight,
                                     change: change

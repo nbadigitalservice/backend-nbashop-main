@@ -41,6 +41,7 @@ const orderservice = new mongoose.Schema({
         creditnumber: { type: Number, required: true },
         creditamount: { type: Number, required: true }
     }],
+    totalCost: { type: Number, required: true },
     totalprice: { type: Number, required: true },
     totalFreight: { type: Number },
     change: { type: Number, required: true },
