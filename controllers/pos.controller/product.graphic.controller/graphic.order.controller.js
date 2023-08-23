@@ -32,8 +32,28 @@ module.exports.order = async (req, res) => {
                             if (!productgraphic) {
                                 return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' })
                             }
-                            const totalprice = graphicpackage.price * req.body.product_detail[0].quantity
-                            const change = req.body.moneyreceive - totalprice
+                            let packagedetail = productgraphic.description
+                            let pricecalculate = graphicpackage.price
+                            console.log(graphicpackage.price)
+                            let calculatefreight = 0
+
+                            if ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) > 2) {
+                                calculatefreight = ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) - 1) * 10;
+                                console.log(calculatefreight)
+                            }
+
+                            if (productgraphic.category === "ไวนิล (vinyl)") {
+                                packagedetail = `${req.body.product_detail[0].width}*${req.body.product_detail[0].hight} ${productgraphic.description}`
+                                pricecalculate *= (req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100)
+                            }
+
+                            const freight = productgraphic.category === "ไวนิล (vinyl)" ? graphicpackage.freight + calculatefreight : graphicpackage.freight
+                            const totalPriceWithoutFreight = pricecalculate * req.body.product_detail[0].quantity;
+                            const totalPriceWithFreight = totalPriceWithoutFreight + freight;
+                            console.log(freight, totalPriceWithoutFreight, totalPriceWithFreight)
+
+                            const change = req.body.moneyreceive - totalPriceWithFreight
+
 
                             //generate receipt number
                             const shop_partner_type = req.body.shop_partner_type
@@ -57,13 +77,15 @@ module.exports.order = async (req, res) => {
                                 product_detail: [{
                                     packageid: graphicpackage._id,
                                     packagename: productgraphic.name,
-                                    packagedetail: req.body.product_detail[0].size,
+                                    packagedetail: packagedetail,
                                     quantity: req.body.product_detail[0].quantity,
                                     price: graphicpackage.price,
+                                    freight: freight
                                 }],
                                 paymenttype: req.body.paymenttype,
                                 moneyreceive: req.body.moneyreceive,
-                                totalprice: totalprice,
+                                totalprice: totalPriceWithFreight,
+                                totalFreight: freight,
                                 change: change
                             }
                             const order = new OrderServiceModel(data)
@@ -107,20 +129,20 @@ module.exports.order = async (req, res) => {
                                             let packagedetail = productgraphic.description
                                             let pricecalculate = container.price
                                             let calculatefreight = 0
-                                
+
                                             if ((item.width / 100) * (item.hight / 100) > 2) {
                                                 calculatefreight = (((item.width / 100) * (item.hight / 100) * item.quantity) - 1) * 10;
                                             }
-                                
+
                                             if (productgraphic.category === "ไวนิล (vinyl)") {
                                                 packagedetail = `${item.width}*${item.hight} ${productgraphic.description}`
                                                 pricecalculate *= (item.width / 100) * (item.hight / 100)
                                             }
-                                
+
                                             const freight = productgraphic.category === "ไวนิล (vinyl)" ? container.freight + calculatefreight : container.freight
                                             const totalPriceWithoutFreight = pricecalculate * item.quantity;
                                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
-                                
+
                                             orders.push({
                                                 packageid: container._id,
                                                 packagename: productgraphic.name,
@@ -128,13 +150,16 @@ module.exports.order = async (req, res) => {
                                                 quantity: item.quantity,
                                                 plateformprofit: plateformprofit,
                                                 price: totalPriceWithFreight,
+                                                freight: freight
                                             });
-                                
+
                                         } else {
                                             return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' })
                                         }
                                     }
-                                }                                
+                                }
+
+                                const totalFreight = orders.reduce((accumulator, currentValue) => accumulator + currentValue.freight, 0)
                                 const totalprice = orders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0)
                                 const totalplateformprofit = orders.reduce((accumulator, currentValue) => accumulator + (currentValue.plateformprofit * currentValue.quantity), 0)
 
@@ -220,6 +245,7 @@ module.exports.order = async (req, res) => {
                                     paymenttype: req.body.paymenttype,
                                     moneyreceive: req.body.moneyreceive,
                                     totalprice: price,
+                                    totalFreight: totalFreight,
                                     change: change
                                 }
                                 console.log(data)

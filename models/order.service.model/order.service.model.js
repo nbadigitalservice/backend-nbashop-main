@@ -25,6 +25,7 @@ const orderservice = new mongoose.Schema({
             packagedetail: { type: String, required: true },
             quantity: { type: Number, required: true },
             price: { type: Number, required: true },
+            freight: { type: Number},
         }]
     },
     paymenttype: { type: String, enum: ['เงินสด', 'เงินโอน', 'บัตรเครดิต', 'อื่นๆ'], required: true },
@@ -41,6 +42,7 @@ const orderservice = new mongoose.Schema({
         creditamount: { type: Number, required: true }
     }],
     totalprice: { type: Number, required: true },
+    totalFreight: { type: Number },
     change: { type: Number, required: true },
     status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
     responsible_id: { type: String },

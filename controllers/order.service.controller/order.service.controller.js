@@ -186,7 +186,7 @@ async function getProductPackageModel(servicename, product_detail) {
       const cost = packageData.price - (packageData.cost_NBA + packageData.profit_NBA);
       totalRefundAmount += product.quantity * cost;
     } else {
-      totalRefundAmount += product.quantity * packageData.cost;
+      totalRefundAmount += product.quantity * (packageData.cost + packageData.nbaprofit);
     }
   }
 
