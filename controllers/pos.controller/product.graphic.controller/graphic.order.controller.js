@@ -125,11 +125,10 @@ module.exports.order = async (req, res) => {
                                     if (container) {
                                         const productgraphic = await ProductGraphic.findOne({ _id: container.product_graphic_id })
                                         if (productgraphic) {
-                                            // const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
+                                            const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
                                             let packagedetail = productgraphic.description
                                             let pricecalculate = container.price
                                             let calculatefreight = 0
-                                            let plateformprofit = 0
                                             if ((item.width / 100) * (item.hight / 100) > 2) {
                                                 calculatefreight = (((item.width / 100) * (item.hight / 100) * item.quantity) - 1) * 10;
                                             }
@@ -137,9 +136,6 @@ module.exports.order = async (req, res) => {
                                             if (productgraphic.category === "ไวนิล (vinyl)") {
                                                 packagedetail = `${item.width}*${item.hight} ${productgraphic.description}`
                                                 pricecalculate *= (item.width / 100) * (item.hight / 100)
-                                                plateformprofit += (container.price - (container.profit_NBA + container.cost_NBA)) * (item.width / 100) * (item.hight / 100)
-                                            } else {
-                                                plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
                                             }
 
                                             if (productgraphic.category === "ไวนิล (vinyl)") {
@@ -169,7 +165,7 @@ module.exports.order = async (req, res) => {
 
                                 const totalFreight = orders.reduce((accumulator, currentValue) => accumulator + currentValue.freight, 0)
                                 const totalprice = orders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0)
-                                const totalplateformprofit = orders.reduce((accumulator, currentValue) => accumulator + (currentValue.plateformprofit * currentValue.quantity), 0)
+                                const totalplateformprofit = totalPriceWithFreight - totalCost
 
                                 // debitdata
                                 const debitData = [];
@@ -208,7 +204,6 @@ module.exports.order = async (req, res) => {
 
                                 //calculation from 100%
                                 const commission = totalplateformprofit
-                                console.log('commissioncommission', commission)
                                 const platformCommission = (commission * 80) / 100
                                 const bonus = (commission * 5) / 100 //bonus
                                 const allSale = (commission * 15) / 100 //all sale
