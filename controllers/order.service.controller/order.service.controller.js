@@ -276,13 +276,15 @@ module.exports.DeliverOrder = async (req, res) => {
       if (err) {
         return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
       }
-      const reqFiles = []
-
+      
       const pictures = []
 
       for (var i = 0; i < req.files.length; i++) {
-        await uploadFileCreate(req.files, res, { i, reqFiles });
-        pictures.push({ imgUrl: req.files[i].filename }); // Adjust this line based on your schema
+        await uploadFileCreate(req.files, res, { i, pictures });
+      }
+
+      for (const picture of pictures) {
+        picture.imgUrl = picture.imgUrl.replace('&export=download', '');
       }
 
       //create collection
@@ -301,7 +303,7 @@ module.exports.DeliverOrder = async (req, res) => {
           res.status(200).send({ status: true, message: 'อัพเดทสถานะออร์เดอร์เป็น "เรียบร้อย" และบันทึกข้อมูลการจัดส่งสำเร็จ', data: orderDeliver })
         }
       })
-
+    
     })
   } catch (error) {
     console.error(error);
@@ -310,7 +312,7 @@ module.exports.DeliverOrder = async (req, res) => {
 }
 
 //update image
-async function uploadFileCreate(req, res, { i, reqFiles }) {
+async function uploadFileCreate(req, res, { i, pictures }) {
   const filePath = req[i].path;
   let fileMetaData = {
     name: req.originalname,
@@ -325,8 +327,8 @@ async function uploadFileCreate(req, res, { i, reqFiles }) {
       media: media,
     });
 
-    generatePublicUrl(response.data.id);
-    reqFiles.push(response.data.id);
+    const url = await generatePublicUrl(response.data.id);
+    pictures.push({fileId:response.data.id, imgUrl:url.webContentLink});
 
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
@@ -348,7 +350,8 @@ async function generatePublicUrl(res) {
       fileId: fileId,
       fields: "webViewLink, webContentLink",
     });
-    console.log(result.data);
+
+    return result.data;
   } catch (error) {
     console.log(error);
     return res.status(500).send({ message: "Internal Server Error" });
