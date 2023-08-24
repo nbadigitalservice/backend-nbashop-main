@@ -129,7 +129,6 @@ module.exports.order = async (req, res) => {
                                             let packagedetail = productgraphic.description
                                             let pricecalculate = container.price
                                             let calculatefreight = 0
-
                                             if ((item.width / 100) * (item.hight / 100) > 2) {
                                                 calculatefreight = (((item.width / 100) * (item.hight / 100) * item.quantity) - 1) * 10;
                                             }
@@ -137,7 +136,12 @@ module.exports.order = async (req, res) => {
                                             if (productgraphic.category === "ไวนิล (vinyl)") {
                                                 packagedetail = `${item.width}*${item.hight} ${productgraphic.description}`
                                                 pricecalculate *= (item.width / 100) * (item.hight / 100)
+                                            }
+
+                                            if (productgraphic.category === "ไวนิล (vinyl)") {
                                                 totalCost += ((container.cost_NBA + container.profit_NBA) * ((item.width / 100) * (item.hight / 100))) * item.quantity
+                                            } else {
+                                                totalCost += (container.cost_NBA + container.profit_NBA) * item.quantity
                                             }
 
                                             const freight = productgraphic.category === "ไวนิล (vinyl)" ? container.freight + calculatefreight : container.freight
@@ -153,7 +157,6 @@ module.exports.order = async (req, res) => {
                                                 price: totalPriceWithFreight,
                                                 freight: freight
                                             })
-                                            totalCost += (container.cost_NBA + container.profit_NBA) * item.quantity
                                         } else {
                                             return res.status(403).send({ message: 'ไม่พบข้อมูลสินค้า' })
                                         }

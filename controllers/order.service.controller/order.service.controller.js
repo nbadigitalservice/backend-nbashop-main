@@ -99,18 +99,14 @@ module.exports.cancel = async (req, res) => {
     // Mark the order as cancelled
     await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'ถูกยกเลิก' });
 
-    // Calculate total refund amount using the modified getProductPackageModel function
-    const totalRefundAmount = await getProductPackageModel(order.servicename, order.product_detail);
-    console.log('totalRefundAmounttotalRefundAmounttotalRefundAmounttotalRefundAmount', totalRefundAmount)
-
     // Create an entry in the 'ordercanceled' schema
     const canceledOrder = new OrderCanceled({
       orderid: order._id,
       receiptnumber: order.receiptnumber,
-      cost: totalRefundAmount,
+      cost: order.totalCost,
       customer_name: order.customer_name,
       customer_tel: order.customer_contact,
-      refund_amount: totalRefundAmount,
+      refund_amount: order.totalCost,
       reason: req.body.reason,
       admin_id: req.decoded._id,
       admin_name: req.decoded.name,
@@ -126,7 +122,7 @@ module.exports.cancel = async (req, res) => {
     }
 
     // Update the partner's wallet by adding the refund amount
-    partner.partner_wallet += totalRefundAmount;
+    partner.partner_wallet += order.totalCost;
     await partner.save();
 
     return res.status(200).send({ message: 'ยกเลิกออร์เดอร์และบันทึกข้อมูลสำเร็จ', data: canceledOrder });
@@ -140,7 +136,6 @@ module.exports.cancel = async (req, res) => {
 
 async function getProductPackageModel(servicename, product_detail) {
   let packageModel;
-  let totalRefundAmount = 0;
 
   switch (servicename) {
     case 'Account Service':
@@ -167,30 +162,6 @@ async function getProductPackageModel(servicename, product_detail) {
     default:
       throw new Error('ไม่สามารถระบุแพ็คเกจที่ถูกยกเลิกได้');
   }
-
-  // Calculate total refund amount based on quantity and package cost
-  for (const product of product_detail) {
-    let packageData;
-
-    if (servicename === 'Artwork') {
-      packageData = await ProductGraphicPrice.findOne({ _id: product.packageid });
-    } else {
-      packageData = await packageModel.findOne({ _id: product.packageid });
-    }
-
-    if (!packageData) {
-      throw new Error('ไม่พบข้อมูลแพ็คเกจ');
-    }
-
-    if (servicename === 'Artwork') {
-      const cost = packageData.price - (packageData.cost_NBA + packageData.profit_NBA);
-      totalRefundAmount += product.quantity * cost;
-    } else {
-      totalRefundAmount += product.quantity * (packageData.cost + packageData.nbaprofit);
-    }
-  }
-
-  return totalRefundAmount;
 }
 
 module.exports.acceptTask = async (req, res) => {
