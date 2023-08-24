@@ -56,6 +56,7 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
             {
                 $project: {
                     _id: 0,
+                    timestamp: 1,
                     tel: '$data.tel',
                     iden: '$data.iden',
                     name: '$data.name',
