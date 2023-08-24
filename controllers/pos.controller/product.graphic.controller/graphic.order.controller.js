@@ -165,7 +165,7 @@ module.exports.order = async (req, res) => {
 
                                 const totalFreight = orders.reduce((accumulator, currentValue) => accumulator + currentValue.freight, 0)
                                 const totalprice = orders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0)
-                                const totalplateformprofit = totalPriceWithFreight - totalCost
+                                const totalplateformprofit = totalprice - totalCost
 
                                 // debitdata
                                 const debitData = [];
