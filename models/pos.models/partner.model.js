@@ -38,7 +38,9 @@ const PartnersSchema = new mongoose.Schema({
 
 PartnersSchema.methods.generateAuthToken = function () {
   const token = jwt.sign(
-    { _id: this._id, row: "partner" },
+    { _id: this._id,
+      partner_phone: this.partner_phone,
+      row: "partner" },
     process.env.JWTPRIVATEKEY,
     {
       expiresIn: "4h",
