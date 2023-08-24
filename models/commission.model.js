@@ -15,8 +15,9 @@ const commission = new mongoose.Schema({
     platformcommission: { type: Number },
     bonus: { type: Number },
     allSale: { type: Number },
-    orderid: { type: String }
-})
+    orderid: { type: String },
+    timestamp: { type: Date, default: Date.now }
+}, { timestamps: true })
 
 const Commission = new mongoose.model("commission", commission)
 
