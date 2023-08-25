@@ -120,17 +120,21 @@ module.exports.order = async (req, res) => {
 
                 //getorder
                 const orders = []
+                let calculateprice = actpackage.price
                 let totalCost = 0
                 for (let item of req.body.product_detail) {
                   const container = await ActPackageModel.findOne({ _id: item.packageid })
                   if (container) {
+                    if (actpackage.name === "รถจักรยานยนต์ ไม่เกิน 75 CC" || "รถจักรยานยนต์ เกิน 75CC ถึง 125CC" || "รถจักรยานยนต์เกิน 125CC ถึง 150CC" || "รถจักรยานยนต์เกิน 150CC") {
+                      calculateprice += 50
+                    }
                     orders.push({
                       packageid: container._id,
                       packagename: container.name,
                       packagedetail: container.detail,
                       quantity: item.quantity,
                       plateformprofit: container.plateformprofit,
-                      price: container.price,
+                      price: calculateprice,
                     })
                     totalCost += (container.cost + container.nbaprofit) * item.quantity
                   }
@@ -225,8 +229,8 @@ module.exports.order = async (req, res) => {
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)
+                console.log('req.body.customer_tel', req.body.customer_tel)
                 const getteammember = await getmemberteam.GetTeamMember(req.body.customer_tel);
-
                 if (getteammember.status === false) {
 
                   return res.status(403).send({ message: 'ไม่พบข้อมมูลลูกค้า' })
