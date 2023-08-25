@@ -122,11 +122,19 @@ module.exports.order = async (req, res) => {
                 const orders = []
                 let calculateprice = actpackage.price
                 let totalCost = 0
+                let servicecharge = 0
                 for (let item of req.body.product_detail) {
                   const container = await ActPackageModel.findOne({ _id: item.packageid })
                   if (container) {
-                    if (actpackage.name === "รถจักรยานยนต์ ไม่เกิน 75 CC" || "รถจักรยานยนต์ เกิน 75CC ถึง 125CC" || "รถจักรยานยนต์เกิน 125CC ถึง 150CC" || "รถจักรยานยนต์เกิน 150CC") {
+                    console.log(container.name)
+                    if (
+                      actpackage.name === "รถจักรยานยนต์ ไม่เกิน 75 CC" ||
+                      actpackage.name === "รถจักรยานยนต์ เกิน 75CC ถึง 125CC" ||
+                      actpackage.name === "รถจักรยานยนต์เกิน 125CC ถึง 150CC" ||
+                      actpackage.name === "รถจักรยานยนต์เกิน 150CC"
+                    ) {
                       calculateprice += 50
+                      servicecharge += 50
                     }
                     orders.push({
                       packageid: container._id,
@@ -135,6 +143,7 @@ module.exports.order = async (req, res) => {
                       quantity: item.quantity,
                       plateformprofit: container.plateformprofit,
                       price: calculateprice,
+                      servicecharge: servicecharge
                     })
                     totalCost += (container.cost + container.nbaprofit) * item.quantity
                   }

@@ -26,6 +26,7 @@ const orderservice = new mongoose.Schema({
             quantity: { type: Number, required: true },
             price: { type: Number, required: true },
             freight: { type: Number},
+            servicecharge: { type: Number},
         }]
     },
     paymenttype: { type: String, enum: ['เงินสด', 'เงินโอน', 'บัตรเครดิต', 'อื่นๆ'], required: true },
