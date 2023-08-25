@@ -148,7 +148,6 @@ module.exports.order = async (req, res) => {
                     totalCost += (container.cost + container.nbaprofit) * item.quantity
                   }
                 }
-                console.log('orders', orders);
                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
                 const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
 
@@ -238,7 +237,6 @@ module.exports.order = async (req, res) => {
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)
-                console.log('req.body.customer_tel', req.body.customer_tel)
                 const getteammember = await getmemberteam.GetTeamMember(req.body.customer_tel);
                 if (getteammember.status === false) {
 
