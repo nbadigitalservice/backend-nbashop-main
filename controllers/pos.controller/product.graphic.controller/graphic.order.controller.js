@@ -36,6 +36,13 @@ module.exports.order = async (req, res) => {
                             let pricecalculate = graphicpackage.price
                             console.log(graphicpackage.price)
                             let calculatefreight = 0
+                            let totalCost = 0
+
+                            if (productgraphic.category === "ไวนิล (vinyl)") {
+                                totalCost += ((graphicpackage.cost_NBA + graphicpackage.profit_NBA) * ((item.width / 100) * (item.hight / 100))) * item.quantity
+                            } else {
+                                totalCost += (graphicpackage.cost_NBA + graphicpackage.profit_NBA) * item.quantity
+                            }
 
                             if ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) > 2) {
                                 calculatefreight = ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) - 1) * 10;
@@ -84,6 +91,7 @@ module.exports.order = async (req, res) => {
                                 }],
                                 paymenttype: req.body.paymenttype,
                                 moneyreceive: req.body.moneyreceive,
+                                totalCost: totalCost,
                                 totalprice: totalPriceWithFreight,
                                 totalFreight: freight,
                                 change: change

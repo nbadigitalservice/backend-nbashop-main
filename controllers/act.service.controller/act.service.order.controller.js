@@ -87,6 +87,7 @@ module.exports.order = async (req, res) => {
                 }],
                 paymenttype: req.body.paymenttype,
                 moneyreceive: req.body.moneyreceive,
+                totalCost: actpackage.cost + actpackage.nbaprofit,
                 totalprice: totalprice,
                 change: change
               }

@@ -63,6 +63,7 @@ module.exports.order = async (req, res) => {
                 }],
                 paymenttype: req.body.paymenttype,
                 moneyreceive: req.body.moneyreceive,
+                totalCost: itsupportpackage.cost + itsupportpackage.nbaprofit,
                 totalprice: totalprice,
                 change: change
               }

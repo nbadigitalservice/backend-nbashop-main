@@ -9,6 +9,8 @@ const { ItsupportPackage } = require('../../models/itsupport.model/itsupport.pac
 const { WebsitePackageModel } = require('../../models/website.package.model/website.package.model')
 const { ProductGraphicPrice } = require('../../models/pos.models/product.graphic.price.model')
 const { Partners } = require('../../models/pos.models/partner.model')
+const axios = require('axios')
+const cryptoJs = require('crypto-js')
 const dayjs = require('dayjs')
 const multer = require('multer')
 const fs = require('fs')
@@ -120,9 +122,9 @@ module.exports.cancel = async (req, res) => {
     }
 
     // Check if the order is already cancelled
-    if (order.status === 'ถูกยกเลิก') {
-      return res.status(200).send({ message: 'ออร์เดอร์ถูกยกเลิกแล้ว' });
-    }
+    // if (order.status === 'ถูกยกเลิก') {
+    //   return res.status(200).send({ message: 'ออร์เดอร์ถูกยกเลิกแล้ว' });
+    // }
 
     // Mark the order as cancelled
     await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'ถูกยกเลิก' });
@@ -149,10 +151,34 @@ module.exports.cancel = async (req, res) => {
       return res.status(403).send({ message: 'ไม่พบข้อมูลพาร์ทเนอร์' });
     }
 
-    // Update the partner's wallet by adding the refund amount
-    partner.partner_wallet += totalRefundAmount;
-    await partner.save();
+    if (order.partnername === "shop") {
+      // Update the partner's wallet by adding the refund amount
+      partner.partner_wallet += totalRefundAmount;
+      await partner.save();
+    } else {
+      //encryptdata
+      const payload = cryptoJs.AES.encrypt(JSON.stringify(canceledOrder), process.env.API_GIVE_COMMISSION).toString();
+      const request = {
+        method: 'post',
+        headers: {
+          'token': process.env.NBA_PLATFORM_SECRET_KEY,
+          'Content-Type': 'application/json'
+        },
+        url: `${process.env.NBA_PLATFORM}order/receiverefund`,
+        data: { payload:payload, tel:order.customer_tel }
+      }
 
+      try {
+        const response = await axios(request)
+        if (response) {
+          return res.status(200).send({ message: 'ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย', data: response.data })
+        } 
+      } catch (error) {
+        console.log(error)
+        return res.status(400).send({ message: 'มีบางอย่างผิดพลาด', data: error.message})
+      }
+
+    }
     return res.status(200).send({ message: 'ยกเลิกออร์เดอร์และบันทึกข้อมูลสำเร็จ', data: canceledOrder });
   } catch (error) {
     console.error(error);
@@ -276,7 +302,7 @@ module.exports.DeliverOrder = async (req, res) => {
       if (err) {
         return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
       }
-      
+
       const pictures = []
 
       for (var i = 0; i < req.files.length; i++) {
@@ -303,7 +329,7 @@ module.exports.DeliverOrder = async (req, res) => {
           res.status(200).send({ status: true, message: 'อัพเดทสถานะออร์เดอร์เป็น "เรียบร้อย" และบันทึกข้อมูลการจัดส่งสำเร็จ', data: orderDeliver })
         }
       })
-    
+
     })
   } catch (error) {
     console.error(error);
@@ -328,7 +354,7 @@ async function uploadFileCreate(req, res, { i, pictures }) {
     });
 
     const url = await generatePublicUrl(response.data.id);
-    pictures.push({fileId:response.data.id, imgUrl:url.webContentLink});
+    pictures.push({ fileId: response.data.id, imgUrl: url.webContentLink });
 
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
