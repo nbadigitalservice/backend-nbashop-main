@@ -4,7 +4,7 @@ exports.getByTel = async (req, res)=>{
     try{
         await axios.get(`${process.env.NBA_PLATFORM}public/member/tel/${req.params.tel}`, {
             headers: {
-                'token' : `${process.env.PLATFORM_PUBLIC_KEY}`
+                'token' : `${process.env.NBA_PLATFORM_SECRET_KEY}`
             }
         }).then((r)=>{
             return res.status(200).send({status: true , data: r.data.data})
@@ -22,7 +22,7 @@ exports.giveCommission = async(req, res)=>{
     try{
         await axios.post(`${process.env.NBA_PLATFORM}public/member/givecommission`, req.body, {
             headers: {
-                'token' : `${process.env.PLATFORM_PUBLIC_KEY}`
+                'token' : `${process.env.NBA_PLATFORM_SECRET_KEY}`
             }
         }).then(()=>{
             return res.status(200).send({status: true, message: 'คืนค่าคอมมิชชั่นสำเร็จ'})
@@ -40,7 +40,7 @@ exports.giveHappyPoint = async (req,res)=>{
     try{
         await axios.post(`${process.env.NBA_PLATFORM}public/member/givehappypoint`, req.body, {
             headers: {
-                'token' : `${process.env.PLATFORM_PUBLIC_KEY}`
+                'token' : `${process.env.NBA_PLATFORM_SECRET_KEY}`
             }
         }).then(()=>{
             return res.status(200).send({status: true, message: 'คืนค่าคอมมิชชั่นสำเร็จ'})
