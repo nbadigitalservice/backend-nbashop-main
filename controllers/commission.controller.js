@@ -5,7 +5,7 @@ const { ExchangeHistory } = require('../models/exchangepoint.model/exchangehisto
 
 module.exports.GetCommissionByTel = async (req, res) => {
     try {
-        const { tel } = req.params
+        const tel = req.decoded.partner_phone
 
         const pipeline = [
             {
@@ -44,7 +44,7 @@ module.exports.GetCommissionByTel = async (req, res) => {
 
 module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
     try {
-        const { tel } = req.params;
+        const tel = req.decoded.partner_phone
 
         const pipeline = [
             {
@@ -56,6 +56,7 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
             {
                 $project: {
                     _id: 0,
+                    timestamp: 1,
                     tel: '$data.tel',
                     iden: '$data.iden',
                     name: '$data.name',
@@ -203,7 +204,7 @@ module.exports.GetTotalPlatformCommission = async (req, res) => {
 
 module.exports.GetTotalAllSaleByTel = async (req, res) => {
     try {
-        const tel = req.params.tel
+        const tel = req.decoded.partner_phone
 
         const pipeline = [
             {
@@ -239,7 +240,7 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
 
 module.exports.GetHappyPointByTel = async (req, res) => {
     try {
-        const tel = req.params.tel
+        const tel = req.decoded.partner_phone
 
         // Aggregate total exchange points by tel
         const exchangePipeline = [

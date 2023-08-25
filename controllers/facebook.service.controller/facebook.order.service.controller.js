@@ -58,6 +58,7 @@ module.exports.order = async (req, res) => {
                 }],
                 paymenttype: req.body.paymenttype,
                 moneyreceive: req.body.moneyreceive,
+                totalCost: facebookpackage.cost + facebookpackage.nbaprofit,
                 totalprice: totalprice,
                 change: change
               }
@@ -91,7 +92,7 @@ module.exports.order = async (req, res) => {
 
                 // getorder
                 const orders = [];
-
+                let totalCost = 0
                 for (let item of req.body.product_detail) {
                   const container = await FacebookPackage.findOne({ _id: item.packageid });
                   if (container) {
@@ -103,10 +104,12 @@ module.exports.order = async (req, res) => {
                       plateformprofit: container.plateformprofit,
                       price: container.price,
                     });
+                    totalCost += (container.cost + container.nbaprofit) * item.quantity
                   }
                 }
                 const totalprice = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.price * currentValue.quantity), 0);
                 const totalplateformprofit = orders.reduce((accumulator, currentValue) => (accumulator) + (currentValue.plateformprofit * currentValue.quantity), 0);
+                
 
                 // debitdata
                 const debitData = [];
@@ -189,6 +192,7 @@ module.exports.order = async (req, res) => {
                   credit: creditData,
                   paymenttype: req.body.paymenttype,
                   moneyreceive: req.body.moneyreceive,
+                  totalCost: totalCost,
                   totalprice: price,
                   change: change
                 }

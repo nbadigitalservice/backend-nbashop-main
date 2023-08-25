@@ -87,6 +87,7 @@ module.exports.order = async (req, res) => {
                 }],
                 paymenttype: req.body.paymenttype,
                 moneyreceive: req.body.moneyreceive,
+                totalCost: actpackage.cost + actpackage.nbaprofit,
                 totalprice: totalprice,
                 change: change
               }
@@ -119,6 +120,7 @@ module.exports.order = async (req, res) => {
 
                 //getorder
                 const orders = []
+                let totalCost = 0
                 for (let item of req.body.product_detail) {
                   const container = await ActPackageModel.findOne({ _id: item.packageid })
                   if (container) {
@@ -130,6 +132,7 @@ module.exports.order = async (req, res) => {
                       plateformprofit: container.plateformprofit,
                       price: container.price,
                     })
+                    totalCost += (container.cost + container.nbaprofit) * item.quantity
                   }
                 }
                 console.log('orders', orders);
@@ -216,6 +219,7 @@ module.exports.order = async (req, res) => {
                   credit: creditData,
                   paymenttype: req.body.paymenttype,
                   moneyreceive: req.body.moneyreceive,
+                  totalCost: totalCost,
                   totalprice: price,
                   change: change
                 }
