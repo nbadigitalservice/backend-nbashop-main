@@ -130,6 +130,9 @@ app.use("/v1/nba-shop/commission", require("./routes/commission.router"))
 // exchange point
 app.use("/v1/nba-shop/exchangepoint", require("./routes/exchangepoint/index"))
 
+// exchange point
+app.use("/v1/nba-shop/wallethistory", require("./routes/wallet.history"))
+
 //express ระบบ ขนส่ง
 app.use("/v1/nba-shop/express/product", require("./routes/express/product.express"));
 app.use("/v1/nba-shop/express", require("./routes/express/booking.shippop"));
