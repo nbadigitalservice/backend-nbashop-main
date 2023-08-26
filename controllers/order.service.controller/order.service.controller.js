@@ -1,6 +1,7 @@
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
 const { OrderCanceled } = require('../../models/order.service.model/order.canceled.model')
 const { OrderDeliverModel } = require('../../models/order.service.model/order.deliver.model')
+const { WalletHistory } = require('../../models/wallet.history.model')
 const { AccountPackageModel } = require('../../models/account.service.model/account.service.package.model')
 const { ActPackageModel } = require('../../models/act.service.model/act.service.package.model')
 const { FacebookPackage } = require('../../models/facebook.model/facebook.package.model')
@@ -124,10 +125,10 @@ module.exports.cancel = async (req, res) => {
       return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
     }
 
-    // Check if the order is already cancelled
-    if (order.status === 'ถูกยกเลิก') {
-      return res.status(200).send({ message: 'ออร์เดอร์ถูกยกเลิกแล้ว' });
-    }
+    // // Check if the order is already cancelled
+    // if (order.status === 'ถูกยกเลิก') {
+    //   return res.status(200).send({ message: 'ออร์เดอร์ถูกยกเลิกแล้ว' });
+    // }
 
     // Mark the order as cancelled
     await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'ถูกยกเลิก' });
@@ -182,6 +183,17 @@ module.exports.cancel = async (req, res) => {
       }
 
     }
+    // create wallet history
+    const wallethistory = {
+      shop_id: order.shopid,
+      partner_id: partner._id,
+      orderid: order._id,
+      name: `รายการสั่งซื้อ ${order.servicename} ใบเสร็จเลขที่ ${order.receiptnumber}`,
+      type: 'เงินเข้า',
+      amount: order.totalCost,
+    }
+    const walletHistory = new WalletHistory(wallethistory)
+    walletHistory.save()
     return res.status(200).send({ message: 'ยกเลิกออร์เดอร์และบันทึกข้อมูลสำเร็จ', data: canceledOrder });
   } catch (error) {
     console.error(error);

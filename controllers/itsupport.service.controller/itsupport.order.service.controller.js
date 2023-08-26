@@ -1,5 +1,6 @@
 const { ItsupportPackage } = require('../../models/itsupport.model/itsupport.package.model')
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
+const { WalletHistory } = require('../../models/wallet.history.model')
 const { Shop } = require('../../models/pos.models/shop.model')
 const { Partners } = require('../../models/pos.models/partner.model')
 const { Employee } = require('../../models/pos.models/employee.model')
@@ -289,6 +290,17 @@ module.exports.order = async (req, res) => {
                           console.log(error)
                           return res.status(403).send({ message: 'ไม่สามารถบันทึกได้', data: data })
                         }
+                        // create wallet history
+                        const wallethistory = {
+                          shop_id: findshop._id,
+                          partner_id: partner._id,
+                          orderid: findorderid._id,
+                          name: `รายการสั่งซื้อ IT Support Service ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
+                          type: 'เงินออก',
+                          amount: findorderid.totalprice,
+                        }
+                        const walletHistory = new WalletHistory(wallethistory)
+                        walletHistory.save()
                       })
                       return res.status(200).send({ status: true, data: data, ยอดเงินคงเหลือ: newwallet });
                     } else {
