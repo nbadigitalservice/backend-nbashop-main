@@ -156,7 +156,7 @@ module.exports.cancel = async (req, res) => {
 
     if (order.partnername === "shop") {
       // Update the partner's wallet by adding the refund amount
-      partner.partner_wallet += totalRefundAmount;
+      partner.partner_wallet += order.totalCost;
       await partner.save();
     } else {
       //encryptdata
