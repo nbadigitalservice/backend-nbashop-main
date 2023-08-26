@@ -240,7 +240,7 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
 
 module.exports.GetHappyPointByTel = async (req, res) => {
     try {
-        const tel = req.decoded.partner_phone
+        const tel = req.user.partner_phone
 
         // Aggregate total exchange points by tel
         const exchangePipeline = [
