@@ -4,7 +4,7 @@ exports.getByTel = async (req, res)=>{
     try{
         await axios.get(`${process.env.NBA_PLATFORM}public/member/tel/${req.params.tel}`, {
             headers: {
-                'token' : `${process.env.NBA_PLATFORM_SECRET_KEY}`
+                'token' : `${process.env.NBA_PLATFORM_PUBLIC_KEY}`
             }
         }).then((r)=>{
             return res.status(200).send({status: true , data: r.data.data})
