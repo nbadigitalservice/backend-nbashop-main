@@ -82,7 +82,10 @@ module.exports.GetById = async (req, res) => {
 
 module.exports.GetTotalPriceSumByTel = async (req, res) => {
   try {
-    const tel = req.params.tel
+    let tel = req.user.partner_phone
+    if (req.user.partner_name === "NBA_PLATEFORM") {
+      tel = req.body.tel
+    }
     const pipeline = [
       {
         $match: { customer_tel: tel }
@@ -165,17 +168,17 @@ module.exports.cancel = async (req, res) => {
           'Content-Type': 'application/json'
         },
         url: `${process.env.NBA_PLATFORM}order/receiverefund`,
-        data: { payload:payload, tel:order.customer_tel }
+        data: { payload: payload, tel: order.customer_tel }
       }
 
       try {
         const response = await axios(request)
         if (response) {
           return res.status(200).send({ message: 'ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย', data: response.data })
-        } 
+        }
       } catch (error) {
         console.log(error)
-        return res.status(400).send({ message: 'มีบางอย่างผิดพลาด', data: error.message})
+        return res.status(400).send({ message: 'มีบางอย่างผิดพลาด', data: error.message })
       }
 
     }
@@ -272,7 +275,10 @@ module.exports.GetCanceledOrderById = async (req, res) => {
 //get canceled order by tel
 module.exports.GetCanceledOrderByTel = async (req, res) => {
   try {
-    const tel = req.params.tel
+    let tel = req.user.partner_phone
+    if (req.user.partner_name === "NBA_PLATEFORM") {
+      tel = req.body.tel
+    }
     const ordercanceled = await OrderCanceled.find({ customer_tel: tel })
     if (!ordercanceled) {
       return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' })

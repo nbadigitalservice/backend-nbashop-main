@@ -5,8 +5,10 @@ const { ExchangeHistory } = require('../models/exchangepoint.model/exchangehisto
 
 module.exports.GetCommissionByTel = async (req, res) => {
     try {
-        const tel = req.decoded.partner_phone
-
+        let tel = req.user.partner_phone
+        if (req.user.partner_name === "NBA_PLATEFORM") {
+            tel = req.body.tel
+        }
         const pipeline = [
             {
                 $unwind: '$data'
@@ -44,8 +46,10 @@ module.exports.GetCommissionByTel = async (req, res) => {
 
 module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
     try {
-        const tel = req.decoded.partner_phone
-
+        let tel = req.user.partner_phone
+        if (req.user.partner_name === "NBA_PLATEFORM") {
+            tel = req.body.tel
+        }
         const pipeline = [
             {
                 $unwind: '$data'
@@ -204,8 +208,10 @@ module.exports.GetTotalPlatformCommission = async (req, res) => {
 
 module.exports.GetTotalAllSaleByTel = async (req, res) => {
     try {
-        const tel = req.decoded.partner_phone
-
+        let tel = req.user.partner_phone
+        if (req.user.partner_name === "NBA_PLATEFORM") {
+            tel = req.body.tel
+        }
         const pipeline = [
             {
                 $match: { customer_tel: tel }
@@ -240,8 +246,10 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
 
 module.exports.GetHappyPointByTel = async (req, res) => {
     try {
-        const tel = req.user.partner_phone
-
+        let tel = req.user.partner_phone
+        if (req.user.partner_name === "NBA_PLATEFORM") {
+            tel = req.body.tel
+        }
         // Aggregate total exchange points by tel
         const exchangePipeline = [
             {
