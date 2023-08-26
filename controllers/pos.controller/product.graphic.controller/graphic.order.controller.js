@@ -103,6 +103,17 @@ module.exports.order = async (req, res) => {
                                     console.error(error)
                                     return res.status(403).send({ message: 'ไม่สามารถบันทึกได้' })
                                 }
+                                // create wallet history
+                                const wallethistory = {
+                                    shop_id: data.shopid,
+                                    partner_id: 'platform',
+                                    orderid: order._id,
+                                    name: `รายการสั่งซื้อ Artwork ใบเสร็จเลขที่ ${data.receiptnumber}`,
+                                    type: 'เงินออก',
+                                    amount: data.totalprice,
+                                }
+                                const walletHistory = new WalletHistory(wallethistory)
+                                walletHistory.save()
                                 return res.status(200).send({ message: 'เพิ่มข้อมูลสำเร็จ', data: data })
                             })
 

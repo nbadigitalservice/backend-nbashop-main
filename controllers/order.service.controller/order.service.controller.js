@@ -175,6 +175,21 @@ module.exports.cancel = async (req, res) => {
       try {
         const response = await axios(request)
         if (response) {
+          let partner_id = partner._id
+          if (order.partnername === "platform") {
+            partner_id = "platform"
+          }
+          // create wallet history
+          const wallethistory = {
+            shop_id: order.shopid,
+            partner_id: partner_id,
+            orderid: order._id,
+            name: `รายการสั่งซื้อ ${order.servicename} ใบเสร็จเลขที่ ${order.receiptnumber}`,
+            type: 'เงินเข้า',
+            amount: order.totalCost,
+          }
+          const walletHistory = new WalletHistory(wallethistory)
+          walletHistory.save()
           return res.status(200).send({ message: 'ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย', data: response.data })
         }
       } catch (error) {
@@ -194,7 +209,7 @@ module.exports.cancel = async (req, res) => {
     }
     const walletHistory = new WalletHistory(wallethistory)
     walletHistory.save()
-    return res.status(200).send({ message: 'ยกเลิกออร์เดอร์และบันทึกข้อมูลสำเร็จ', data: canceledOrder });
+    return res.status(200).send({ message: 'ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย', data: canceledOrder });
   } catch (error) {
     console.error(error);
     return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', error: error.message });
