@@ -194,6 +194,7 @@ module.exports.GetTotalPlatformCommission = async (req, res) => {
         ];
 
         const result = await Commission.aggregate(pipeline);
+        console.log(result)
 
         if (result.length === 0) {
             return res.status(404).send({ message: 'ไม่พบข้อมูล', totalPlatformCommission: 0 });
@@ -208,18 +209,26 @@ module.exports.GetTotalPlatformCommission = async (req, res) => {
 
 module.exports.GetTotalAllSaleByTel = async (req, res) => {
     try {
-        let tel = req.user.partner_phone
+        let tel = req.user.partner_phone;
         if (req.user.partner_name === "NBA_PLATEFORM") {
-            tel = req.body.tel
+            tel = req.body.tel;
         }
+        console.log(tel);
+        
         const pipeline = [
             {
-                $match: { customer_tel: tel }
+                $match: { "data.tel": tel }
+            },
+            {
+                $unwind: '$data'
+            },
+            {
+                $match: { "data.tel": tel }
             },
             {
                 $group: {
-                    _id: '$customer_tel',
-                    totalAllSale: { $sum: '$totalprice' }
+                    _id: '$data.tel',
+                    totalAllSale: { $sum: '$data.commission_amount' }
                 }
             },
             {
@@ -231,7 +240,7 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
             }
         ];
 
-        const result = await OrderServiceModel.aggregate(pipeline);
+        const result = await Commission.aggregate(pipeline);
 
         if (result.length === 0) {
             return res.status(404).send({ message: 'ไม่พบข้อมูล', totalAllSale: 0 });
@@ -246,10 +255,11 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
 
 module.exports.GetHappyPointByTel = async (req, res) => {
     try {
-        let tel = req.user.partner_phone
+        let tel = req.user.partner_phone;
         if (req.user.partner_name === "NBA_PLATEFORM") {
-            tel = req.body.tel
+            tel = req.body.tel;
         }
+
         // Aggregate total exchange points by tel
         const exchangePipeline = [
             {
@@ -268,17 +278,30 @@ module.exports.GetHappyPointByTel = async (req, res) => {
         // Aggregate total all sale by tel
         const allSalePipeline = [
             {
-                $match: { customer_tel: tel }
+                $match: { "data.tel": tel }
+            },
+            {
+                $unwind: '$data'
+            },
+            {
+                $match: { "data.tel": tel }
             },
             {
                 $group: {
-                    _id: '$customer_tel',
-                    totalAllSale: { $sum: '$totalprice' }
+                    _id: '$data.tel',
+                    totalAllSale: { $sum: '$data.commission_amount' }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    customer_tel: '$_id',
+                    totalAllSale: 1
                 }
             }
         ];
 
-        const allSaleResult = await OrderServiceModel.aggregate(allSalePipeline);
+        const allSaleResult = await Commission.aggregate(allSalePipeline);
 
         // Calculate happy point by subtracting exchange points from total all sale
         const totalExchangePoints = exchangeResult.length > 0 ? exchangeResult[0].totalExchangePoints : 0;

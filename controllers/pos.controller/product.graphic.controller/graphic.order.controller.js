@@ -58,7 +58,6 @@ module.exports.order = async (req, res) => {
                             const freight = productgraphic.category === "ไวนิล (vinyl)" ? graphicpackage.freight + calculatefreight : graphicpackage.freight
                             const totalPriceWithoutFreight = pricecalculate * req.body.product_detail[0].quantity;
                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
-                            console.log(freight, totalPriceWithoutFreight, totalPriceWithFreight)
 
                             const change = req.body.moneyreceive - totalPriceWithFreight
 
@@ -140,6 +139,7 @@ module.exports.order = async (req, res) => {
                                 //getorder
                                 const orders = []
                                 let totalCost = 0
+                                let totalPriceWithoutFreight = 0
                                 for (let item of req.body.product_detail) {
                                     const container = await ProductGraphicPrice.findOne({ _id: item.packageid });
                                     if (container) {
@@ -165,7 +165,7 @@ module.exports.order = async (req, res) => {
                                             }
 
                                             const freight = productgraphic.category === "ไวนิล (vinyl)" ? container.freight + calculatefreight : container.freight
-                                            const totalPriceWithoutFreight = pricecalculate * item.quantity;
+                                            totalPriceWithoutFreight += pricecalculate * item.quantity;
                                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
 
                                             orders.push({
@@ -185,7 +185,7 @@ module.exports.order = async (req, res) => {
 
                                 const totalFreight = orders.reduce((accumulator, currentValue) => accumulator + currentValue.freight, 0)
                                 const totalprice = orders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0)
-                                const totalplateformprofit = totalprice - totalCost
+                                const commissioncal = totalPriceWithoutFreight - totalCost
 
                                 // debitdata
                                 const debitData = [];
@@ -223,7 +223,7 @@ module.exports.order = async (req, res) => {
                                 //total profit
 
                                 //calculation from 100%
-                                const commission = totalplateformprofit
+                                const commission = commissioncal
                                 const platformCommission = (commission * 80) / 100
                                 const bonus = (commission * 5) / 100 //bonus
                                 const allSale = (commission * 15) / 100 //all sale

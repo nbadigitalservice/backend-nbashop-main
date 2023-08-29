@@ -133,14 +133,18 @@ module.exports.cancel = async (req, res) => {
     // Mark the order as cancelled
     await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'ถูกยกเลิก' });
 
-    // Create an entry in the 'ordercanceled' schema
+    let refund = order.totalCost
+    if (order.servicename === "Artwork") {
+      refund = order.totalCost + order.totalFreight
+    }
+
     const canceledOrder = new OrderCanceled({
       orderid: order._id,
       receiptnumber: order.receiptnumber,
-      cost: order.totalCost,
+      cost: refund,
       customer_name: order.customer_name,
       customer_tel: order.customer_contact,
-      refund_amount: order.totalCost,
+      refund_amount: refund,
       reason: req.body.reason,
       admin_id: req.decoded._id,
       admin_name: req.decoded.name,
@@ -157,7 +161,7 @@ module.exports.cancel = async (req, res) => {
 
     if (order.partnername === "shop") {
       // Update the partner's wallet by adding the refund amount
-      partner.partner_wallet += order.totalCost;
+      partner.partner_wallet += refund;
       await partner.save();
     } else {
       //encryptdata
@@ -186,7 +190,7 @@ module.exports.cancel = async (req, res) => {
             orderid: order._id,
             name: `รายการสั่งซื้อ ${order.servicename} ใบเสร็จเลขที่ ${order.receiptnumber}`,
             type: 'เงินเข้า',
-            amount: order.totalCost,
+            amount: refund,
           }
           const walletHistory = new WalletHistory(wallethistory)
           walletHistory.save()
@@ -205,7 +209,7 @@ module.exports.cancel = async (req, res) => {
       orderid: order._id,
       name: `รายการสั่งซื้อ ${order.servicename} ใบเสร็จเลขที่ ${order.receiptnumber}`,
       type: 'เงินเข้า',
-      amount: order.totalCost,
+      amount: refund,
     }
     const walletHistory = new WalletHistory(wallethistory)
     walletHistory.save()
