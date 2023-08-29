@@ -125,10 +125,10 @@ module.exports.cancel = async (req, res) => {
       return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
     }
 
-    // // Check if the order is already cancelled
-    // if (order.status === 'ถูกยกเลิก') {
-    //   return res.status(200).send({ message: 'ออร์เดอร์ถูกยกเลิกแล้ว' });
-    // }
+    // Check if the order is already cancelled
+    if (order.status === 'ถูกยกเลิก') {
+      return res.status(200).send({ message: 'ออร์เดอร์ถูกยกเลิกแล้ว' });
+    }
 
     // Mark the order as cancelled
     await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'ถูกยกเลิก' });
