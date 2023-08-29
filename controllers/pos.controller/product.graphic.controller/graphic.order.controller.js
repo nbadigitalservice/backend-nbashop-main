@@ -35,19 +35,18 @@ module.exports.order = async (req, res) => {
                             }
                             let packagedetail = productgraphic.description
                             let pricecalculate = graphicpackage.price
-                            console.log(graphicpackage.price)
                             let calculatefreight = 0
                             let totalCost = 0
+                            let totalPriceWithoutFreight = 0
 
                             if (productgraphic.category === "ไวนิล (vinyl)") {
-                                totalCost += ((graphicpackage.cost_NBA + graphicpackage.profit_NBA) * ((item.width / 100) * (item.hight / 100))) * item.quantity
+                                totalCost += ((graphicpackage.cost_NBA + graphicpackage.profit_NBA) * ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100))) * req.body.product_detail[0].quantity
                             } else {
-                                totalCost += (graphicpackage.cost_NBA + graphicpackage.profit_NBA) * item.quantity
+                                totalCost += (graphicpackage.cost_NBA + graphicpackage.profit_NBA) * req.body.product_detail[0].quantity
                             }
 
                             if ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) > 2) {
                                 calculatefreight = ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) - 1) * 10;
-                                console.log(calculatefreight)
                             }
 
                             if (productgraphic.category === "ไวนิล (vinyl)") {
@@ -56,10 +55,37 @@ module.exports.order = async (req, res) => {
                             }
 
                             const freight = productgraphic.category === "ไวนิล (vinyl)" ? graphicpackage.freight + calculatefreight : graphicpackage.freight
-                            const totalPriceWithoutFreight = pricecalculate * req.body.product_detail[0].quantity;
+                            totalPriceWithoutFreight += pricecalculate * req.body.product_detail[0].quantity;
                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
+                            const commissioncal = totalPriceWithoutFreight - totalCost
+                            console.log('commissioncal', commissioncal, totalPriceWithoutFreight, totalCost)
 
                             const change = req.body.moneyreceive - totalPriceWithFreight
+
+                            //commission
+                            //calculation from 100%
+                            const commission = commissioncal
+                            const platformCommission = (commission * 80) / 100
+                            const bonus = (commission * 5) / 100 //bonus
+                            const allSale = (commission * 15) / 100 //all sale
+
+                            //calculation from 80% for member
+                            const owner = (platformCommission * 55) / 100
+                            const lv1 = (platformCommission * 20) / 100
+                            const lv2 = (platformCommission * 15) / 100
+                            const lv3 = (platformCommission * 10) / 100
+
+                            //calculation vat 3%
+                            const ownervat = (owner * 3) / 100
+                            const lv1vat = (lv1 * 3) / 100
+                            const lv2vat = (lv2 * 3) / 100
+                            const lv3vat = (lv3 * 3) / 100
+
+                            //real commission for member
+                            const ownercommission = owner - ownervat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                            const lv1commission = lv1 - lv1vat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                            const lv2commission = lv2 - lv2vat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                            const lv3commission = lv3 - lv3vat //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
 
 
                             //generate receipt number
@@ -97,25 +123,109 @@ module.exports.order = async (req, res) => {
                                 change: change
                             }
                             const order = new OrderServiceModel(data)
-                            order.save(error => {
-                                if (error) {
-                                    console.error(error)
-                                    return res.status(403).send({ message: 'ไม่สามารถบันทึกได้' })
-                                }
-                                // create wallet history
-                                const wallethistory = {
-                                    shop_id: data.shopid,
-                                    partner_id: 'platform',
-                                    orderid: order._id,
-                                    name: `รายการสั่งซื้อ Artwork ใบเสร็จเลขที่ ${data.receiptnumber}`,
-                                    type: 'เงินออก',
-                                    amount: data.totalprice,
-                                }
-                                const walletHistory = new WalletHistory(wallethistory)
-                                walletHistory.save()
-                                return res.status(200).send({ message: 'เพิ่มข้อมูลสำเร็จ', data: data })
-                            })
+                            const getteammember = await getmemberteam.GetTeamMember(req.body.customer_tel);
+                            if (getteammember.status === false) {
+                                return res.status(403).send({ message: 'ไม่พบข้อมมูลลูกค้า' })
+                            } else {
+                                order.save(async (error, data) => {
+                                    if (data) {
+                                        const findorderid = await OrderServiceModel.findById({ _id: data._id });
 
+                                        const level = getteammember.data;
+
+                                        const validLevel = level.filter(item => item !== null);
+
+                                        const storeData = [];
+
+                                        for (const TeamMemberData of validLevel) {
+                                            let integratedData;
+
+                                            if (TeamMemberData.level == 'owner') {
+                                                integratedData = {
+                                                    lv: TeamMemberData.level,
+                                                    iden: TeamMemberData.iden,
+                                                    name: TeamMemberData.name,
+                                                    address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                                                    tel: TeamMemberData.tel,
+                                                    commission_amount: owner,
+                                                    vat3percent: ownervat,
+                                                    remainding_commission: ownercommission
+                                                };
+                                            }
+                                            if (TeamMemberData.level == '1') {
+                                                integratedData = {
+                                                    lv: TeamMemberData.level,
+                                                    iden: TeamMemberData.iden,
+                                                    name: TeamMemberData.name,
+                                                    address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                                                    tel: TeamMemberData.tel,
+                                                    commission_amount: lv1,
+                                                    vat3percent: lv1vat,
+                                                    remainding_commission: lv1commission
+                                                };
+                                            }
+                                            if (TeamMemberData.level == '2') {
+                                                integratedData = {
+                                                    lv: TeamMemberData.level,
+                                                    iden: TeamMemberData.iden,
+                                                    name: TeamMemberData.name,
+                                                    address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                                                    tel: TeamMemberData.tel,
+                                                    commission_amount: lv2,
+                                                    vat3percent: lv2vat,
+                                                    remainding_commission: lv2commission
+                                                };
+                                            }
+                                            if (TeamMemberData.level == '3') {
+                                                integratedData = {
+                                                    lv: TeamMemberData.level,
+                                                    iden: TeamMemberData.iden,
+                                                    name: TeamMemberData.name,
+                                                    address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                                                    tel: TeamMemberData.tel,
+                                                    commission_amount: lv3,
+                                                    vat3percent: lv2vat,
+                                                    remainding_commission: lv3commission
+                                                };
+                                            }
+                                            if (integratedData) {
+                                                storeData.push(integratedData);
+                                            }
+                                        }
+
+                                        const commissionData = {
+                                            data: storeData,
+                                            platformcommission: platformCommission,
+                                            bonus: bonus,
+                                            allSale: allSale,
+                                            orderid: findorderid._id
+                                        };
+                                        const commission = new Commission(commissionData)
+                                        commission.save((error, data) => {
+                                            if (error) {
+                                                console.log(error)
+                                                return res.status(403).send({ message: 'ไม่สามารถบันทึกได้', data: data })
+                                            }
+
+                                            // create wallet history
+                                            const wallethistory = {
+                                                shop_id: order.shopid,
+                                                partner_id: 'platform',
+                                                orderid: order._id,
+                                                name: `รายการสั่งซื้อ Artwork ใบเสร็จเลขที่ ${order.receiptnumber}`,
+                                                type: 'เงินออก',
+                                                amount: order.totalprice,
+                                            }
+                                            const walletHistory = new WalletHistory(wallethistory)
+                                            walletHistory.save()
+                                        })
+                                        return res.status(200).send({ status: true, data: order });
+                                    } else {
+                                        console.error(error)
+                                        return res.status(400).send({ message: 'ไม่สามารถบันทึกได้', error: error.message })
+                                    }
+                                })
+                            }
                         }
                     })
                 } else {
