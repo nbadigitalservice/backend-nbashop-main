@@ -260,7 +260,6 @@ module.exports.GetHappyPointByTel = async (req, res) => {
             tel = req.body.tel;
         }
 
-        // Aggregate total exchange points by tel
         const exchangePipeline = [
             {
                 $match: { tel: tel }
@@ -275,16 +274,13 @@ module.exports.GetHappyPointByTel = async (req, res) => {
 
         const exchangeResult = await ExchangeHistory.aggregate(exchangePipeline);
 
-        // Aggregate total all sale by tel
+        // Aggregate total happy point by tel
         const allSalePipeline = [
-            {
-                $match: { "data.tel": tel }
-            },
             {
                 $unwind: '$data'
             },
             {
-                $match: { "data.tel": tel }
+                $match: { "data.tel": tel, "data.lv": "owner" }
             },
             {
                 $group: {
