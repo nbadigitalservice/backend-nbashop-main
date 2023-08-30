@@ -5,5 +5,6 @@ const authAdmin = require('../lib/auth.admin');
 
 router.get('/list', authAdmin, wallethistory.GetAll)
 router.get('/listbypid/:id', auth, wallethistory.GetWalletHistoryByPartnerId)
+router.post('/create', auth, wallethistory.create)
 
 module.exports = router
