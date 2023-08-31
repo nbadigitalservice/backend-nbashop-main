@@ -22,6 +22,6 @@ router.delete("/package/delete/:id", authAdmin, ActServicePackage.delete);
 
 //order
 router.post("/order", auth, ActOrder.order)
-router.put("/order/updatepicture/id", auth, ActOrder.updatePictures)
+router.put("/order/updatepicture/:id", auth, ActOrder.updatePictures)
 
 module.exports = router
