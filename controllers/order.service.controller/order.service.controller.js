@@ -434,6 +434,11 @@ module.exports.DeliverOrder = async (req, res) => {
     if (!order) {
       return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
     }
+
+    if (order.status === 'เรียบร้อย') {
+      return res.status(403).send({ message: 'ไม่สามารถอัพเดทสถานะออร์เดอร์ได้เนื่องจากออร์เดอร์เรียบร้อยแล้ว' });
+    }
+    
     await OrderServiceModel.findByIdAndUpdate(orderId, { status: 'เรียบร้อย' });
 
     let upload = multer({ storage: storage }).array("imgCollection", 20);
