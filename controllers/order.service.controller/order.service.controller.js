@@ -96,6 +96,7 @@ module.exports.GetAll = async (req, res) => {
           change: 1,
           status: 1,
           createdAt: 1,
+          updatedAt: 1,
           deliverdata: "$deliverdata"
         }
       }
