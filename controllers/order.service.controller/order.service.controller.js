@@ -344,11 +344,25 @@ module.exports.DeliverOrder = async (req, res) => {
       const files = [];
 
       for (var i = 0; i < req.files.length; i++) {
-        if(req.files.type ==='')
-        await uploadFileCreate(req.files, res, { i, pictures });
+        const fileType = req.files[i]?.mimetype;
+        if (fileType === "image/png" ||
+          fileType === "image/tiff" ||
+          fileType === "image/jpeg") {
+          try {
+            await uploadFileCreate(req.files, res, { i, pictures });
+          } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Error uploading image' });
+          }
+        } else {
+          try {
+            await uploadFileCreate(req.files, res, { i, files });
+          } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: 'Error uploading file' });
+          }
+        }
       }
-
-
 
       for (const picture of pictures) {
         picture.imgUrl = picture.imgUrl.replace('&export=download', '');
@@ -359,19 +373,18 @@ module.exports.DeliverOrder = async (req, res) => {
         orderid: orderId,
         detail: req.body.detail,
         picture: pictures,
-        // file: 
+        file: files,
         transport: req.body.transport,
         trackingNo: req.body.trackingNo,
       }
       const orderDeliver = new OrderDeliverModel(data);
-      orderDeliver.save(error => {
+      orderDeliver.save(async error => {
         if (error) {
-          res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกข้อมูลได้', data: error })
-        } else {
-          res.status(200).send({ status: true, message: 'อัพเดทสถานะออร์เดอร์เป็น "เรียบร้อย" และบันทึกข้อมูลการจัดส่งสำเร็จ', data: orderDeliver })
+          console.error(error);
+          return res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกข้อมูลได้', data: error });
         }
+        res.status(200).send({ status: true, message: 'อัพเดทสถานะออร์เดอร์เป็น "เรียบร้อย" และบันทึกข้อมูลการจัดส่งสำเร็จ', data: orderDeliver });
       })
-
     })
   } catch (error) {
     console.error(error);
@@ -380,7 +393,7 @@ module.exports.DeliverOrder = async (req, res) => {
 }
 
 //update image
-async function uploadFileCreate(req, res, { i, pictures }) {
+async function uploadFileCreate(req, res, { i, pictures, files }) {
   const filePath = req[i].path;
   let fileMetaData = {
     name: req.originalname,
@@ -396,10 +409,13 @@ async function uploadFileCreate(req, res, { i, pictures }) {
     });
 
     const url = await generatePublicUrl(response.data.id);
-    pictures.push({ fileId: response.data.id, imgUrl: url.webContentLink });
-
+    if (pictures) {
+      pictures.push({ fileId: response.data.id, imgUrl: url.webContentLink });
+    } else if (files) {
+      files.push({ fileId: response.data.id, fileUrl: url.webContentLink });
+    }
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error" });
+    throw error;
   }
 }
 
@@ -419,9 +435,9 @@ async function generatePublicUrl(res) {
       fields: "webViewLink, webContentLink",
     });
 
-    return result.data;
+    return result.data
   } catch (error) {
-    console.log(error);
-    return res.status(500).send({ message: "Internal Server Error" });
+    console.log(error)
+    throw error
   }
 }
