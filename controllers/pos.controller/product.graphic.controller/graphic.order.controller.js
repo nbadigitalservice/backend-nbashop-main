@@ -50,8 +50,8 @@ module.exports.order = async (req, res) => {
                                 totalCost += (graphicpackage.cost_NBA + graphicpackage.profit_NBA) * req.body.product_detail[0].quantity
                             }
 
-                            if ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) > 2) {
-                                calculatefreight = ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) - 1) * 10;
+                            if (((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) * req.body.product_detail[0].quantity) > 2) {
+                                calculatefreight = (((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) * req.body.product_detail[0].quantity) - 1) * 10;
                             }
 
                             if (productgraphic.detail === "ราคาต่อตารางเมตร") {
@@ -268,9 +268,8 @@ module.exports.order = async (req, res) => {
 
                                             let packagedetail = productgraphic.description
                                             let pricecalculate = container.price
-                                            console.log('container.price', container.price)
                                             let calculatefreight = 0
-                                            if ((item.width / 100) * (item.hight / 100) > 2) {
+                                            if (((item.width / 100) * (item.hight / 100) * item.quantity) > 2) {
                                                 calculatefreight = (((item.width / 100) * (item.hight / 100) * item.quantity) - 1) * 10;
                                             }
 
@@ -298,9 +297,7 @@ module.exports.order = async (req, res) => {
 
                                             const freight = productgraphic.detail === "ราคาต่อตารางเมตร" ? container.freight + calculatefreight : container.freight
                                             totalPriceWithoutFreight += pricecalculate * item.quantity;
-                                            console.log('totalPriceWithoutFreight', pricecalculate)
                                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
-                                            console.log('dfgdfgdfgdfgdfgdfgdfg', totalPriceWithFreight, totalPriceWithoutFreight, freight)
 
                                             orders.push({
                                                 packageid: container._id,
@@ -308,7 +305,7 @@ module.exports.order = async (req, res) => {
                                                 packagedetail: packagedetail,
                                                 quantity: item.quantity,
                                                 plateformprofit: plateformprofit,
-                                                price: totalPriceWithFreight,
+                                                price: totalPriceWithoutFreight,
                                                 freight: freight
                                             })
                                         } else {
