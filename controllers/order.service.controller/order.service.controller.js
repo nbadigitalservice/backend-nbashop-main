@@ -10,6 +10,7 @@ const { ItsupportPackage } = require('../../models/itsupport.model/itsupport.pac
 const { WebsitePackageModel } = require('../../models/website.package.model/website.package.model')
 const { ProductGraphicPrice } = require('../../models/pos.models/product.graphic.price.model')
 const { Partners } = require('../../models/pos.models/partner.model')
+const mongoose = require('mongoose')
 const axios = require('axios')
 const cryptoJs = require('crypto-js')
 const dayjs = require('dayjs')
@@ -113,19 +114,72 @@ module.exports.GetAll = async (req, res) => {
 //get order by id
 module.exports.GetById = async (req, res) => {
   try {
-    const orderservice = await OrderServiceModel.findById(req.params.id)
-    if (!orderservice) {
-      return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' })
+    const id = mongoose.Types.ObjectId(req.params.id); // Convert id to ObjectId
+    const pipeline = [
+      {
+        $match: { _id: id }
+      },
+      {
+        $addFields: {
+          orderId: { $toString: "$_id" }
+        }
+      },
+      {
+        $lookup: {
+          from: "orderdelivers",
+          localField: "orderId",
+          foreignField: "orderid",
+          as: "deliverdata"
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          receiptnumber: 1,
+          picture: 1,
+          customer_contact: 1,
+          customer_name: 1,
+          customer_tel: 1,
+          customer_iden_id: 1,
+          customer_line: 1,
+          partnername: 1,
+          servicename: 1,
+          shopid: 1,
+          shop_partner_type: 1,
+          branch_name: 1,
+          product_detail: 1,
+          paymenttype: 1,
+          moneyreceive: 1,
+          debit: 1,
+          credit: 1,
+          totalCost: 1,
+          totalprice: 1,
+          totalFreight: 1,
+          change: 1,
+          status: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          deliverdata: 1 // Use 1 to include the field
+        }
+      }
+    ];
 
-    } else {
-      return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: orderservice })
-    }
+    const orderWithDeliver = await OrderServiceModel.aggregate(pipeline).exec();
 
+    return res.status(200).send({
+      status: true,
+      message: 'ดึงข้อมูลสำเร็จ',
+      data: orderWithDeliver
+    });
   } catch (error) {
-    console.error(error)
-    res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
+    console.error(error);
+    res.status(500).send({
+      message: "มีบางอย่างผิดพลาด",
+      error: "server side error"
+    });
   }
-}
+};
+
 
 module.exports.GetTotalPriceSumByTel = async (req, res) => {
   try {
