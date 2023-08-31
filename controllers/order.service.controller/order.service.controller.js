@@ -95,6 +95,7 @@ module.exports.GetAll = async (req, res) => {
           totalFreight: 1,
           change: 1,
           status: 1,
+          createdAt: 1,
           deliverdata: "$deliverdata"
         }
       }
