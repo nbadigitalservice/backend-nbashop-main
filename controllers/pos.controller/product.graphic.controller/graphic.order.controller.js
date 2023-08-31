@@ -41,7 +41,11 @@ module.exports.order = async (req, res) => {
                             let totalPriceWithoutFreight = 0
 
                             if (productgraphic.detail === "ราคาต่อตารางเมตร") {
-                                totalCost += ((graphicpackage.cost_NBA + graphicpackage.profit_NBA) * ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100))) * req.body.product_detail[0].quantity
+                                if ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) < 1) {
+                                    totalCost += (graphicpackage.cost_NBA + graphicpackage.profit_NBA) * req.body.product_detail[0].quantity
+                                } else {
+                                    totalCost += ((graphicpackage.cost_NBA + graphicpackage.profit_NBA) * ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100))) * req.body.product_detail[0].quantity
+                                }
                             } else {
                                 totalCost += (graphicpackage.cost_NBA + graphicpackage.profit_NBA) * req.body.product_detail[0].quantity
                             }
@@ -52,14 +56,17 @@ module.exports.order = async (req, res) => {
 
                             if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                                 packagedetail = `${req.body.product_detail[0].width}*${req.body.product_detail[0].hight} ${productgraphic.description}`
-                                pricecalculate *= (req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100)
+                                if ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) < 1) {
+                                    pricecalculate = graphicpackage.price
+                                } else {
+                                    pricecalculate *= (req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100)
+                                }
                             }
 
                             const freight = productgraphic.detail === "ราคาต่อตารางเมตร" ? graphicpackage.freight + calculatefreight : graphicpackage.freight
                             totalPriceWithoutFreight += pricecalculate * req.body.product_detail[0].quantity;
                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
                             const commissioncal = totalPriceWithoutFreight - totalCost
-                            console.log('commissioncal', commissioncal, totalPriceWithoutFreight, totalCost)
 
                             const change = req.body.moneyreceive - totalPriceWithFreight
 
@@ -261,6 +268,7 @@ module.exports.order = async (req, res) => {
 
                                             let packagedetail = productgraphic.description
                                             let pricecalculate = container.price
+                                            console.log('container.price', container.price)
                                             let calculatefreight = 0
                                             if ((item.width / 100) * (item.hight / 100) > 2) {
                                                 calculatefreight = (((item.width / 100) * (item.hight / 100) * item.quantity) - 1) * 10;
@@ -268,21 +276,31 @@ module.exports.order = async (req, res) => {
 
                                             if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                                                 packagedetail = `${item.width}*${item.hight} ${productgraphic.description}`
-                                                pricecalculate *= (item.width / 100) * (item.hight / 100)
+                                                if ((item.width / 100) * (item.hight / 100) < 1) {
+                                                    pricecalculate = container.price
+                                                } else {
+                                                    pricecalculate *= (item.width / 100) * (item.hight / 100)
+                                                }
                                             } else {
                                                 packagedetail = productgraphic.description
                                                 pricecalculate = container.price
                                             }
 
                                             if (productgraphic.detail === "ราคาต่อตารางเมตร") {
-                                                totalCost += ((container.cost_NBA + container.profit_NBA) * ((item.width / 100) * (item.hight / 100))) * item.quantity
+                                                if ((item.width / 100) * (item.hight / 100) < 1) {
+                                                    totalCost += (container.cost_NBA + container.profit_NBA) * item.quantity
+                                                } else {
+                                                    totalCost += ((container.cost_NBA + container.profit_NBA) * ((item.width / 100) * (item.hight / 100))) * item.quantity
+                                                }
                                             } else {
                                                 totalCost += (container.cost_NBA + container.profit_NBA) * item.quantity
                                             }
 
                                             const freight = productgraphic.detail === "ราคาต่อตารางเมตร" ? container.freight + calculatefreight : container.freight
                                             totalPriceWithoutFreight += pricecalculate * item.quantity;
+                                            console.log('totalPriceWithoutFreight', pricecalculate)
                                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
+                                            console.log('dfgdfgdfgdfgdfgdfgdfg', totalPriceWithFreight, totalPriceWithoutFreight, freight)
 
                                             orders.push({
                                                 packageid: container._id,
