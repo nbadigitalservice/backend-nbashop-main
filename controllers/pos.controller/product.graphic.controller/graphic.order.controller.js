@@ -1,5 +1,6 @@
 const { ProductGraphic } = require('../../../models/pos.models/product.graphic.model')
 const { ProductGraphicPrice } = require('../../../models/pos.models/product.graphic.price.model')
+const { ProductGraphicCategory } = require('../../../models/pos.models/product.graphic.category.model')
 const { OrderServiceModel, validate } = require('../../../models/order.service.model/order.service.model')
 const { WalletHistory } = require('../../../models/wallet.history.model')
 const { Shop } = require('../../../models/pos.models/shop.model')
@@ -39,7 +40,7 @@ module.exports.order = async (req, res) => {
                             let totalCost = 0
                             let totalPriceWithoutFreight = 0
 
-                            if (productgraphic.category === "ไวนิล (vinyl)") {
+                            if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                                 totalCost += ((graphicpackage.cost_NBA + graphicpackage.profit_NBA) * ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100))) * req.body.product_detail[0].quantity
                             } else {
                                 totalCost += (graphicpackage.cost_NBA + graphicpackage.profit_NBA) * req.body.product_detail[0].quantity
@@ -49,12 +50,12 @@ module.exports.order = async (req, res) => {
                                 calculatefreight = ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) - 1) * 10;
                             }
 
-                            if (productgraphic.category === "ไวนิล (vinyl)") {
+                            if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                                 packagedetail = `${req.body.product_detail[0].width}*${req.body.product_detail[0].hight} ${productgraphic.description}`
                                 pricecalculate *= (req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100)
                             }
 
-                            const freight = productgraphic.category === "ไวนิล (vinyl)" ? graphicpackage.freight + calculatefreight : graphicpackage.freight
+                            const freight = productgraphic.detail === "ราคาต่อตารางเมตร" ? graphicpackage.freight + calculatefreight : graphicpackage.freight
                             totalPriceWithoutFreight += pricecalculate * req.body.product_detail[0].quantity;
                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
                             const commissioncal = totalPriceWithoutFreight - totalCost
@@ -253,9 +254,11 @@ module.exports.order = async (req, res) => {
                                 for (let item of req.body.product_detail) {
                                     const container = await ProductGraphicPrice.findOne({ _id: item.packageid });
                                     if (container) {
+
                                         const productgraphic = await ProductGraphic.findOne({ _id: container.product_graphic_id })
                                         if (productgraphic) {
                                             const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
+
                                             let packagedetail = productgraphic.description
                                             let pricecalculate = container.price
                                             let calculatefreight = 0
@@ -263,18 +266,21 @@ module.exports.order = async (req, res) => {
                                                 calculatefreight = (((item.width / 100) * (item.hight / 100) * item.quantity) - 1) * 10;
                                             }
 
-                                            if (productgraphic.category === "ไวนิล (vinyl)") {
+                                            if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                                                 packagedetail = `${item.width}*${item.hight} ${productgraphic.description}`
                                                 pricecalculate *= (item.width / 100) * (item.hight / 100)
+                                            } else {
+                                                packagedetail = productgraphic.description
+                                                pricecalculate = container.price
                                             }
 
-                                            if (productgraphic.category === "ไวนิล (vinyl)") {
+                                            if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                                                 totalCost += ((container.cost_NBA + container.profit_NBA) * ((item.width / 100) * (item.hight / 100))) * item.quantity
                                             } else {
                                                 totalCost += (container.cost_NBA + container.profit_NBA) * item.quantity
                                             }
 
-                                            const freight = productgraphic.category === "ไวนิล (vinyl)" ? container.freight + calculatefreight : container.freight
+                                            const freight = productgraphic.detail === "ราคาต่อตารางเมตร" ? container.freight + calculatefreight : container.freight
                                             totalPriceWithoutFreight += pricecalculate * item.quantity;
                                             const totalPriceWithFreight = totalPriceWithoutFreight + freight;
 
