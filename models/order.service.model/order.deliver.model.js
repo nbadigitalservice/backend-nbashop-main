@@ -9,6 +9,10 @@ const orderdeliver = new mongoose.Schema({
             imgUrl: { type: String, required: true },
         }]
     },
+    file: { 
+        type: [{
+        fileUrl: { type: String, required: true },
+    }] },
     transport: { type: String },
     trackingNo: { type: String },
     timestamp: { type: Date, default: Date.now }

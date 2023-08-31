@@ -340,11 +340,15 @@ module.exports.DeliverOrder = async (req, res) => {
         return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
       }
 
-      const pictures = []
+      const pictures = [];
+      const files = [];
 
       for (var i = 0; i < req.files.length; i++) {
+        if(req.files.type ==='')
         await uploadFileCreate(req.files, res, { i, pictures });
       }
+
+
 
       for (const picture of pictures) {
         picture.imgUrl = picture.imgUrl.replace('&export=download', '');
@@ -355,6 +359,7 @@ module.exports.DeliverOrder = async (req, res) => {
         orderid: orderId,
         detail: req.body.detail,
         picture: pictures,
+        // file: 
         transport: req.body.transport,
         trackingNo: req.body.trackingNo,
       }
