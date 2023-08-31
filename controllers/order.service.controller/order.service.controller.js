@@ -54,15 +54,59 @@ module.exports.confirm = async (req, res) => {
 //get All order
 module.exports.GetAll = async (req, res) => {
   try {
-    console.log(req.decoded)
-    const orderservice = await OrderServiceModel.find()
-    return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: orderservice })
+    // const orderservice = await OrderServiceModel.find();
 
+    const pipeline = [
+      {
+        $addFields: {
+          orderId: { $toString: "$_id" }
+        }
+      },
+      {
+        $lookup: {
+          from: "orderdelivers",
+          localField: "orderId",
+          foreignField: "orderid",
+          as: "deliverdata"
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          receiptnumber: 1,
+          picture: 1,
+          customer_contact: 1,
+          customer_name: 1,
+          customer_tel: 1,
+          customer_iden_id: 1,
+          customer_line: 1,
+          partnername: 1,
+          servicename: 1,
+          shopid: 1,
+          shop_partner_type: 1,
+          branch_name: 1,
+          product_detail: 1,
+          paymenttype: 1,
+          moneyreceive: 1,
+          debit: 1,
+          credit: 1,
+          totalCost: 1,
+          totalprice: 1,
+          totalFreight: 1,
+          change: 1,
+          status: 1,
+          deliverdata: "$deliverdata"
+        }
+      }
+    ]
+    const orderiwithdeliver = await OrderServiceModel.aggregate(pipeline).exec()
+
+    return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: orderiwithdeliver });
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: 'server side error' })
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: 'server side error' });
   }
-}
+};
 
 //get order by id
 module.exports.GetById = async (req, res) => {

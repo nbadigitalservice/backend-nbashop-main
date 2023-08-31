@@ -5,6 +5,7 @@ const { ExchangeHistory } = require('../models/exchangepoint.model/exchangehisto
 
 module.exports.GetCommissionByTel = async (req, res) => {
     try {
+        console.log(req.user)
         let tel = req.user.partner_phone
         if (req.user.partner_name === "NBA_PLATEFORM") {
             tel = req.body.tel
@@ -32,10 +33,6 @@ module.exports.GetCommissionByTel = async (req, res) => {
         ];
 
         const result = await Commission.aggregate(pipeline);
-
-        if (result.length === 0) {
-            return res.status(404).send({ message: 'ไม่พบเบอร์ที่ตรงกัน', data: [] });
-        }
 
         return res.status(200).send({ message: 'ดึงข้อมูลสำเร็จ', data: result });
     } catch (error) {
@@ -75,10 +72,6 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
         ];
 
         const result = await Commission.aggregate(pipeline);
-
-        if (result.length === 0) {
-            return res.status(404).send({ message: 'ไม่พบเบอร์ที่ตรงกัน', data: [] });
-        }
 
         const orderIds = result.map(item => item.orderid);
         const services = await OrderServiceModel.find({ _id: { $in: orderIds } }, 'servicename');
@@ -213,8 +206,6 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
         if (req.user.partner_name === "NBA_PLATEFORM") {
             tel = req.body.tel;
         }
-        console.log(tel);
-        
         const pipeline = [
             {
                 $match: { "data.tel": tel }
@@ -255,6 +246,7 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
 
 module.exports.GetHappyPointByTel = async (req, res) => {
     try {
+        console.log(req.user)
         let tel = req.user.partner_phone;
         if (req.user.partner_name === "NBA_PLATEFORM") {
             tel = req.body.tel;
@@ -298,6 +290,7 @@ module.exports.GetHappyPointByTel = async (req, res) => {
         ];
 
         const allSaleResult = await Commission.aggregate(allSalePipeline);
+        console.log(allSaleResult)
 
         // Calculate happy point by subtracting exchange points from total all sale
         const totalExchangePoints = exchangeResult.length > 0 ? exchangeResult[0].totalExchangePoints : 0;
@@ -305,6 +298,7 @@ module.exports.GetHappyPointByTel = async (req, res) => {
         const happyPoint = totalAllSale - totalExchangePoints;
 
         return res.status(200).send({ message: 'Success', happyPoint: happyPoint });
+
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: 'An error occurred', data: error.data });
