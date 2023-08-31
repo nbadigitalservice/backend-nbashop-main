@@ -430,11 +430,6 @@ module.exports.DeliverOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
 
-    // Check if the order is already cancelled
-    if (order.status === 'เรียบร้อย') {
-      return res.status(200).send({ message: 'ออร์เดอร์ถูกส่งงานแล้ว' });
-    }
-
     const order = await OrderServiceModel.findOne({ _id: orderId });
     if (!order) {
       return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
@@ -473,6 +468,10 @@ module.exports.DeliverOrder = async (req, res) => {
 
       for (const picture of pictures) {
         picture.imgUrl = picture.imgUrl.replace('&export=download', '');
+      }
+
+      for (const file of files) {
+        file.fileUrl = file.fileUrl.replace('&export=download', '');
       }
 
       //create collection
