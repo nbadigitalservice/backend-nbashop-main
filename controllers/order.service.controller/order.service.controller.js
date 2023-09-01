@@ -97,6 +97,7 @@ module.exports.GetAll = async (req, res) => {
           totalFreight: 1,
           change: 1,
           status: 1,
+          timestamp: 1,
           createdAt: 1,
           updatedAt: 1,
           deliverdata: "$deliverdata"
@@ -159,6 +160,7 @@ module.exports.GetById = async (req, res) => {
           totalFreight: 1,
           change: 1,
           status: 1,
+          timestamp: 1,
           createdAt: 1,
           updatedAt: 1,
           deliverdata: 1 // Use 1 to include the field
