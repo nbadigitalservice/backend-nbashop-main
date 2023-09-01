@@ -59,7 +59,7 @@ module.exports.order = async (req, res) => {
                                 if ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100) < 1) {
                                     pricecalculate = graphicpackage.price
                                 } else {
-                                    pricecalculate *= (req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100)
+                                    pricecalculate *= ((req.body.product_detail[0].width / 100) * (req.body.product_detail[0].hight / 100))
                                 }
                             }
 
@@ -278,7 +278,7 @@ module.exports.order = async (req, res) => {
                                                 if ((item.width / 100) * (item.hight / 100) < 1) {
                                                     pricecalculate = container.price
                                                 } else {
-                                                    pricecalculate *= (item.width / 100) * (item.hight / 100)
+                                                    pricecalculate *= ((item.width / 100) * (item.hight / 100))
                                                 }
                                             } else {
                                                 packagedetail = productgraphic.description
@@ -297,7 +297,7 @@ module.exports.order = async (req, res) => {
 
                                             const freight = productgraphic.detail === "ราคาต่อตารางเมตร" ? container.freight + calculatefreight : container.freight
                                             totalPriceWithoutFreight += pricecalculate * item.quantity;
-                                            const totalPriceWithFreight = totalPriceWithoutFreight + freight;
+                                            // const totalPriceWithFreight = totalPriceWithoutFreight + freight;
 
                                             orders.push({
                                                 packageid: container._id,

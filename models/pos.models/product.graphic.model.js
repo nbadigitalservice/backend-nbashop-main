@@ -5,7 +5,7 @@ const ProductGraphicSchema = new mongoose.Schema({
 
     name:{type:String, required:true,unique:true},
     category:{type:String, required:true},
-    detail:{type:String,required:true},
+    detail:{type:String, enum: ['ราคาต่อตารางเมตร', 'ราคาต่อชิ้น', 'ราคาต่อชุด'], required:true},
     description:{type:String},
     imgUrl:{type:[String]},
   
