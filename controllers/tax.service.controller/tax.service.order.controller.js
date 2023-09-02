@@ -317,6 +317,10 @@ module.exports.ConfirmByCustomer = async (req, res) => {
         // Find the taxreverse document by ID
         const taxreverse = await TaxReverseModel.findById(req.params.id);
 
+        if (taxreverse.status === "ลูกค้ายืนยันแล้ว") {
+            return res.status(403).send({ message: 'ลูกค้าได้ทำการยืนยันไปแล้ว' })
+        }
+
         if (!taxreverse) {
             return res.status(404).send({ message: 'Tax reverse document not found' });
         }
