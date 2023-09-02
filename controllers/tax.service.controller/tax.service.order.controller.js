@@ -292,17 +292,19 @@ module.exports.confirm = async (req, res) => {
         } else {
             servicecharge = 100
         }
+        let reverse_price = 0
+        reverse_price = req.body.price + req.body.tax_value + req.body.tax_mulct_value + req.body.traffic_mulct_value + req.body.other + servicecharge
         const data = {
             orderid: updateStatus._id,
+            shopid: updateStatus.shopid,
             name: updateStatus.product_detail[0].packagename,
             price: req.body.price,
-            reverse_price: req.body.reverse_price + servicecharge,
+            reverse_price: reverse_price,
             servicecharge: servicecharge,
             tax_value: req.body.tax_value,
             tax_mulct_value: req.body.tax_mulct_value,
             traffic_mulct_value: req.body.traffic_mulct_value,
-            other: req.body.other,
-            status: 'รอการยืนยันจากลูกค้า'
+            other: req.body.other
         }
         const taxrevers = new TaxReverseModel(data)
         await taxrevers.save()
