@@ -465,6 +465,7 @@ module.exports.ConfirmByCustomer = async (req, res) => {
 
         // Save the updated orderservice document
         await orderServiceToUpdate.save();
+        await TaxReverseModel.findByIdAndUpdate(taxreverse._id, { status : 'ลูกค้ายืนยันแล้ว' })
 
         return res.status(200).send({ message: 'Order service document updated successfully', data: orderServiceToUpdate });
     } catch (error) {
