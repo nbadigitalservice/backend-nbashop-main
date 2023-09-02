@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const TaxServiceCategory = require('../../controllers/tax.service.controller/tax.service.category.controller')
 const TaxServicePackage = require('../../controllers/tax.service.controller/tax.service.package.controller')
+const TaxOrder = require('../../controllers/tax.service.controller/tax.service.order.controller')
 // const InsuranceOrder = require('../../controllers/insurance.service.controller/insurance.service.order.controller')
 const auth = require("../../lib/auth");
 const authAdmin = require('../../lib/auth.admin');
@@ -21,6 +22,9 @@ router.put("/package/update/:id", authAdmin, TaxServicePackage.update);
 router.delete("/package/delete/:id", authAdmin, TaxServicePackage.delete);
 
 //order
-// router.post("/order", auth, InsuranceOrder.order)
+router.post("/order", auth, TaxOrder.order)
+router.put("/order/updatepicture/:id", auth, TaxOrder.updatePictures)
+router.post("/order/confirm/:id", authAdmin, TaxOrder.confirm)
+router.post("/order/cusconfirm/:id", authAdmin, TaxOrder.ConfirmByCustomer)
 
 module.exports = router

@@ -5,7 +5,7 @@ const taxpackage = new mongoose.Schema({
     categoryid: {type: String, required: true},
     picture: {type: String, required: true},
     name: {type: String, required: true, unique: true},
-    detail: {type:  String},
+    detail: {type: String},
     price: {type: Number},
     cost: {type: Number},
     profitbeforeallocate: {type: Number},
