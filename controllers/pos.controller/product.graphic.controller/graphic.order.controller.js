@@ -266,7 +266,7 @@ module.exports.order = async (req, res) => {
                                         if (productgraphic) {
                                             const plateformprofit = container.price - (container.profit_NBA + container.cost_NBA)
 
-                                            let packagedetail = `${productgraphic.description} ${req.body.detail}`
+                                            let packagedetail = `${productgraphic.description} ${item.detail}`
                                             let pricecalculate = container.price
                                             let calculatefreight = 0
                                             if (((item.width / 100) * (item.hight / 100) * item.quantity) > 2) {
@@ -274,14 +274,14 @@ module.exports.order = async (req, res) => {
                                             }
 
                                             if (productgraphic.detail === "ราคาต่อตารางเมตร") {
-                                                packagedetail = `${item.width}*${item.hight} ${productgraphic.description} ${req.body.detail}`
+                                                packagedetail = `${item.width}*${item.hight} ${productgraphic.description} ${item.detail}`
                                                 if ((item.width / 100) * (item.hight / 100) < 1) {
                                                     pricecalculate = container.price
                                                 } else {
                                                     pricecalculate *= ((item.width / 100) * (item.hight / 100))
                                                 }
                                             } else {
-                                                packagedetail = `${productgraphic.description} ${req.body.detail}`
+                                                packagedetail = `${productgraphic.description} ${item.detail}`
                                                 pricecalculate = container.price
                                             }
 
