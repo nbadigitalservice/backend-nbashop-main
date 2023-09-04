@@ -344,7 +344,7 @@ module.exports.ConfirmByCustomer = async (req, res) => {
         price += taxreverse.price + (taxreverse.tax_value || 0) + (taxreverse.tax_mulct_value || 0) + (taxreverse.traffic_mulct_value || 0) + (taxreverse.other || 0);
 
         // Calculate the new totalprice (if needed)
-        const totalprice = taxreverse.reverse_price - taxreverse.servicecharge;
+        const totalprice = taxreverse.reverse_price;
 
         // Find and update the corresponding orderservice document
         const orderServiceIdToUpdate = taxreverse.orderid;
