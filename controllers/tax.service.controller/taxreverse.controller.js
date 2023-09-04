@@ -1,6 +1,7 @@
 const { TaxReverseModel } = require('../../models/tax.service.model/tax.service.reverse.model')
 const { Partners } = require('../../models/pos.models/partner.model')
 const { Shop } = require('../../models/pos.models/shop.model')
+const { Employee } = require('../../models/pos.models/employee.model')
 
 module.exports.GetByOrderId = async (req, res) => {
     try {
@@ -37,8 +38,8 @@ module.exports.GetByOrderId = async (req, res) => {
 module.exports.GetByShopId = async (req, res) => {
     try {
         const id = req.user._id;
-        const partner = await Partners.findById(id);
-        const findShop = await Shop.findOne({ shop_partner_id: partner._id });
+        const employee = await Employee.findById(id);
+        const findShop = await Shop.findOne({ _id: employee.employee_shop_id });
         let shopId = findShop._id.toString()
         console.log(shopId)
         

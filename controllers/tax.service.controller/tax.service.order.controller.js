@@ -282,36 +282,45 @@ module.exports.updatePictures = async (req, res) => {
 };
 
 module.exports.confirm = async (req, res) => {
+    try {
+        const updateStatus = await OrderServiceModel.findOne({ _id: req.params.id })
 
-    const updateStatus = await OrderServiceModel.findOne({ _id: req.params.id })
-    if (updateStatus) {
-        const taxpackage = await TaxPackageModel.findById(updateStatus.product_detail[0].packageid)
-        let servicecharge = 0
-        if (taxpackage.categoryid === "ต่อภาษีรถจักรยานต์ยนต์") {
-            servicecharge = 50
+        if (updateStatus.status === "กำลังดำเนินการ") {
+            return res.status(403).send({ message: 'แอดมินได้ทำการคอนเฟิร์มออเดอร์นี้ไปแล้ว' })
+        }
+
+        if (updateStatus) {
+            const taxpackage = await TaxPackageModel.findById(updateStatus.product_detail[0].packageid)
+            let servicecharge = 0
+            if (taxpackage.categoryid === "ต่อภาษีรถจักรยานต์ยนต์") {
+                servicecharge = 50
+            } else {
+                servicecharge = 100
+            }
+            let reverse_price = 0
+            reverse_price = req.body.price + req.body.tax_value + req.body.tax_mulct_value + req.body.traffic_mulct_value + req.body.other + servicecharge
+            const data = {
+                orderid: updateStatus._id,
+                shopid: updateStatus.shopid,
+                name: updateStatus.product_detail[0].packagename,
+                price: req.body.price,
+                reverse_price: reverse_price,
+                servicecharge: servicecharge,
+                tax_value: req.body.tax_value,
+                tax_mulct_value: req.body.tax_mulct_value,
+                traffic_mulct_value: req.body.traffic_mulct_value,
+                other: req.body.other
+            }
+            const taxrevers = new TaxReverseModel(data)
+            await taxrevers.save()
+            await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'กำลังดำเนินการ' })
         } else {
-            servicecharge = 100
-        }
-        let reverse_price = 0
-        reverse_price = req.body.price + req.body.tax_value + req.body.tax_mulct_value + req.body.traffic_mulct_value + req.body.other + servicecharge
-        const data = {
-            orderid: updateStatus._id,
-            shopid: updateStatus.shopid,
-            name: updateStatus.product_detail[0].packagename,
-            price: req.body.price,
-            reverse_price: reverse_price,
-            servicecharge: servicecharge,
-            tax_value: req.body.tax_value,
-            tax_mulct_value: req.body.tax_mulct_value,
-            traffic_mulct_value: req.body.traffic_mulct_value,
-            other: req.body.other
-        }
-        const taxrevers = new TaxReverseModel(data)
-        await taxrevers.save()
-        await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'กำลังดำเนินการ' })
-    } else {
-        return res.status(403).send({ message: 'เกิดข้อผิดพลาด' })
-    } return res.status(200).send({ message: 'คอนเฟิร์มออร์เดอร์สำเร็จ' })
+            return res.status(403).send({ message: 'เกิดข้อผิดพลาด' })
+        } return res.status(200).send({ message: 'คอนเฟิร์มออร์เดอร์สำเร็จ' })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({ message: 'Internal Server', data: error })
+    }
 }
 
 module.exports.ConfirmByCustomer = async (req, res) => {
@@ -471,7 +480,7 @@ module.exports.ConfirmByCustomer = async (req, res) => {
 
         // Save the updated orderservice document
         await orderServiceToUpdate.save();
-        await TaxReverseModel.findByIdAndUpdate(taxreverse._id, { status : 'ลูกค้ายืนยันแล้ว' })
+        await TaxReverseModel.findByIdAndUpdate(taxreverse._id, { status: 'ลูกค้ายืนยันแล้ว' })
 
         return res.status(200).send({ message: 'Order service document updated successfully', data: orderServiceToUpdate });
     } catch (error) {
