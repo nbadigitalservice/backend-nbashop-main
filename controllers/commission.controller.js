@@ -81,7 +81,7 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
                     vat3percent: '$data.vat3percent',
                     remainding_commission: '$data.remainding_commission',
                     orderid: '$orderid',
-                    orderData: 1
+                    orderData: "$orderData.product_detail"
                 }
             }
         ];
