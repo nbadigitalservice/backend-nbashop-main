@@ -10,6 +10,7 @@ const { ItsupportPackage } = require('../../models/itsupport.model/itsupport.pac
 const { WebsitePackageModel } = require('../../models/website.package.model/website.package.model')
 const { ProductGraphicPrice } = require('../../models/pos.models/product.graphic.price.model')
 const { Partners } = require('../../models/pos.models/partner.model')
+const { Shop } = require('../../models/pos.models/shop.model')
 const mongoose = require('mongoose')
 const axios = require('axios')
 const cryptoJs = require('crypto-js')
@@ -257,7 +258,8 @@ module.exports.cancel = async (req, res) => {
     await canceledOrder.save();
 
     // Find the partner using their ID
-    const partner = await Partners.findOne({ partner_phone: order.customer_tel });
+    const fineShop = await Shop.findOne({ _id: order.shopid })
+    const partner = await Partners.findOne({ _id: fineShop.shop_partner_id });
 
     if (!partner) {
       return res.status(403).send({ message: 'ไม่พบข้อมูลพาร์ทเนอร์' });
