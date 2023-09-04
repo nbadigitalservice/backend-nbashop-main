@@ -395,7 +395,8 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                 return res.status(400).send({ message: 'มีบางอย่างผิดพลาด', data: error.message })
               }
         } else {
-            const partner = await Partners.findOne({ partner_phone: orderServiceToUpdate.customer_tel });
+            const findShop = await Shop.findOne({ _id: orderServiceToUpdate.shopid })
+            const partner = await Partners.findOne({ _id: findShop.shop_partner_id });
             const newWallet = partner.partner_wallet - totalprice;
             await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newWallet });
 
