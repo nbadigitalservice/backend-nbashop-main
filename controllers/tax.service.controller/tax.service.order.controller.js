@@ -7,6 +7,7 @@ const { Partners } = require('../../models/pos.models/partner.model')
 const { Employee } = require('../../models/pos.models/employee.model')
 const getmemberteam = require('../../lib/getPlateformMemberTeam')
 const { Commission } = require('../../models/commission.model')
+const axios = require('axios');
 const jwt = require('jsonwebtoken')
 const dayjs = require('dayjs')
 const multer = require('multer')
@@ -44,9 +45,9 @@ module.exports.order = async (req, res) => {
         //     .status(400)
         //     .send({ status: false, message: error.details[0].message });
         // }
-        const insurancepackage = await TaxPackageModel.findOne({ _id: req.body.product_detail[0].packageid });
-        console.log(insurancepackage);
-        if (insurancepackage) {
+        const taxpackage = await TaxPackageModel.findOne({ _id: req.body.product_detail[0].packageid });
+        console.log(taxpackage);
+        if (taxpackage) {
 
             let token = req.headers['auth-token'];
             token = token.replace(/^Bearer\s+/, "");
@@ -56,6 +57,8 @@ module.exports.order = async (req, res) => {
                         if (err) {
                             return res.status(403).send({ message: 'Not have permission ' })
                         } else {
+                            const totalprice = taxpackage.price * req.body.product_detail[0].quantity
+                            const change = req.body.moneyreceive - totalprice
 
                             //generate receipt number
                             const shop_partner_type = req.body.shop_partner_type
@@ -77,15 +80,15 @@ module.exports.order = async (req, res) => {
                                 branch_name: req.body.branch_name,
                                 branch_id: req.body.branch_id,
                                 product_detail: [{
-                                    packageid: insurancepackage._id,
-                                    packagename: insurancepackage.name,
-                                    packagedetail: insurancepackage.detail,
+                                    packageid: taxpackage._id,
+                                    packagename: taxpackage.name,
+                                    packagedetail: taxpackage.detail,
                                     quantity: req.body.product_detail[0].quantity,
-                                    price: insurancepackage.price,
+                                    price: taxpackage.price,
                                 }],
                                 paymenttype: req.body.paymenttype,
                                 moneyreceive: req.body.moneyreceive,
-                                totalCost: insurancepackage.cost + insurancepackage.nbaprofit,
+                                totalCost: taxpackage.cost + taxpackage.nbaprofit,
                                 totalprice: totalprice,
                                 change: change
                             }
@@ -328,9 +331,9 @@ module.exports.ConfirmByCustomer = async (req, res) => {
         // Find the taxreverse document by ID
         const taxreverse = await TaxReverseModel.findById(req.params.id);
 
-        if (taxreverse.status === "ลูกค้ายืนยันแล้ว") {
-            return res.status(403).send({ message: 'ลูกค้าได้ทำการยืนยันไปแล้ว' })
-        }
+        // if (taxreverse.status === "ลูกค้ายืนยันแล้ว") {
+        //     return res.status(403).send({ message: 'ลูกค้าได้ทำการยืนยันไปแล้ว' })
+        // }
 
         if (!taxreverse) {
             return res.status(404).send({ message: 'Tax reverse document not found' });
@@ -355,11 +358,61 @@ module.exports.ConfirmByCustomer = async (req, res) => {
         orderServiceToUpdate.totalCost = price;
         orderServiceToUpdate.totalprice = totalprice;
 
-        // Deduct money from the partner's wallet
-        const partner = await Partners.findOne({ partner_phone: orderServiceToUpdate.customer_tel });
-        const newWallet = partner.partner_wallet - totalprice;
-        await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newWallet });
+        // Deduct money from wallet
+        if (orderServiceToUpdate.partnername === "platform") {
+            let tel = orderServiceToUpdate.customer_tel
+            let data = {
+                servicename: orderServiceToUpdate.servicename,
+                receiptnumber: orderServiceToUpdate.receiptnumber,
+                totalprice: orderServiceToUpdate.totalprice
+            }
+            const request = {
+                method: 'post',
+                headers: {
+                  'token': process.env.NBA_PLATFORM_PUBLIC_KEY,
+                  'Content-Type': 'application/json'
+                },
+                url: `${process.env.NBA_PLATFORM}member/confirm`,
+                data: { tel: tel, data: data }
+              }
+              try {
+                const response = await axios(request)
+                if (response) {
+                  // create wallet history
+                  const wallethistory = {
+                    shop_id: orderServiceToUpdate.shopid,
+                    partner_id: 'platform',
+                    orderid: orderServiceToUpdate._id,
+                    name: `รายการสั่งซื้อ ${orderServiceToUpdate.servicename} ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
+                    type: 'เงินออก',
+                    amount: totalprice,
+                  }
+                  const walletHistory = new WalletHistory(wallethistory)
+                  walletHistory.save()
+                }
+              } catch (error) {
+                console.log(error)
+                return res.status(400).send({ message: 'มีบางอย่างผิดพลาด', data: error.message })
+              }
+        } else {
+            const partner = await Partners.findOne({ partner_phone: orderServiceToUpdate.customer_tel });
+            const newWallet = partner.partner_wallet - totalprice;
+            await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newWallet });
 
+            // Create wallet history
+            const wallethistory = {
+                shop_id: orderServiceToUpdate.shopid,
+                partner_id: partner._id,
+                orderid: orderServiceToUpdate._id,
+                name: `รายการสั่งซื้อ Tax Service(ภาษี) ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
+                type: 'เงินออก',
+                amount: totalprice,
+            };
+
+            const walletHistory = new WalletHistory(wallethistory);
+            await walletHistory.save();
+        }
+        
         // Calculate commissions
         let taxcal = taxreverse.servicecharge
         if (taxcal == 50) {
@@ -464,19 +517,6 @@ module.exports.ConfirmByCustomer = async (req, res) => {
         // Create and save commission data
         const givecommission = new Commission(commissionData);
         await givecommission.save();
-
-        // Create wallet history
-        const wallethistory = {
-            shop_id: orderServiceToUpdate.shopid,
-            partner_id: partner._id,
-            orderid: orderServiceToUpdate._id,
-            name: `รายการสั่งซื้อ Tax Service(ภาษี) ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
-            type: 'เงินออก',
-            amount: totalprice,
-        };
-
-        const walletHistory = new WalletHistory(wallethistory);
-        await walletHistory.save();
 
         // Save the updated orderservice document
         await orderServiceToUpdate.save();

@@ -33,7 +33,7 @@ module.exports.order = async (req, res) => {
             } else {
               const totalprice = websitepackage.price * req.body.product_detail[0].quantity
               const change = req.body.moneyreceive - totalprice
-              const totalplateformprofit = facebookpackage.plateformprofit * req.body.product_detail[0].quantity
+              const totalplateformprofit = websitepackage.plateformprofit * req.body.product_detail[0].quantity
 
               //commission
               //calculation from 100%
