@@ -208,9 +208,6 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
         }
         const pipeline = [
             {
-                $match: { "data.tel": tel }
-            },
-            {
                 $unwind: '$data'
             },
             {

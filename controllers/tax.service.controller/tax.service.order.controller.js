@@ -117,7 +117,7 @@ module.exports.order = async (req, res) => {
                         } else {
                             const partner = await Partners.findById({ _id: findshop.shop_partner_id });
                             //check partner wallet
-                            if (partner.partner_wallet < insurancepackage.price) {
+                            if (partner.partner_wallet < taxpackage.price) {
                                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
                             } else {
 
@@ -230,18 +230,19 @@ module.exports.order = async (req, res) => {
 
 module.exports.updatePictures = async (req, res) => {
     try {
+        console.log(req.body)
         const id = req.params.id;
 
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
             if (err) {
-                return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
+                return res.status(403).send({ message: 'มีบางอย่างผิดพลาดfffff', data: err.data });
             }
 
             const reqFiles = [];
 
             if (!req.files) {
-                return res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
+                return res.status(500).send({ message: "มีบางอย่างผิดพลาดgggggg", data: 'No Request Files', status: false });
             }
 
             const url = req.protocol + "://" + req.get("host");
