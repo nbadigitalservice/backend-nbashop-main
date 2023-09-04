@@ -163,7 +163,7 @@ module.exports.GetById = async (req, res) => {
           timestamp: 1,
           createdAt: 1,
           updatedAt: 1,
-          deliverdata: 1 // Use 1 to include the field
+          deliverdata: 1 
         }
       }
     ];

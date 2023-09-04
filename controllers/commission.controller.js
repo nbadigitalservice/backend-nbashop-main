@@ -47,6 +47,7 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
         if (req.user.partner_name === "NBA_PLATEFORM") {
             tel = req.body.tel
         }
+        console.log(tel)
         const pipeline = [
             {
                 $unwind: '$data'
@@ -55,9 +56,22 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
                 $match: { 'data.tel': tel }
             },
             {
+                $addFields: {
+                    orderId: { $toObjectId: "$orderid" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "orderservices",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "orderData"
+                }
+            },
+            {
                 $project: {
                     _id: 0,
-                    timestamp: 1,
+                    createdAt: 1,
                     tel: '$data.tel',
                     iden: '$data.iden',
                     name: '$data.name',
@@ -66,20 +80,13 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
                     commission_amount: '$data.commission_amount',
                     vat3percent: '$data.vat3percent',
                     remainding_commission: '$data.remainding_commission',
-                    orderid: '$orderid'
+                    orderid: '$orderid',
+                    orderData: 1
                 }
             }
         ];
 
         const result = await Commission.aggregate(pipeline);
-
-        const orderIds = result.map(item => item.orderid);
-        const services = await OrderServiceModel.find({ _id: { $in: orderIds } }, 'servicename');
-
-        result.forEach(item => {
-            const service = services.find(service => service._id.toString() === item.orderid);
-            item.servicename = service ? service.servicename : 'N/A';
-        });
 
         return res.status(200).send({ message: 'ดึงข้อมูลสำเร็จ', data: result });
     } catch (error) {

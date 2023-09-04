@@ -230,19 +230,18 @@ module.exports.order = async (req, res) => {
 
 module.exports.updatePictures = async (req, res) => {
     try {
-        console.log(req.body)
         const id = req.params.id;
 
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
             if (err) {
-                return res.status(403).send({ message: 'มีบางอย่างผิดพลาดfffff', data: err.data });
+                return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err.data });
             }
 
             const reqFiles = [];
 
             if (!req.files) {
-                return res.status(500).send({ message: "มีบางอย่างผิดพลาดgggggg", data: 'No Request Files', status: false });
+                return res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
             }
 
             const url = req.protocol + "://" + req.get("host");
@@ -332,9 +331,9 @@ module.exports.ConfirmByCustomer = async (req, res) => {
         // Find the taxreverse document by ID
         const taxreverse = await TaxReverseModel.findById(req.params.id);
 
-        // if (taxreverse.status === "ลูกค้ายืนยันแล้ว") {
-        //     return res.status(403).send({ message: 'ลูกค้าได้ทำการยืนยันไปแล้ว' })
-        // }
+        if (taxreverse.status === "ลูกค้ายืนยันแล้ว") {
+            return res.status(403).send({ message: 'ลูกค้าได้ทำการยืนยันไปแล้ว' })
+        }
 
         if (!taxreverse) {
             return res.status(404).send({ message: 'Tax reverse document not found' });
