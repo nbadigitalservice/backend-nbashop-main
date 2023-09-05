@@ -295,7 +295,7 @@ module.exports.confirm = async (req, res) => {
         if (updateStatus) {
             const taxpackage = await TaxPackageModel.findById(updateStatus.product_detail[0].packageid)
             let servicecharge = 0
-            if (taxpackage.categoryid === "ต่อภาษีรถจักรยานต์ยนต์") {
+            if (taxpackage.categoryid === "รถจักรยานยนต์") {
                 servicecharge = 50
             } else {
                 servicecharge = 100
@@ -563,6 +563,33 @@ async function GenerateRiceiptNumber(shop_partner_type, branch_id) {
         const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
         console.log(count);
         return data;
+    }
+}
+
+module.exports.CancelByCustomer = async (req, res) => {
+    try {
+        const id = req.params.id
+        const findTaxReverse = await TaxReverseModel.findById(id)
+        if (!findTaxReverse) {
+            return res.status(403).send({ message: 'ไม่มีใบเสนอราคานี้อยู่แล้ว' })
+        } else {
+            const findOrder = await OrderServiceModel.findById(findTaxReverse.orderid)
+            if (!findOrder) {
+                return res.status(403).send({ message: 'ไม่มีออร์เดอร์นี้อยู่แล้ว' })
+            } else {
+                if (findTaxReverse.status === "ลูกค้ายกเลิกใบเสนอราคานี้" ||
+                    OrderServiceModel.status === "ถูกยกเลิก") {
+                    return res.status(403).send({ message: 'ใบเสนอราคาและออร์เดอร์นี้ถูกยกเลิกไปแล้ว' })
+                } else {
+                    await TaxReverseModel.findByIdAndUpdate(findTaxReverse._id, { status: 'ลูกค้ายกเลิกใบเสนอราคานี้' })
+                    await OrderServiceModel.findByIdAndUpdate(OrderServiceModel._id, { status: 'ถูกยกเลิก' })
+                }
+                return res.status(200).send({ message: 'ยกเลิกใบเสนอราคาสำเร็จ' })
+            }
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(500).send({ message: 'Internal Server', data: error })
     }
 }
 

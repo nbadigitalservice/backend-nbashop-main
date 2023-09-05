@@ -32,4 +32,7 @@ router.post("/order/cusconfirm/:id", auth, TaxOrder.ConfirmByCustomer)
 router.get("/taxreverse/list/:id", auth, TaxReverse.GetByOrderId)
 router.get("/taxreverse/list", auth, TaxReverse.GetByShopId)
 
+// cancel by customer
+router.put("/taxreverse/cancel/:id", auth, TaxOrder.CancelByCustomer)
+
 module.exports = router
