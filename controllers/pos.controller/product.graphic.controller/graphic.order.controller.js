@@ -296,7 +296,7 @@ module.exports.order = async (req, res) => {
                                             }
 
                                             const freight = productgraphic.detail === "ราคาต่อตารางเมตร" ? container.freight + calculatefreight : container.freight
-                                            totalPriceWithoutFreight += pricecalculate * item.quantity;
+                                            totalPriceWithoutFreight = pricecalculate * item.quantity;
                                             // const totalPriceWithFreight = totalPriceWithoutFreight + freight;
 
                                             orders.push({
@@ -305,7 +305,7 @@ module.exports.order = async (req, res) => {
                                                 packagedetail: packagedetail,
                                                 quantity: item.quantity,
                                                 plateformprofit: plateformprofit,
-                                                price: pricecalculate,
+                                                price: totalPriceWithoutFreight,
                                                 freight: freight
                                             })
                                         } else {
