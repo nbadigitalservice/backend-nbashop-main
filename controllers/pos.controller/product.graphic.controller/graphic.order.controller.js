@@ -305,7 +305,7 @@ module.exports.order = async (req, res) => {
                                                 packagedetail: packagedetail,
                                                 quantity: item.quantity,
                                                 plateformprofit: plateformprofit,
-                                                price: totalPriceWithoutFreight,
+                                                price: pricecalculate,
                                                 freight: freight
                                             })
                                         } else {
