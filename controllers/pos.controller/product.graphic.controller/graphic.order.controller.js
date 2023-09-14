@@ -128,6 +128,7 @@ module.exports.order = async (req, res) => {
                                 totalCost: totalCost,
                                 totalprice: totalPriceWithFreight,
                                 totalFreight: freight,
+                                total: totalPriceWithFreight + freight,
                                 change: change
                             }
                             const order = new OrderServiceModel(data)
@@ -316,7 +317,7 @@ module.exports.order = async (req, res) => {
 
                                 const totalFreight = orders.reduce((accumulator, currentValue) => accumulator + currentValue.freight, 0)
                                 const totalprice = orders.reduce((accumulator, currentValue) => accumulator + currentValue.price, 0)
-                                const commissioncal = totalPriceWithoutFreight - totalCost
+                                const commissioncal = totalprice - totalCost
 
                                 // debitdata
                                 const debitData = [];
@@ -402,6 +403,7 @@ module.exports.order = async (req, res) => {
                                     totalCost: totalCost,
                                     totalprice: price,
                                     totalFreight: totalFreight,
+                                    total: price + totalFreight,
                                     change: change
                                 }
                                 console.log(data)
@@ -501,7 +503,7 @@ module.exports.order = async (req, res) => {
                                                     orderid: findorderid._id,
                                                     name: `รายการสั่งซื้อ Artwork ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
                                                     type: 'เงินออก',
-                                                    amount: findorderid.totalprice,
+                                                    amount: findorderid.total,
                                                 }
                                                 const walletHistory = new WalletHistory(wallethistory)
                                                 walletHistory.save()

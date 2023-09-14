@@ -45,6 +45,7 @@ const orderservice = new mongoose.Schema({
     totalCost: { type: Number, required: true },
     totalprice: { type: Number, required: true },
     totalFreight: { type: Number },
+    total: { type: Number },
     change: { type: Number, required: true },
     status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
     responsible_id: { type: String },
