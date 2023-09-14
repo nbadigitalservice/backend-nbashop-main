@@ -11,6 +11,7 @@ const { WebsitePackageModel } = require('../../models/website.package.model/webs
 const { ProductGraphicPrice } = require('../../models/pos.models/product.graphic.price.model')
 const { Partners } = require('../../models/pos.models/partner.model')
 const { Shop } = require('../../models/pos.models/shop.model')
+const { Order } = require('../../models/pos.models/order.model')
 const mongoose = require('mongoose')
 const axios = require('axios')
 const cryptoJs = require('crypto-js')
@@ -380,6 +381,46 @@ module.exports.acceptTask = async (req, res) => {
     return res.status(500).send({ message: 'มีบางอย่างผิดพลาด', error: error.message });
   }
 }
+
+//delete order
+module.exports.DeleteOrderById = async (req, res) => {
+  
+  try {
+    const orderId = req.params.id;
+    const order = await OrderServiceModel.findOne({ _id: orderId });
+
+    if (!order) {
+      return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
+    }
+
+    await OrderServiceModel.findByIdAndRemove(orderId)
+      .then((data) => {
+        console.log(data);
+        if (!data) {
+          res.status(404).send({
+            message: `ไม่สามารถลบรายการนี้ได้`,
+            status: false,
+          });
+        } else {
+          res.send({
+            message: "ลบรายการนี้เรียบร้อยเเล้ว",
+            status: true,
+          });
+        }
+      })
+      .catch((err) => {
+        res.status(500).send({
+          message: "ไม่สามารถลบรายการนี้ได้",
+          status: false,
+        });
+      });
+  } catch (error) {
+    res.status(500).send({
+      message: "ไม่สามารถลบรายการนี้ได้",
+      status: false,
+    });
+  }
+};
 
 //get All canceled order
 module.exports.GetAllCanceledOrder = async (req, res) => {

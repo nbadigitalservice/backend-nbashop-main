@@ -16,4 +16,7 @@ router.get("/cancelorder/list", auth, OrderStatus.GetAllCanceledOrder)
 router.get("/cancelorder/list/:id", auth, OrderStatus.GetCanceledOrderById)
 router.get("/cancelorder/listbytel", auth, OrderStatus.GetCanceledOrderByTel)
 
+//delete order
+router.delete("/deleteorder/:id", auth, OrderStatus.DeleteOrderById)
+
 module.exports = router
