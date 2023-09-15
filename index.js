@@ -146,7 +146,7 @@ app.use("/v1/nba-shop/counter_service/", require('./routes/cs/'))
 app.use("/v1/nba-shop/counter_service/percent", require('./routes/cs/percent'))
 app.use("/v1/nba-shop/counter_service/service", require("./routes/cs/service"))
 app.use("/v1/nba-shop/counter_service/barcode", require('./routes/cs/barcode'))
-app.use('/v1/nba-shop/counter_service/mobile_bill', require('./routes/cs/mobile_bill.js'))
+app.use('/v1/nba-shop/counter_service/mobile_bill', require('./routes/cs/mobile_bill'))
 app.use('/v1/nba-shop/counter_service/wallet', require('./routes/cs/wallet'))
 app.use('/v1/nba-shop/counter_service/nba', require('./routes/cs/nba'))
 
