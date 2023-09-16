@@ -422,6 +422,7 @@ module.exports.DeleteOrderById = async (req, res) => {
   }
 };
 
+
 //get All canceled order
 module.exports.GetAllCanceledOrder = async (req, res) => {
   try {
@@ -471,7 +472,47 @@ module.exports.GetCanceledOrderByTel = async (req, res) => {
     console.error(error)
     res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
   }
-}
+};
+
+//delete order cancel
+module.exports.DeleteOrderCancel = async (req, res) => {
+  
+  try {
+    const orderId = req.params.id;
+    const order = await OrderCanceled.findOne({ _id: orderId });
+
+    if (!order) {
+      return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
+    }
+
+    await OrderCanceled.findByIdAndRemove(orderId)
+      .then((data) => {
+        console.log(data);
+        if (!data) {
+          res.status(404).send({
+            message: `ไม่สามารถลบรายการนี้ได้`,
+            status: false,
+          });
+        } else {
+          res.send({
+            message: "ลบรายการนี้เรียบร้อยเเล้ว",
+            status: true,
+          });
+        }
+      })
+      .catch((err) => {
+        res.status(500).send({
+          message: "ไม่สามารถลบรายการนี้ได้",
+          status: false,
+        });
+      });
+  } catch (error) {
+    res.status(500).send({
+      message: "ไม่สามารถลบรายการนี้ได้",
+      status: false,
+    });
+  }
+};
 
 module.exports.DeliverOrder = async (req, res) => {
   try {
