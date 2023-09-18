@@ -1,4 +1,4 @@
-const { FacebookPackage } = require('../../models/facebook.model/facebook.package.model')
+const { PhotoPackage } = require('../../models/photo.model/photo.package.model')
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
 const { WalletHistory } = require('../../models/wallet.history.model')
 const { Shop } = require('../../models/pos.models/shop.model')
@@ -18,8 +18,8 @@ module.exports.order = async (req, res) => {
     //     .status(400)
     //     .send({ status: false, message: error.details[0].message });
     // }
-    const facebookpackage = await FacebookPackage.findOne({ _id: req.body.product_detail[0].packageid });
-    if (facebookpackage) {
+    const photopackage = await PhotoPackage.findOne({ _id: req.body.product_detail[0].packageid });
+    if (photopackage) {
       let token = req.headers['auth-token'];
       token = token.replace(/^Bearer\s+/, "");
       jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
@@ -28,9 +28,9 @@ module.exports.order = async (req, res) => {
             if (err) {
               return res.status(403).send({ message: 'Not have permission ' })
             } else {
-              const totalprice = facebookpackage.price * req.body.product_detail[0].quantity
+              const totalprice = photopackage.price * req.body.product_detail[0].quantity
               const change = req.body.moneyreceive - totalprice
-              const totalplateformprofit = facebookpackage.plateformprofit * req.body.product_detail[0].quantity
+              const totalplateformprofit = photopackage.plateformprofit * req.body.product_detail[0].quantity
 
               //commission
               //calculation from 100%
@@ -208,7 +208,7 @@ module.exports.order = async (req, res) => {
             } else {
               const partner = await Partners.findById({ _id: findshop.shop_partner_id });
               //check partner wallet
-              if (partner.partner_wallet < facebookpackage.price) {
+              if (partner.partner_wallet < photopackage.price) {
                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
               } else {
 
@@ -216,7 +216,7 @@ module.exports.order = async (req, res) => {
                 const orders = [];
                 let totalCost = 0
                 for (let item of req.body.product_detail) {
-                  const container = await FacebookPackage.findOne({ _id: item.packageid });
+                  const container = await PhotoPackage.findOne({ _id: item.packageid });
                   if (container) {
                     orders.push({
                       packageid: container._id,
@@ -302,7 +302,7 @@ module.exports.order = async (req, res) => {
                   customer_iden_id: req.body.customer_iden_id,
                   customer_line: req.body.customer_line,
                   partnername: 'shop',
-                  servicename: 'Facebook Service',
+                  servicename: 'Photo Service',
                   shopid: findshop._id,
                   shop_partner_type: findshop.shop_partner_type,
                   branch_name: findshop.shop_name,
@@ -412,7 +412,7 @@ module.exports.order = async (req, res) => {
                           shop_id: findshop._id,
                           partner_id: partner._id,
                           orderid: findorderid._id,
-                          name: `รายการสั่งซื้อ Facebook Service ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
+                          name: `รายการสั่งซื้อ Photo Service ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
                           type: 'เงินออก',
                           amount: findorderid.totalprice,
                         }
