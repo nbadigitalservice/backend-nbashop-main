@@ -118,8 +118,11 @@ app.use("/v1/nba-shop/taxservice", require("./routes/taxservice/index"))
 // service order controller
 app.use("/v1/nba-shop/orderservice", require("./routes/order.service/order.service.router"))
 
-//facebook service
+// facebook service
 app.use("/v1/nba-shop/itsupportservice", require("./routes/itsupportservice/index"))
+
+// photo service
+app.use("/v1/nba-shop/photoservice", require("./routes/photoservice/index"))
 
 //get member team
 app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"))
