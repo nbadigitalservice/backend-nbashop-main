@@ -86,11 +86,11 @@ module.exports.GetAll = async (req, res) => {
   }
 }
 
-//get facebookservice by id
+//get photoservice by id
 module.exports.GetById = async (req, res) => {
   try {
     const photoservice = await PhotoPackage.findById(req.params.id);
-    if (!facebookservice) {
+    if (!photoservice) {
       return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
 
     } else {
