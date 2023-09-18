@@ -12,6 +12,7 @@ const { ProductGraphicPrice } = require('../../models/pos.models/product.graphic
 const { Partners } = require('../../models/pos.models/partner.model')
 const { Shop } = require('../../models/pos.models/shop.model')
 const { Order } = require('../../models/pos.models/order.model')
+const line = require('../../lib/line.notify.office')
 const mongoose = require('mongoose')
 const axios = require('axios')
 const cryptoJs = require('crypto-js')
@@ -48,6 +49,14 @@ module.exports.confirm = async (req, res) => {
   const updateStatus = await OrderServiceModel.findOne({ _id: req.params.id })
   console.log(updateStatus);
   if (updateStatus) {
+    const message = `
+แจ้งงานเข้า : ${updateStatus.servicename}
+เลขที่ทำรายการ : ${updateStatus.receiptnumber}
+
+ตรวจสอบได้ที่ : http://official.nbadigitalservice.com/
+
+*ตั้งใจทำงานการนะคะ/ครับ* `
+    await line.linenotify(message);
     await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'กำลังดำเนินการ' })
   } else {
     return res.status(403).send({ message: 'เกิดข้อผิดพลาด' })

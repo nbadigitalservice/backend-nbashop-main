@@ -2,6 +2,7 @@ const { TaxPackageModel } = require('../../models/tax.service.model/tax.service.
 const { TaxReverseModel } = require('../../models/tax.service.model/tax.service.reverse.model')
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
 const { WalletHistory } = require('../../models/wallet.history.model')
+const line = require('../../lib/line.notify.order')
 const { Shop } = require('../../models/pos.models/shop.model')
 const { Partners } = require('../../models/pos.models/partner.model')
 const { Employee } = require('../../models/pos.models/employee.model')
@@ -203,6 +204,16 @@ module.exports.order = async (req, res) => {
                                 }
                                 console.log(data)
                                 const order = new OrderServiceModel(data)
+                                const message = `
+แจ้งงานเข้า : ${order.servicename}
+เลขที่ทำรายการ : ${order.receiptnumber}
+จาก : ${order.branch_name}
+จำนวน : ${order.totalprice} บาท
+สถานะ : ${order.status}
+ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
+
+*ตั้งใจทำงานการนะคะ/ครับ* `
+                    await line.linenotify(message);
                                 await order.save(err => {
                                     if (err) {
                                         console.log(err)
