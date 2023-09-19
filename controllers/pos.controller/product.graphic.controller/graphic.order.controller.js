@@ -227,7 +227,17 @@ module.exports.order = async (req, res) => {
                                             }
                                             const walletHistory = new WalletHistory(wallethistory)
                                             walletHistory.save()
-                                        })
+                                        });
+                                        const message = `
+แจ้งงานเข้า : ${order.servicename}
+เลขที่ทำรายการ : ${order.receiptnumber}
+จาก : ${order.branch_name}
+จำนวน : ${order.totalprice} บาท
+สถานะ : ${order.status}
+ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
+
+*ตั้งใจทำงานการนะคะ/ครับ* `
+                    await line.linenotify(message);
                                         return res.status(200).send({ status: true, data: order });
                                     } else {
                                         console.error(error)
@@ -507,7 +517,17 @@ module.exports.order = async (req, res) => {
                                                 }
                                                 const walletHistory = new WalletHistory(wallethistory)
                                                 walletHistory.save()
-                                            })
+                                            });
+                                            const message = `
+แจ้งงานเข้า : ${order.servicename}
+เลขที่ทำรายการ : ${order.receiptnumber}
+จาก : ${order.branch_name}
+จำนวน : ${order.totalprice} บาท
+สถานะ : ${order.status}
+ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
+
+*ตั้งใจทำงานการนะคะ/ครับ* `
+                    await line.linenotify(message);
                                             return res.status(200).send({ status: true, data: data, ยอดเงินคงเหลือ: newwallet });
                                         } else {
                                             console.error(error)
