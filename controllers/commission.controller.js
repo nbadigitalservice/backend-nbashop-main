@@ -233,8 +233,56 @@ module.exports.GetTotalPlatformCommission = async (req, res) => {
   }
 };
 
+// module.exports.GetTotalAllSaleByTel = async (req, res) => {
+//   try {
+//     let tel = req.user.phone;
+//     console.log(req.user);
+//     if (req.user.partner_name === "NBA_PLATEFORM") {
+//       tel = req.body.tel;
+//     }
+//     const pipeline = [
+//       {
+//         $unwind: "$data",
+//       },
+//       {
+//         $match: {"data.tel": tel},
+//       },
+//       {
+//         $group: {
+//           _id: "$data.tel",
+//           totalAllSale: {$sum: "$data.commission_amount"},
+//         },
+//       },
+//       // {
+//       //   $project: {
+//       //     _id: 0,
+//       //     customer_tel: "$_id",
+//       //     totalAllSale: 1,
+//       //   },
+//       // },
+//     ];
+
+//     const result = await Commission.aggregate(pipeline);
+//     console.log(Commission);
+//     console.log(result);
+//     if (result.length === 0) {
+//       return res.status(404).send({message: "ไม่พบข้อมูล", totalAllSale: 0});
+//     }
+
+//     return res
+//       .status(200)
+//       .send({message: "ดึงข้อมูลสำเร็จ", totalAllSale: result[0].totalAllSale});
+//   } catch (error) {
+//     console.error(error);
+//     return res
+//       .status(500)
+//       .send({message: "An error occurred", data: error.data});
+//   }
+// };
+
 module.exports.GetTotalAllSaleByTel = async (req, res) => {
   try {
+    console.log(req.user);
     let tel = req.user.partner_phone;
     if (req.user.partner_name === "NBA_PLATEFORM") {
       tel = req.body.tel;
@@ -255,7 +303,7 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
       {
         $project: {
           _id: 0,
-          customer_tel: "$_id",
+          tel: "$_id",
           totalAllSale: 1,
         },
       },
@@ -263,18 +311,12 @@ module.exports.GetTotalAllSaleByTel = async (req, res) => {
 
     const result = await Commission.aggregate(pipeline);
 
-    if (result.length === 0) {
-      return res.status(404).send({message: "ไม่พบข้อมูล", totalAllSale: 0});
-    }
-
-    return res
-      .status(200)
-      .send({message: "ดึงข้อมูลสำเร็จ", totalAllSale: result[0].totalAllSale});
+    return res.status(200).send({message: "ดึงข้อมูลสำเร็จ", data: result});
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return res
       .status(500)
-      .send({message: "An error occurred", data: error.data});
+      .send({message: "เกิดข้อผิดพลาดบางอย่าง", data: error.data});
   }
 };
 
