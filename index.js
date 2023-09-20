@@ -148,6 +148,9 @@ app.use("/v1/nba-shop/more/service_nba", require("./routes/more/service_nba"));
 app.use("/v1/nba-shop/more/debit_history", require("./routes/more/debit.history"));
 app.use("/v1/nba-shop/more/platform", require("./routes/more/platform"));
 
+//จองตั๋ว
+app.use("/v1/nba-shop/aoc/book", require("./routes/aoc/index"))
+
 //จัดการหมวดหมู่สินค้า
 app.use("/v1/nba-shop/category", require("./routes/pos/category"));
 
@@ -160,6 +163,9 @@ app.use("/v1/nba-shop/callback", require("./routes/callback"));
 
 //Thailand
 app.use("/v1/nba-shop/thailand", require("./routes/thailand"));
+
+//Airport
+app.use("/v1/nba-shop/airport", require("./routes/airport"));
 
 //public
 app.use("/v1/nba-shop/public", require("./routes/public"));
