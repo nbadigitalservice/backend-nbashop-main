@@ -11,7 +11,7 @@ router.get('/bonus', authAdmin, commission.GetTotalBonus)
 router.get('/allsale', authAdmin, commission.GetTotalAllSale)
 router.get('/platformcommission', authAdmin, commission.GetTotalPlatformCommission)
 router.get('/totalallsalebytel', auth, commission.GetTotalAllSaleByTel)
-router.get('/happypoint/:tel', auth, commission.GetHappyPointByTel)
+router.get('/happypoint', auth, commission.GetHappyPointByTel)
 
 //delete
 router.delete('/delete/:id',authAdmin, commission.DeleteCommission)

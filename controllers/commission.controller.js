@@ -366,7 +366,6 @@ module.exports.GetHappyPointByTel = async (req, res) => {
     ];
 
     const allSaleResult = await Commission.aggregate(allSalePipeline);
-    console.log(allSaleResult);
 
     // Calculate happy point by subtracting exchange points from total all sale
     const totalExchangePoints =
@@ -375,7 +374,8 @@ module.exports.GetHappyPointByTel = async (req, res) => {
       allSaleResult.length > 0 ? allSaleResult[0].totalAllSale : 0;
     const happyPoint = totalAllSale - totalExchangePoints;
 
-    return res.status(200).send({message: "Success", happyPoint: happyPoint});
+    return res.status(200).send({message: "ดึงข้อมูลสำเร็จ", happyPoint: happyPoint});
+    // return res.status(200).send({message: "Success", allSaleResult: allSaleResult});
   } catch (error) {
     console.error(error);
     return res
