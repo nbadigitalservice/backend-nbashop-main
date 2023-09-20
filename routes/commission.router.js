@@ -10,7 +10,7 @@ router.get('/listbyorderid/:id', auth, commission.GetCommissionByOrderId)
 router.get('/bonus', authAdmin, commission.GetTotalBonus)
 router.get('/allsale', authAdmin, commission.GetTotalAllSale)
 router.get('/platformcommission', authAdmin, commission.GetTotalPlatformCommission)
-router.get('/totalallsalebytel/:tel', auth, commission.GetTotalAllSaleByTel)
+router.get('/totalallsalebytel', auth, commission.GetTotalAllSaleByTel)
 router.get('/happypoint/:tel', auth, commission.GetHappyPointByTel)
 
 //delete
