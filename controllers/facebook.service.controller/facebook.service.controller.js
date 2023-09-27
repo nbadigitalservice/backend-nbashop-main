@@ -204,7 +204,6 @@ module.exports.delete = async (req, res) => {
 
 
 //update image
-
 async function uploadFileCreate(req, res, { i, reqFiles }) {
   const filePath = req[i].path;
   let fileMetaData = {

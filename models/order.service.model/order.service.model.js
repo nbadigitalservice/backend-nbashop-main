@@ -36,7 +36,6 @@ const orderservice = new mongoose.Schema({
         debitnumber: { type: Number, required: true },
         debitamount: { type: Number, required: true }
     }],
-
     credit: [{
         creditname: { type: String, required: true },
         creditnumber: { type: Number, required: true },
@@ -47,11 +46,17 @@ const orderservice = new mongoose.Schema({
     totalFreight: { type: Number },
     total: { type: Number },
     change: { type: Number, required: true },
-    status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
+    status:{ type: Array, required: true},
+    /*
+        name : 'รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'
+        detail : รายละเอียดหรือหมายเหตุ
+        timestamp: วันเวลาทำการ
+    */
+    // status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
     responsible_id: { type: String },
     responsible_name: { type: String },
-    timestamp: { type: Date, default: Date.now }
-}, { timestamps: true })
+    timestamp: { type: Date, default: Date.now() }
+})
 
 const OrderServiceModel = new mongoose.model("orderservice", orderservice)
 

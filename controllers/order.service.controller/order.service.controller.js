@@ -45,7 +45,6 @@ const storage = multer.diskStorage({
 })
 
 module.exports.confirm = async (req, res) => {
-
   const updateStatus = await OrderServiceModel.findOne({ _id: req.params.id })
   console.log(updateStatus);
   if (updateStatus) {
@@ -57,10 +56,15 @@ module.exports.confirm = async (req, res) => {
 
 *ตั้งใจทำงานการนะคะ/ครับ* `
     await line.linenotify(message);
-    await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: 'กำลังดำเนินการ' })
+    updateStatus.status.push({
+      name: 'กำลังดำเนินการ',
+      timestamp: dayjs(Date.now()).format('')
+    });
+    // await OrderServiceModel.findByIdAndUpdate(updateStatus._id, { status: statusData })
+    updateStatus.save();
   } else {
     return res.status(403).send({ message: 'เกิดข้อผิดพลาด' })
-  } return res.status(200).send({ message: 'คอนเฟิร์มออร์เดอร์สำเร็จ' })
+  } return res.status(200).send({status: true, message: 'คอนเฟิร์มออร์เดอร์สำเร็จ', data: updateStatus})
 }
 
 //get All order
@@ -371,19 +375,20 @@ async function getProductPackageModel(servicename, product_detail) {
 module.exports.acceptTask = async (req, res) => {
   try {
     const orderId = req.params.id;
-
     const order = await OrderServiceModel.findOne({ _id: orderId });
-
     if (!order) {
       return res.status(403).send({ message: 'ไม่พบข้อมูลออร์เดอร์' });
     }
-
-    await OrderServiceModel.findByIdAndUpdate(orderId, {
-      status: req.body.status,
-      responsible_id: req.body._id,
-      responsible_name: req.body.name,
+    // await OrderServiceModel.findByIdAndUpdate(orderId, {
+    //   status: req.body.status,
+    //   responsible_id: req.body._id,
+    //   responsible_name: req.body.name,
+    // });
+    order.status.push({
+      name: 'รับงานแล้ว',
+      timestamp: dayjs(Date.now()).format('')
     });
-
+    order.save();
     return res.status(200).send({ message: 'รับงานแล้ว', data: order });
   } catch (error) {
     console.error(error);

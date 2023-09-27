@@ -270,6 +270,12 @@ module.exports.order = async (req, res) => {
                   }
                 }
 
+                const statusData = [];
+                statusData.push({
+                  name: 'รอการตรวจสอบ',
+                  timestamp: dayjs(Date.now()).format('')
+                });
+
                 //ตัดเงิน
                 const price = totalprice
                 const newwallet = partner.partner_wallet - price
@@ -323,6 +329,7 @@ module.exports.order = async (req, res) => {
                   product_detail: orders,
                   debit: debitData,
                   credit: creditData,
+                  status: statusData,
                   paymenttype: req.body.paymenttype,
                   moneyreceive: req.body.moneyreceive,
                   totalCost: totalCost,

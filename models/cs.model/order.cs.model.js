@@ -43,7 +43,6 @@ const validate = (data)=>{
         timestamp : Joi.date().required().label("ไม่พบวันเวลาทำรายการ"),
         updated_by: Joi.string().required().allow(""),
         created_by: Joi.string().required().allow(""),
-
     });
     return schema.validate(data);
 }
