@@ -106,6 +106,9 @@ app.use("/v1/nba-shop/itsupportservice", require("./routes/itsupportservice/inde
 // photo service
 app.use("/v1/nba-shop/photoservice", require("./routes/photoservice/index"));
 
+//datach service
+app.use("/v1/nba-shop/detachservice", require("./routes/detachsevice/index"));
+
 //get member team
 app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"));
 
