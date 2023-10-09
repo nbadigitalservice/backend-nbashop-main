@@ -207,7 +207,7 @@ async function uploadFileCreate(req, res, { i, reqFiles }) {
     const filePath = req[i].path;
     let fileMetaData = {
         name: req.originalname,
-        parents: [process.env.GOOGLE_DRIVE_IMAGE_PHOTO_SERVICE],
+        parents: [process.env.GOOGLE_DRIVE_IMAGE_DETACH_SERVICE],
     };
     let media = {
         body: fs.createReadStream(filePath),
