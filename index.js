@@ -109,6 +109,11 @@ app.use("/v1/nba-shop/photoservice", require("./routes/photoservice/index"));
 //detach service
 app.use("/v1/nba-shop/detachservice", require("./routes/detachservice/index"));
 
+// buysim
+app.use("/v1/nba-shop/buysimdtac", require("./routes/buysim/dtac"));
+app.use("/v1/nba-shop/buysimtrue", require("./routes/buysim/true"));
+app.use("/v1/nba-shop/buysimais", require("./routes/buysim/ais"));
+
 //get member team
 app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"));
 

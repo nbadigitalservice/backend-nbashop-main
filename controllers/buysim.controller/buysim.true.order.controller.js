@@ -1,9 +1,9 @@
-const { DetachPackage } = require('../../models/detach.model/detach.package.model')
+const { BuysimTRUEPackage } = require('../../models/buysim.model/buysim.true.package.model')
 const { OrderServiceModel, validate } = require('../../models/order.service.model/order.service.model')
 const { WalletHistory } = require('../../models/wallet.history.model')
 const line = require('../../lib/line.notify.order')
 const { Shop } = require('../../models/pos.models/shop.model')
-const { Partners } = require('../../models/pos.models/partner.model')
+const { Partner } = require('../../models/pos.models/partner.model')
 const { Employee } = require('../../models/pos.models/employee.model')
 const getmemberteam = require('../../lib/getPlateformMemberTeam')
 const { Commission } = require('../../models/commission.model')
@@ -12,8 +12,8 @@ const dayjs = require('dayjs');
 
 module.exports.order = async (req, res) => {
     try {
-        const detachpackage = await DetachPackage.findOne({ _id: req.body.product_dtail[0].packageid });
-        if (detachpackage) {
+        const buysimtruepackage = await BuysimTRUEPackage.findOne({ _id: req.body.product_detail[0].packageid });
+        if (buysimtruepackage) {
             let token = req.headers['auth-token'];
             token = token.replace(/^Bearer\s+/, "");
             jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
@@ -22,9 +22,9 @@ module.exports.order = async (req, res) => {
                         if (err) {
                             return res.status(403).send({ message: 'Not have permission' });
                         } else {
-                            const totalprice = detachpackage.price * req.body.product_detail[0].quantity
+                            const totalprice = buysimtruepackage.price * req.body.product_detail[0].quantity
                             const change = req.body.moneyreceive - totalprice
-                            const totalplateformprofit = detachpackage.plateformprofit * req.body.product_detail[0].quantity
+                            const totalplateformprofit = buysimtruepackage.plateformprofit * req.body.product_detail[0].quantity
 
                             //commission
                             //calculation from 100%
@@ -65,21 +65,21 @@ module.exports.order = async (req, res) => {
                                 customer_iden_id: req.body.customer_iden_id,
                                 customer_line: req.body.customer_line,
                                 partnername: 'platform',
-                                servicename: 'detach Service',
+                                servicename: 'buysim Service',
                                 shopid: req.body.shopid,
                                 shop_partner_type: req.body.shop_partner_type,
                                 branch_name: req.body.branch_name,
                                 branch_id: req.body.branch_id,
                                 product_detail: [{
-                                    packageid: detachpackage._id,
-                                    packagename: detachpackage.name,
-                                    packagedetail: detachpackage.detail,
+                                    packageid: buysimtruepackage._id,
+                                    packagename: buysimtruepackage.name,
+                                    packagedetail: buysimtruepackage.detail,
                                     quantity: req.body.product_detail[0].quantity,
-                                    price: detachpackage.price,
+                                    price: buysimtruepackage.price,
                                 }],
                                 paymenttype: req.body.paymenttype,
                                 moneyreceive: req.body.moneyreceive,
-                                totalCost: detachpackage.cost + detachpackage.nbaprofit,
+                                totalCost: buysimtruepackage.cost + buysimtruepackage.nbaprofit,
                                 totalprice: totalprice,
                                 change: change
                             }
@@ -173,7 +173,7 @@ module.exports.order = async (req, res) => {
                                                 shop_id: order.shopid,
                                                 partner_id: 'platform',
                                                 orderid: order._id,
-                                                name: `รายการสั่งซื้อ Deatch Service ใบเสร็จเลขที่ ${order.receiptnumber}`,
+                                                name: `รายการสั่งซื้อ Buysim Service ใบเสร็จเลขที่ ${order.receiptnumber}`,
                                                 type: 'เงินออก',
                                                 amount: order.totalprice,
                                             }
@@ -212,9 +212,9 @@ module.exports.order = async (req, res) => {
 
                             return res.status(400).send({ status: false, message: "ไม่พบ shop" });
                         } else {
-                            const partner = await Partners.findById({ _id: findshop.shop_partner_id });
+                            const partner = await Partner.findById({ _id: findshop.shop_partner_id });
                             //check partner wallet
-                            if (partner.partner_wallet < detachpackage.price) {
+                            if (partner.partner_wallet < buysimtruepackage.price) {
                                 return res.status(400).send({ status: false, message: 'ยอดเงินไม่ในกระเป๋าไม่เพียงพอ' })
                             } else {
 
@@ -222,7 +222,7 @@ module.exports.order = async (req, res) => {
                                 const orders = [];
                                 let totalCost = 0
                                 for (let item of req.body.product_detail) {
-                                    const container = await DetachPackage.findOne({ _id: item.packageid });
+                                    const container = await BuysimTRUEPackage.findOne({ _id: item.packageid });
                                     if (container) {
                                         orders.push({
                                             packageid: container._id,
@@ -272,7 +272,7 @@ module.exports.order = async (req, res) => {
                                 //ตัดเงิน
                                 const price = totalprice
                                 const newwallet = partner.partner_wallet - price
-                                await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
+                                await partner.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
 
                                 //generate receipt number
                                 const receiptnumber = await GenerateRiceiptNumber(findshop.shop_partner_type, findshop.shop_branch_id)
@@ -314,7 +314,7 @@ module.exports.order = async (req, res) => {
                                     customer_iden_id: req.body.customer_iden_id,
                                     customer_line: req.body.customer_line,
                                     partnername: 'shop',
-                                    servicename: 'Detach Service',
+                                    servicename: 'Buysim Service',
                                     shopid: findshop._id,
                                     shop_partner_type: findshop.shop_partner_type,
                                     branch_name: findshop.shop_name,
@@ -425,7 +425,7 @@ module.exports.order = async (req, res) => {
                                                     shop_id: findshop._id,
                                                     partner_id: partner._id,
                                                     orderid: findorderid._id,
-                                                    name: `รายการสั่งซื้อ Detach Service ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
+                                                    name: `รายการสั่งซื้อ Buysim Service ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
                                                     type: 'เงินออก',
                                                     amount: findorderid.totalprice,
                                                 }
@@ -460,43 +460,6 @@ module.exports.order = async (req, res) => {
                 .send({ status: false, message: "ไม่พบบริการเซอร์วิสต์นี้" });
         }
     } catch (error) {
-        console.log(error);
-        return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
-    }
-}
 
-async function GenerateRiceiptNumber(shop_partner_type, branch_id) {
-    if (shop_partner_type === 'One Stop Service') {
-        const pipeline = [
-            {
-                $match: { shop_partner_type: shop_partner_type }
-            },
-            {
-                $group: { _id: 0, count: { $sum: 1 } }
-            }
-        ];
-        const count = await OrderServiceModel.aggregate(pipeline);
-        const countValue = count.length > 0 ? count[0].count + 1 : 1;
-        const data = `REP${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-        return data;
-    } else {
-        const pipeline = [
-            {
-                $match: {
-                    $and: [
-                        { "shop_partner_type": shop_partner_type },
-                        { "branch_id": branch_id }
-                    ]
-                }
-            },
-            {
-                $group: { _id: 0, count: { $sum: 1 } }
-            }
-        ];
-        const count = await OrderServiceModel.aggregate(pipeline);
-        const countValue = count.length > 0 ? count[0].count + 1 : 1;
-        const data = `RE${dayjs(Date.now()).format('YYYYMMDD')}${countValue.toString().padStart(5, '0')}`;
-        console.log(count);
-        return data;
     }
 }

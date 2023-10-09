@@ -1,4 +1,4 @@
-const { DetachPackage, validate } = require('../../models/detach.model/detach.package.model')
+const { BuysimTRUEPackage, validate } = require('../../models/buysim.model/buysim.true.package.model');
 const fs = require('fs');
 const multer = require('multer');
 const { google } = require('googleapis');
@@ -27,10 +27,10 @@ const storage = multer.diskStorage({
     },
 });
 
-// create 
+// create
 module.exports.create = async (req, res) => {
     try {
-        let upload = multer({ storage: storage }).array("imgCollection", 20);
+        let upload = multer({ storage: storage }).array('imgCollection', 20);
         upload(req, res, async function (err) {
             if (err) {
                 return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
@@ -38,7 +38,7 @@ module.exports.create = async (req, res) => {
             const reqFiles = [];
 
             if (!req.files) {
-                res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
+                res.status(500).send({ message: 'มีบางอย่างผิดพลาด', data: 'No request Files', status: false });
             } else {
                 const url = req.protocol + "://" + req.get("host");
                 for (var i = 0; i < req.files.length; i++) {
@@ -56,14 +56,14 @@ module.exports.create = async (req, res) => {
                     nbaprofit: Number(req.body.nbaprofit),
                     plateformprofit: Number(req.body.plateformprofit)
                 }
-                const detachservicepackage = new DetachPackage(data);
-                detachservicepackage.save(error => {
+                const buysimtruepackage = new BuysimTRUEPackage(data);
+                buysimtruepackage.save(error => {
                     if (error) {
-                        res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: error })
+                        res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: error });
                     } else {
-                        res.status(200).send({ status: true, message: 'บันทึกสำเร็จ' })
+                        res.status(200).send({ status: true, message: 'บันทึกสำเร็จ' });
                     }
-                })
+                });
                 //end
             }
         });
@@ -73,11 +73,11 @@ module.exports.create = async (req, res) => {
     }
 }
 
-//get All detachservice
+//get All 
 module.exports.GetAll = async (req, res) => {
     try {
-        const detachservice = await DetachPackage.find();
-        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: detachservice })
+        const buysimservice = await BuysimTRUEPackage.find();
+        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: buysimservice })
 
     } catch (error) {
         console.error(error);
@@ -85,20 +85,18 @@ module.exports.GetAll = async (req, res) => {
     }
 }
 
-//get detachservice by id
+//get by id
 module.exports.GetById = async (req, res) => {
     try {
-        const detachservice = await DetachPackage.findById(req.params.id);
-        if (!detachservice) {
+        const buysimservice = await BuysimTRUEPackage.findById(req.params.id);
+        if (!buysimservice) {
             return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
-
         } else {
             return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: detachservice });
         }
-
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
+        res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" });
     }
 }
 
@@ -107,12 +105,11 @@ module.exports.GetById = async (req, res) => {
 //change picture
 module.exports.update = async (req, res) => {
     try {
-
         const id = req.params.id;
 
-        const packageUpdate = await DetachPackage.findById(id)
+        const packageUpdate = await BuysimTRUEPackage.findById(id);
 
-        let upload = multer({ storage: storage }).array("imgCollection", 20);
+        let upload = multer({ storage: storage }).array('imgCollection', 20);
         upload(req, res, async function (err) {
 
             const name = req.body.name ? req.body.name : packageUpdate.name
@@ -137,7 +134,7 @@ module.exports.update = async (req, res) => {
                     await uploadFileCreate(req.files, res, { i, reqFiles });
                 }
 
-                //Update collection
+                //update collection
                 const data = {
                     picture: reqFiles[0],
                     name: name,
@@ -150,7 +147,7 @@ module.exports.update = async (req, res) => {
                     status: status
 
                 }
-                DetachPackage.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
+                BuysimTRUEPackage.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
                     if (err) {
                         return res.status(403).send({ message: 'อัพเดทรูปภาพไม่สำเร็จ', data: err })
                     }
@@ -169,8 +166,8 @@ module.exports.update = async (req, res) => {
                             plateformprofit: result.plateformprofit,
                             status: result.status
                         }
-                    })
-                })
+                    });
+                });
                 //end
             }
         });
@@ -180,21 +177,20 @@ module.exports.update = async (req, res) => {
     }
 }
 
-//Delete
+//delete
 module.exports.delete = async (req, res) => {
     try {
         const id = req.params.id;
-        DetachPackage.findByIdAndDelete(id, { returnOriginal: true }, (error, result) => {
-            if (error) {
-                return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ', data: error })
+        BuysimTRUEPackage.findByIdAndDelete(id, { returnOriginal: true }, (err, result) => {
+            if (err) {
+                return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ', data: err })
             }
             if (result) {
                 return res.status(200).send({ status: true, message: 'ลบสำเร็จ' });
             } else {
-                return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ กรุณาลองอีกครั้ง' });
+                return res.staus(403).send({ status: false, message: 'ลบไม่สำเร็จ กรุณาลองอีกครั้ง' });
             }
         })
-
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: "Internal Server Error" });
