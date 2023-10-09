@@ -17,8 +17,8 @@ const cors = require("cors");
 const connection = require("./config/db");
 connection();
 
-app.use(bodyParser.json({limit: "50mb", type: "application/json"}));
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json({ limit: "50mb", type: "application/json" }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
 app.use(cors());
@@ -105,6 +105,14 @@ app.use("/v1/nba-shop/itsupportservice", require("./routes/itsupportservice/inde
 
 // photo service
 app.use("/v1/nba-shop/photoservice", require("./routes/photoservice/index"));
+
+//detach service
+app.use("/v1/nba-shop/detachservice", require("./routes/detachservice/index"));
+
+// buysim
+app.use("/v1/nba-shop/buysimdtac", require("./routes/buysim/dtac"));
+app.use("/v1/nba-shop/buysimtrue", require("./routes/buysim/true"));
+app.use("/v1/nba-shop/buysimais", require("./routes/buysim/ais"));
 
 //get member team
 app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"));

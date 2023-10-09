@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
 
-const photoPackage = new mongoose.Schema({
+const detachPackage = new mongoose.Schema({
     picture: { type: String, required: true },
     name: { type: String, required: true, unique: true },
     detail: { type: String },
@@ -13,7 +13,7 @@ const photoPackage = new mongoose.Schema({
     status: { type: String, default: 'เปิดให้บริการ' },
 })
 
-const PhotoPackage = new mongoose.model("photopackage", photoPackage)
+const DetachPackage = new mongoose.model("detachpackage", detachPackage)
 
 const validate = (data) => {
     const Schema = Joi.object({
@@ -29,4 +29,4 @@ const validate = (data) => {
     return Schema.validate(data);
 }
 
-module.exports = { PhotoPackage, validate }
+module.exports = { DetachPackage, validate }
