@@ -1,4 +1,4 @@
-const { BuysimTRUEPackage, validate } = require('../../models/buysim.model/buysim.true.package.model');
+const { RegsimAISPackage, validate } = require('../../models/regsim.model/regsim.ais.model');
 const fs = require('fs');
 const multer = require('multer');
 const { google } = require('googleapis');
@@ -56,8 +56,8 @@ module.exports.create = async (req, res) => {
                     nbaprofit: Number(req.body.nbaprofit),
                     plateformprofit: Number(req.body.plateformprofit)
                 }
-                const buysimtruepackage = new BuysimTRUEPackage(data);
-                buysimtruepackage.save(error => {
+                const regsimaispackage = new RegsimAISPackage(data);
+                regsimaispackage.save(error => {
                     if (error) {
                         res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: error });
                     } else {
@@ -76,8 +76,8 @@ module.exports.create = async (req, res) => {
 //get All 
 module.exports.GetAll = async (req, res) => {
     try {
-        const buysimservice = await BuysimTRUEPackage.find();
-        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: buysimservice })
+        const regsimservice = await RegsimAISPackage.find();
+        return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: regsimservice })
 
     } catch (error) {
         console.error(error);
@@ -88,11 +88,11 @@ module.exports.GetAll = async (req, res) => {
 //get by id
 module.exports.GetById = async (req, res) => {
     try {
-        const buysimservice = await BuysimTRUEPackage.findById(req.params.id);
-        if (!buysimservice) {
+        const regsimservice = await RegsimAISPackage.findById(req.params.id);
+        if (!regsimservice) {
             return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
         } else {
-            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: buysimservice });
+            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: regsimservice });
         }
     } catch (error) {
         console.error(error);
@@ -107,7 +107,7 @@ module.exports.update = async (req, res) => {
     try {
         const id = req.params.id;
 
-        const packageUpdate = await BuysimTRUEPackage.findById(id);
+        const packageUpdate = await RegsimAISPackage.findById(id);
 
         let upload = multer({ storage: storage }).array('imgCollection', 20);
         upload(req, res, async function (err) {
@@ -147,7 +147,7 @@ module.exports.update = async (req, res) => {
                     status: status
 
                 }
-                BuysimTRUEPackage.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
+                RegsimAISPackage.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
                     if (err) {
                         return res.status(403).send({ message: 'อัพเดทรูปภาพไม่สำเร็จ', data: err })
                     }
@@ -181,7 +181,7 @@ module.exports.update = async (req, res) => {
 module.exports.delete = async (req, res) => {
     try {
         const id = req.params.id;
-        BuysimTRUEPackage.findByIdAndDelete(id, { returnOriginal: true }, (err, result) => {
+        RegsimAISPackage.findByIdAndDelete(id, { returnOriginal: true }, (err, result) => {
             if (err) {
                 return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ', data: err })
             }

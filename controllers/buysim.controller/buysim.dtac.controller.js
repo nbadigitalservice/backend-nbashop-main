@@ -92,7 +92,7 @@ module.exports.GetById = async (req, res) => {
         if (!buysimservice) {
             return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
         } else {
-            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: detachservice });
+            return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: buysimservice });
         }
     } catch (error) {
         console.error(error);
