@@ -34,7 +34,7 @@ exports.create = async (req, res) => {
     upload(req, res, async function (err) {
 
       const checkPartner = await Partners.findOne({ _id: req.body.shop_partner_id })
-      console.log('partnerpartnerpartnerpartner',checkPartner)
+      console.log('partnerpartnerpartnerpartner', checkPartner)
       
       if (!req.file) {
         const { error } = validate(req.body);
