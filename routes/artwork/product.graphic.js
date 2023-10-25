@@ -25,15 +25,15 @@ router.get('/product/category/:id',auth,ProductGraphic.GetPricelistByCategoryId)
 
 //pricelist
 router.get('/price/all',authAdmin,ProductGraphicPrice.getAllPriceList);
-router.get('/price/byid/:id',auth,ProductGraphicPrice.GetPriceById)
+router.get('/price/byid/:id',auth,ProductGraphicPrice.GetPriceById);
 router.post('/price',authAdmin,ProductGraphicPrice.Create);
 router.get('/price/:id',auth,ProductGraphicPrice.GetPrice);
 router.put('/price/:id',auth,ProductGraphicPrice.updatePriceList);
 router.delete('/price/:id',auth,ProductGraphicPrice.DeleteProductGraphicPriceList);
 
 //preorder
-router.post('/preorder',authAdmin,ProductGraphicOrder.PreOrderProductGraphic)
-router.post('/order', auth, graphicorder.order)
+router.post('/preorder',authAdmin,ProductGraphicOrder.PreOrderProductGraphic);
+router.post('/order', auth, graphicorder.order);
 
 
 module.exports = router

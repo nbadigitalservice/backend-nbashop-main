@@ -6,6 +6,7 @@ const {
 const {
   ExchangeHistory,
 } = require("../models/exchangepoint.model/exchangehistory.model");
+const {Partners} = require("../models/pos.models/partner.model");
 
 module.exports.GetCommissionByTel = async (req, res) => {
   try {
@@ -53,7 +54,6 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
     if (req.user.partner_name === "NBA_PLATEFORM") {
       tel = req.body.tel;
     }
-    console.log(tel);
     const pipeline = [
       {
         $unwind: "$data",
@@ -61,37 +61,37 @@ module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
       {
         $match: {"data.tel": tel},
       },
-      {
-        $addFields: {
-          orderId: {$toObjectId: "$orderid"},
-        },
-      },
-      {
-        $lookup: {
-          from: "orderservices",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "orderData",
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          createdAt: 1,
-          tel: "$data.tel",
-          iden: "$data.iden",
-          name: "$data.name",
-          address: "$data.address",
-          tel: "$data.tel",
-          commission_amount: "$data.commission_amount",
-          vat3percent: "$data.vat3percent",
-          remainding_commission: "$data.remainding_commission",
-          orderid: "$orderid",
-          orderData: "$orderData.product_detail",
-        },
-      },
+      // {
+      //   $addFields: {
+      //     orderId: {$toObjectId: "$orderid"},
+      //   },
+      // },
+      // {
+      //   $lookup: {
+      //     from: "orderservices",
+      //     localField: "orderId",
+      //     foreignField: "_id",
+      //     as: "orderData",
+      //   },
+      // },
+      // {
+      //   $project: {
+      //     _id: 0,
+      //     createdAt: 1,
+      //     tel: "$data.tel",
+      //     iden: "$data.iden",
+      //     name: "$data.name",
+      //     address: "$data.address",
+      //     tel: "$data.tel",
+      //     commission_amount: "$data.commission_amount",
+      //     vat3percent: "$data.vat3percent",
+      //     remainding_commission: "$data.remainding_commission",
+      //     orderid: "$orderid",
+      //     orderData: "$orderData.product_detail",
+      //   },
+      // },
     ];
-
+    console.log(pipeline)
     const result = await Commission.aggregate(pipeline);
 
     return res.status(200).send({message: "ดึงข้อมูลสำเร็จ", data: result});
@@ -423,3 +423,4 @@ module.exports.DeleteCommission = async (req, res) => {
     });
   }
 };
+
