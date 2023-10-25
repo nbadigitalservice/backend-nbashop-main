@@ -523,7 +523,8 @@ module.exports.ConfirmByCustomer = async (req, res) => {
             platformcommission: platformCommission,
             bonus: bonus,
             allSale: allSale,
-            orderid: orderServiceToUpdate._id,
+            orderid: orderServiceToUpdate.receiptnumber,
+            code: "Service"
         };
 
         // Create and save commission data

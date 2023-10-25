@@ -8,7 +8,7 @@ exports.findAll = async (req, res) => {
   try {
     Percent.find()
       .then(async (data) => {
-        res.send({data: data[0], message: "success", status: true});
+        res.send({data: data, message: "success", status: true});
       })
       .catch((err) => {
         res.status(500).send({

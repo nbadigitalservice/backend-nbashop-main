@@ -171,7 +171,8 @@ module.exports.order = async (req, res) => {
                       platformcommission: platformCommission,
                       bonus: bonus,
                       allSale: allSale,
-                      orderid: findorderid._id
+                      orderid: receiptnumber,
+                      code: "Service"
                     };
                     const commission = new Commission(commissionData)
                     commission.save((error, data) => {
@@ -415,7 +416,8 @@ module.exports.order = async (req, res) => {
                         platformcommission: platformCommission,
                         bonus: bonus,
                         allSale: allSale,
-                        orderid: findorderid._id
+                        orderid: receiptnumber,
+                        code: "Service"
                       };
                       const commission = new Commission(commissionData)
                       commission.save((error, data) => {
