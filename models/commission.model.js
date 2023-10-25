@@ -21,6 +21,7 @@ const commission = new mongoose.Schema(
     bonus: {type: Number},
     allSale: {type: Number},
     orderid: {type: String},
+    code: {type: String},
     timestamp: {type: Date, required: false, default: Date.now()},
   },
   {timestamps: true}

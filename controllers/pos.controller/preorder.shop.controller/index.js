@@ -120,7 +120,6 @@ exports.create = async (req, res) => {
   console.log("สร้าง");
   try {
     const {error} = validate(req.body);
-    console.log("error");
     if (error)
       return res
         .status(400)
@@ -144,7 +143,7 @@ exports.create = async (req, res) => {
 };
 
 exports.createCommission = async (req, res) => {
-  console.log("สร้าง");
+  console.log("สร้าง Commission");
   try {
     // const {error} = valiCommission(req.body);
     // console.log("error");
@@ -155,6 +154,9 @@ exports.createCommission = async (req, res) => {
     const getteammember = await getmemberteam.GetTeamMember(
       req.body.tel_platform
     );
+    const code = 'POS';
+    const percent = await Percent.findOne({code: code});
+
     if (getteammember.status === false) {
       return res.status(403).send({message: "ไม่พบข้อมมูลลูกค้า"});
     } else {
@@ -163,12 +165,12 @@ exports.createCommission = async (req, res) => {
       const validLevel = level.filter((item) => item !== null);
 
       const storeData = [];
-
+      const platform = percent.percent_platform;
       //calculation from 80% for member
-      const owner = (req.body.platformcommission * 55) / 100;
-      const lv1 = (req.body.platformcommission * 20) / 100;
-      const lv2 = (req.body.platformcommission * 15) / 100;
-      const lv3 = (req.body.platformcommission * 10) / 100;
+      const owner = (req.body.platformcommission * platform.level_owner) / 100;
+      const lv1 = (req.body.platformcommission * platform.level_one) / 100;
+      const lv2 = (req.body.platformcommission * platform.level_two) / 100;
+      const lv3 = (req.body.platformcommission * platform.level_tree) / 100;
 
       //calculation vat 3%
       const ownervat = (owner * 3) / 100;
@@ -243,6 +245,7 @@ exports.createCommission = async (req, res) => {
         bonus: req.body.bonus,
         allSale: req.body.allSale,
         orderid: req.body.orderid,
+        code: 'POS'
       };
       const commission = new Commission(commissionData);
       commission.save((error, data) => {
