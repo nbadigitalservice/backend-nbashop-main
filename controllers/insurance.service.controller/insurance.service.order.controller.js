@@ -116,7 +116,11 @@ module.exports.order = async (req, res) => {
                 moneyreceive: req.body.moneyreceive,
                 totalCost: insurancepackage.cost + insurancepackage.nbaprofit,
                 totalprice: totalprice,
-                change: change
+                change: change,
+                status: ({
+                  name: 'รอการตรวจสอบ',
+                  timestamp: dayjs(Date.now()).format(''),
+                }),
               }
               const order = new OrderServiceModel(data)
               const getteammember = await getmemberteam.GetTeamMember(req.body.customer_tel);
@@ -356,7 +360,11 @@ module.exports.order = async (req, res) => {
                   moneyreceive: req.body.moneyreceive,
                   totalCost: totalCost,
                   totalprice: price,
-                  change: change
+                  change: change,
+                  status: ({
+                    name: 'รอการตรวจสอบ',
+                    timestamp: dayjs(Date.now()).format(''),
+                  }),
                 }
                 console.log(data)
                 const order = new OrderServiceModel(data)

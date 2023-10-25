@@ -183,6 +183,10 @@ module.exports.order = async (req, res) => {
                   totalFreight: freight,
                   total: totalPriceWithFreight + freight,
                   change: change,
+                  status: ({
+                    name: 'รอการตรวจสอบ',
+                    timestamp: dayjs(Date.now()).format(''),
+                  }),
                 };
                 const order = new OrderServiceModel(data);
                 const getteammember = await getmemberteam.GetTeamMember(
@@ -530,6 +534,10 @@ module.exports.order = async (req, res) => {
                   totalFreight: totalFreight,
                   total: price + totalFreight,
                   change: change,
+                  status: ({
+                    name: 'รอการตรวจสอบ',
+                    timestamp: dayjs(Date.now()).format(''),
+                  }),
                 };
                 console.log(data);
                 const order = new OrderServiceModel(data);
