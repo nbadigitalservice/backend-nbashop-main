@@ -1,4 +1,22 @@
 const axios = require("axios");
+const { IATA } = require("../../models/aoc.service.model/iata.model")
+
+//get Token
+exports.getIATA = async (req, res) => {
+  try {
+    const IATA_list = await IATA.find();
+    if (IATA_list) {
+      return res.status(200).send({status: true, data: IATA_list});
+    } else {
+      return res
+        .status(400)
+        .send({message: "ดึงข้อมูลไม่สำเร็จ", status: false});
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
+  }
+};
 
 //get Token
 exports.getToken = async (req, res) => {
