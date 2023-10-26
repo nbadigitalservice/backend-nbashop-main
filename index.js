@@ -70,14 +70,14 @@ app.use("/v1/nba-shop/percent-profit", require("./routes/pos/percent.profit"));
 
 app.use("/v1/nba-shop/advertising-image", require("./routes/pos/advertising.image"));
 
-//art work
-app.use("/v1/nba-shop/artwork", require("./routes/artwork/index"));
-app.use("/v1/nba-shop/artwork/product-graphic", require("./routes/artwork/product.graphic"));
-
 //order
 app.use("/v1/nba-shop/order", require("./routes/pos/order"));
 app.use("/v1/nba-shop/order_consignment", require("./routes/pos/order.consignment"));
 app.use("/v1/nba-shop/product/store", require("./routes/pos/product.store"));
+
+//art work
+app.use("/v1/nba-shop/artwork", require("./routes/artwork/index"));
+app.use("/v1/nba-shop/artwork/product-graphic", require("./routes/artwork/product.graphic"));
 
 //facebook service
 app.use("/v1/nba-shop/facebookservice", require("./routes/facebookservice/index"));
@@ -176,9 +176,6 @@ app.use("/v1/nba-shop/callback", require("./routes/callback"));
 
 //Thailand
 app.use("/v1/nba-shop/thailand", require("./routes/thailand"));
-
-//Airport
-app.use("/v1/nba-shop/airport", require("./routes/airport"));
 
 //public
 app.use("/v1/nba-shop/public", require("./routes/public"));

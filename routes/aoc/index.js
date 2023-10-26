@@ -1,10 +1,9 @@
 const router = require('express').Router();
-const service = require("../../controllers/aoc.controller/aoc.order.service.controller")
+const service = require("../../controllers/aoc.controller/aoc.order.service.controller");
 const auth = require("../../lib/auth");
-const authAoc = require("../../lib/auth.aoc");
-const authAdmin = require('../../lib/auth.admin')
+const authAdmin = require('../../lib/auth.admin');
 
-router.get('/token', service.getAocService);
-// router.get('/airplane', service.getAllService);
+router.post('/token', service.getToken);
+router.post('/ticketflight', service.getFlightTicket);
 
 module.exports = router
