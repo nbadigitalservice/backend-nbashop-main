@@ -14,6 +14,7 @@ const OrderExpressSchema = new mongoose.Schema({
     product : {type: Array, default:[]},
     employee : {type: String, required: true},
     status : {type: Array, default: []},
+    timestamp: {type: String, required: true},
 })
 
 const OrderExpress = mongoose.model("order_express", OrderExpressSchema);
@@ -31,7 +32,8 @@ const validate = (data)=>{
         purchase_id : Joi.string().default("ไม่มี"),
         product : Joi.array(),
         employee: Joi.string().required().label("ไม่พบพนักงานทำรายการ"),
-        status: Joi.array()
+        status: Joi.array(),
+        timestamp: Joi.string().required().label("ไม่พบเวลาทำรายการ"),
     });
     return schema.validate(data);
 }
