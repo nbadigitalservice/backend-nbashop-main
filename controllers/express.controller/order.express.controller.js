@@ -8,8 +8,9 @@ exports.create = async(req, res)=>{
             return res.status(400).send({statue: false, message : error.details[0].message})
         }
         const invoice = await invoiceNumber(req.body.shop_id, req.body.status[0].timestamp);
+        const date = dayjs(Date.now()).format('')
         const data = {
-            ...req.body, invoice : invoice
+            ...req.body, invoice : invoice, timestamp: date
         };
         const order = await OrderExpress.create(data);
         if(order){

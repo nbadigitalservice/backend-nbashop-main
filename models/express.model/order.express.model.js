@@ -33,7 +33,7 @@ const validate = (data)=>{
         product : Joi.array(),
         employee: Joi.string().required().label("ไม่พบพนักงานทำรายการ"),
         status: Joi.array(),
-        timestamp: Joi.string().required().label("ไม่พบเวลาทำรายการ"),
+        timestamp: Joi.string(),
     });
     return schema.validate(data);
 }
