@@ -1,19 +1,20 @@
-const mongoose = require("mongoose");
 const Joi = require("joi");
 
 const valiTicket = (data) => {
   const schema = Joi.object({
-    tripType: Joi.string().required().label(""),
-    originCode: Joi.string().required().label(""),
-    destinationCode: Joi.string().required().label(""),
-    airline: Joi.string().required().label(""),
-    directFlight: Joi.string().default(false),
-    departDate: Joi.date().required().label(""),
-    returnDate: Joi.date().required().label(""),
-    adult: Joi.number().required().label(""),
-    child: Joi.number().required().label(""),
-    infant: Joi.number().required().label(""),
-    languageCode: Joi.string().required().label(""),
+    token: Joi.string().required(),
+    pgSearchOID: Joi.string().required().label("ไม่พบ ID"),
+    tripType: Joi.string().required().label("ไม่พบประเภทการบิน"),
+    origin: Joi.string().required().label("ไม่พบ Code เที่ยวบนขาไป"),
+    destination: Joi.string().required().label("ไม่พบ Code เที่ยวบนขากลับ"),
+    adult: Joi.string().required(),
+    child: Joi.string().required(),
+    infant: Joi.number().required(),
+    svcClass: Joi.number().required().label("ไม่พบ Service Class"),
+    S1: Joi.number().required().label("ไม่พบ Booking Code ขาไป"),
+    s2: Joi.number().required().label("ไม่พบ Booking Code ขากลับ"),
+    bMultiTicket_Fare: Joi.number().required(),
+    languageCode: Joi.number().required(),
   });
   return schema.valiTicket(data);
 };

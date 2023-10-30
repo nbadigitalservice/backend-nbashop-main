@@ -1,5 +1,8 @@
 const axios = require("axios");
 const {IATA} = require("../../models/aoc.service.model/iata.model");
+const {
+  valiTicket,
+} = require("../../models/aoc.service.model/aoc.tricket.model");
 
 //get Token
 exports.getToken = async (req, res) => {
@@ -64,16 +67,21 @@ exports.getFlightTicket = async (req, res) => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Token}`,
+          Cookie: process.env.AOC_COOKIE,
         },
       }
     );
-    const data = ticketFlight.data.flights;
-    if (data) {
-      return res.status(200).send({status: true, data: data});
+    const ticketFlight_data = ticketFlight.data;
+    if (ticketFlight_data) {
+      return res.status(200).send({
+        message: "ดึงข้อมูลเที่ยวบินสำเร็จ",
+        status: true,
+        data: ticketFlight_data,
+      });
     } else {
       return res
         .status(400)
-        .send({message: "ดึงข้อมูลไม่สำเร็จ", status: false});
+        .send({message: "ดึงข้อมูลเที่ยวบินไม่สำเร็จ", status: false});
     }
   } catch (err) {
     console.log(err);
@@ -84,46 +92,43 @@ exports.getFlightTicket = async (req, res) => {
 //get Price Ticket
 exports.getPriceTicket = async (req, res) => {
   try {
-    const data = {
-      token: req.body.token,
-      pgSearchOID: req.body.pgSearchOID,
-      tripType: req.body.tripType,
-      origin: req.body.origin,
-      destination: req.body.destination,
-      adult: req.body.adult,
-      child: req.body.child,
-      infant: req.body.infant,
-      svcClass: req.body.svcClass,
-      S1: req.body.S1,
-      S2: req.body.S2,
-      bMultiTicket_Fare: req.body.bMultiTicket_Fare,
-      languageCode: req.body.languageCode,
-    };
-    console.log(data);
     const Token = req.body.token;
-    // const priceTicket = await axios.post(
-    //   process.env.AOC_URL + "FlightMultiTicketPricing",
-    //   {
-    //     pgSearchOID: req.body.pgSearchOID,
-    //     tripType: req.body.tripType,
-    //     origin: req.body.origin,
-    //     destination: req.body.destination,
-    //     adult: req.body.adult,
-    //     child: req.body.child,
-    //     infant: req.body.infant,
-    //     svcClass: req.body.svcClass,
-    //     S1: req.body.S1,
-    //     child: req.body.S2,
-    //     bMultiTicket_Fare: req.body.bMultiTicket_Fare,
-    //     languageCode: req.body.languageCode,
-    //   },
-    //   {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${Token}`,
-    //     },
-    //   }
-    // );
+    const ticketPrice = await axios.post(
+      process.env.AOC_URL + "FlightMultiTicketPricing",
+      {
+        pgSearchOID: req.body.pgSearchOID,
+        tripType: req.body.tripType,
+        origin: req.body.origin,
+        destination: req.body.destination,
+        adult: req.body.adult,
+        child: req.body.child,
+        infant: req.body.infant,
+        svcClass: req.body.svcClass,
+        S1: req.body.S1,
+        S2: req.body.S2,
+        bMultiTicket_Fare: req.body.bMultiTicket_Fare,
+        languageCode: req.body.languageCode,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Token}`,
+          Cookie: process.env.AOC_COOKIE,
+        },
+      }
+    );
+    const ticketPrice_data = ticketPrice.data;
+    if (ticketPrice_data) {
+      return res.status(200).send({
+        message: "ดึงข้อมูลเที่ยวบินสำเร็จ",
+        status: true,
+        data: ticketPrice_data,
+      });
+    } else {
+      return res
+        .status(400)
+        .send({message: "ดึงข้อมูลเที่ยวบินไม่สำเร็จ", status: false});
+    }
   } catch (err) {
     console.log(err);
     return res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
