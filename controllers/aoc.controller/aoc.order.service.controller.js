@@ -71,7 +71,7 @@ exports.getFlightTicket = async (req, res) => {
         },
       }
     );
-    const ticketFlight_data = ticketFlight.data;
+    const ticketFlight_data = ticketFlight.data.flights;
     if (ticketFlight_data) {
       return res.status(200).send({
         message: "ดึงข้อมูลเที่ยวบินสำเร็จ",
@@ -117,7 +117,7 @@ exports.getPriceTicket = async (req, res) => {
         },
       }
     );
-    const ticketPrice_data = ticketPrice.data.flights;
+    const ticketPrice_data = ticketPrice.data;
     if (ticketPrice_data) {
       return res.status(200).send({
         message: "ดึงข้อมูลราคาเที่ยวบินสำเร็จ",
