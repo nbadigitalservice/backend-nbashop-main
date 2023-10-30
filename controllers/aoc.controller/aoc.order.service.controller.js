@@ -117,10 +117,10 @@ exports.getPriceTicket = async (req, res) => {
         },
       }
     );
-    const ticketPrice_data = ticketPrice.data;
+    const ticketPrice_data = ticketPrice.data.flights;
     if (ticketPrice_data) {
       return res.status(200).send({
-        message: "ดึงข้อมูลเที่ยวบินสำเร็จ",
+        message: "ดึงข้อมูลราคาเที่ยวบินสำเร็จ",
         status: true,
         data: ticketPrice_data,
       });
@@ -128,6 +128,54 @@ exports.getPriceTicket = async (req, res) => {
       return res
         .status(400)
         .send({message: "ดึงข้อมูลเที่ยวบินไม่สำเร็จ", status: false});
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
+  }
+};
+
+//put Passenger
+exports.putPassenger = async (req, res) => {
+  try {
+    const token = req.body.token;
+    const data = {
+      FlightBookingPaxInfoOID: req.body.FlightBookingPaxInfoOID,
+      paxType: req.body.paxType,
+      title: req.body.title,
+      firstname: req.body.firstname,
+      middlename: req.body.middlename,
+      lastname: req.body.lastname,
+      birthday: req.body.birthday,
+      email: req.body.email,
+      telNo: req.body.telNo,
+      passportNumber: req.body.passportNumber,
+      passportIssuingDate: req.body.passportIssuingDate,
+      passportExpiryDate: req.body.passportExpiryDate,
+      passportIssuingCountry: req.body.passportIssuingCountry,
+      passportNationality: req.body.passportNationality,
+      frequentFlyList: req.body.frequentFlyList,
+      seatRequest: req.body.seatRequest,
+      seatsRequest: req.body.seatsRequest,
+      mealRequest: req.body.mealRequest,
+      travelWithAdultID: req.body.travelWithAdultID,
+      ticketNumber: req.body.ticketNumber,
+      netRefund: req.body.netRefund,
+      agentRefund: req.body.agentRefund,
+      refundAmount: req.body.refundAmount,
+      tickNoRefund: req.body.tickNoRefund,
+      remarkRefund: req.body.remarkRefund,
+      StatusRefund: req.body.StatusRefund,
+      netReissue: req.body.netReissue,
+      agentReissue: req.body.agentReissue,
+      reissueSelling: req.body.reissueSelling,
+      tickNoReissueOld: req.body.tickNoReissueOld,
+      tickNoReissueNew: req.body.tickNoReissueNew,
+      remarkReissue: req.body.remarkReissue,
+      StatusReissue: req.body.StatusReissue,
+      kiwiBag: req.body.kiwiBag,
+      kiwiBagPrice: req.body.kiwiBagPrice,
+      kiwiBagWeight: req.body.kiwiBagWeight,
     }
   } catch (err) {
     console.log(err);
