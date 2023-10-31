@@ -7,12 +7,12 @@ const authAdmin = require('../../lib/auth.admin');
 router.get('/iata',auth, service.getIATA);
 
 router.post('/token',auth, service.getToken);
-router.post('/admin/token', service.getToken);
+router.post('/admin/token',authAdmin, service.getToken);
 router.post('/ticketflight',auth, service.getFlightTicket);
 router.post('/ticketprice',auth, service.getPriceTicket);
 router.post('/booking',auth, service.getBooking);
 router.get('/flightbooking', auth, service.getFlightBooking);
-router.get('/admin/flightbooking', service.getFlightBooking);
+router.get('/admin/flightbooking', authAdmin, service.getFlightBooking);
 router.post('/updatapayment', auth, service.updatePayment);
 
 router.get('/order/ticket',auth, service.getOrderTicket);
