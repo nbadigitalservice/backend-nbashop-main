@@ -12,7 +12,7 @@ router.post('/ticketflight',auth, service.getFlightTicket);
 router.post('/ticketprice',auth, service.getPriceTicket);
 router.post('/booking',auth, service.getBooking);
 router.get('/flightbooking', auth, service.getFlightBooking);
-router.get('/admin/flightbooking', authAdmin, service.getFlightBooking);
+router.get('/admin/flightbooking', service.getFlightBooking);
 router.post('/updatapayment', auth, service.updatePayment);
 
 router.get('/order/ticket',auth, service.getOrderTicket);
