@@ -7,6 +7,7 @@ const authAdmin = require('../../lib/auth.admin');
 router.get('/iata',auth, service.getIATA);
 
 router.post('/token',auth, service.getToken);
+router.post('/admin/token',authAdmin, service.getToken);
 router.post('/ticketflight',auth, service.getFlightTicket);
 router.post('/ticketprice',auth, service.getPriceTicket);
 router.post('/booking',auth, service.getBooking);
