@@ -1,4 +1,19 @@
+const mongoose = require("mongoose");
 const Joi = require("joi");
+
+const flightTicketSchema = new mongoose.Schema({
+  TransactionID: {type: String, required: true},
+  Booking: {type: Array, required: true},
+  status: [
+    {
+      name: {type: String, required: true},
+      timestamp: {type: String, required: true},
+    },
+  ],
+  timestamp: {type: String, required: true},
+});
+
+const OrderFlightTicket = new mongoose.model("order_ticket", flightTicketSchema);
 
 const valiTicket = (data) => {
   const schema = Joi.object({
@@ -19,4 +34,4 @@ const valiTicket = (data) => {
   return schema.valiTicket(data);
 };
 
-module.exports = {valiTicket};
+module.exports = {OrderFlightTicket, valiTicket};

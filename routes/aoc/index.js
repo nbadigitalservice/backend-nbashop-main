@@ -10,8 +10,11 @@ router.get('/iata',auth, service.getIATA);
 router.post('/token',auth, service.getToken);
 router.post('/ticketflight',auth, service.getFlightTicket);
 router.post('/ticketprice',auth, service.getPriceTicket);
-router.put('/pessenger', auth, service.putPassenger);
+router.post('/booking',auth, service.getBooking);
+router.post('/flightbooking', auth, service.getFlightBooking);
+router.post('/updatapayment', auth, service.updatePayment);
 
+router.get('/order/ticket',auth, service.getOrderTicket);
 
 // api
 router.get('/api/airline', auth, api.getAirline);
