@@ -78,6 +78,7 @@ exports.getFlightTicket = async (req, res) => {
         message: "ดึงข้อมูลเที่ยวบินสำเร็จ",
         status: true,
         data: ticketFlight_data,
+        pgSearchOID: ticketFlight.data.pgSearchOID
       });
     } else {
       return res
