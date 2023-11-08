@@ -49,6 +49,7 @@ module.exports.create = async (req, res) => {
                 const data = {
                     picture: reqFiles[0],
                     name: req.body.name,
+                    service_free: req.body.service_free
                 }
                 const taxcategory = new TaxCategoryModel(data);
                 taxcategory.save(error => {
@@ -107,7 +108,8 @@ module.exports.update = async (req, res) => {
         let upload = multer({ storage: storage }).array("imgCollection", 20);
         upload(req, res, async function (err) {
 
-            const name = req.body.name ? req.body.name : taxcategory.name
+            const name = req.body.name ? req.body.name : taxcategory.name;
+            const service_free = req.body.service_free ? req.body.service_free : taxcategory.service_free;
 
             if (err) {
                 return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
@@ -125,7 +127,8 @@ module.exports.update = async (req, res) => {
                 //Update collection
                 const data = {
                     picture: reqFiles[0],
-                    name: name
+                    name: name,
+                    service_free: service_free
                 }
                 TaxCategoryModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
                     if (err) {
