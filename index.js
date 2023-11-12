@@ -20,7 +20,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.json());
 app.use(cors());
+var CategoryRouter = require('./routes/antiques/antiques.js');
 
+// Antiques
+app.use("/v1/nba-shop/antiques/", CategoryRouter);
 // Delete Image
 app.use("/v1/nba-shop/delete/image", require("./routes/pos/deleteImage"));
 // CALL ME
