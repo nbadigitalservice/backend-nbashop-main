@@ -8,5 +8,6 @@ const authAdmin = require("../../lib/auth.admin");
 router.get("/get", auth, Category.Getcategory);
 router.post("/CreateCategory", auth, Category.CreateCategory);
 router.post("/CreateCategoryType", auth, Category.CreateCategoryType);
-router.get("/ProductCate", auth, Category.CreateProduct);
+router.post("/createcategory", auth, Category.CreateCategory);
+router.post("/createtype", auth, Category.CreateType);
 module.exports = router;
