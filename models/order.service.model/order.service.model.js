@@ -31,28 +31,12 @@ const orderservice = new mongoose.Schema({
     },
     paymenttype: { type: String, enum: ['เงินสด', 'เงินโอน', 'บัตรเครดิต', 'อื่นๆ'], required: true },
     moneyreceive: { type: Number, required: true },
-    debit: [{
-        debitname: { type: String, required: true },
-        debitnumber: { type: Number, required: true },
-        debitamount: { type: Number, required: true }
-    }],
-    credit: [{
-        creditname: { type: String, required: true },
-        creditnumber: { type: Number, required: true },
-        creditamount: { type: Number, required: true }
-    }],
     totalCost: { type: Number, required: true },
     totalprice: { type: Number, required: true },
     totalFreight: { type: Number },
     total: { type: Number },
     change: { type: Number, required: true },
     status:{ type: Array, required: true},
-    /*
-        name : 'รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'
-        detail : รายละเอียดหรือหมายเหตุ
-        timestamp: วันเวลาทำการ
-    */
-    // status: { type: String, enum: ['รอการตรวจสอบ', 'กำลังดำเนินการ', 'รับงานแล้ว', 'เรียบร้อย', 'ถูกยกเลิก'], default: 'รอการตรวจสอบ' },
     responsible_id: { type: String },
     responsible_name: { type: String },
     timestamp: { type: Date, default: Date.now() }

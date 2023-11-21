@@ -219,7 +219,6 @@ module.exports.order = async (req, res) => {
             //find shop
             const findshop = await Shop.findOne({ _id: checkuser.employee_shop_id });
             if (!findshop) {
-
               return res.status(400).send({ status: false, message: "ไม่พบ shop" });
             } else {
               const partner = await Partners.findById({ _id: findshop.shop_partner_id });

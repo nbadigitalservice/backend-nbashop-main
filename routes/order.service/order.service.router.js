@@ -5,6 +5,7 @@ const auth = require("../../lib/auth");
 
 router.put("/confirm/:id", authAdmin, OrderStatus.confirm)
 router.put("/accept/:id", auth, OrderStatus.acceptTask)
+router.put("/submit/:id", auth, OrderStatus.submit)
 router.put("/cancel/:id", authAdmin, OrderStatus.cancel)
 router.post("/deliver/:id", auth, OrderStatus.DeliverOrder)
 router.get("/list", auth, OrderStatus.GetAll)
