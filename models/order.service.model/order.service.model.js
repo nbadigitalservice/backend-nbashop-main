@@ -36,9 +36,8 @@ const orderservice = new mongoose.Schema({
     totalFreight: { type: Number },
     total: { type: Number },
     change: { type: Number, required: true },
+    employee: { type: Number, required: true},
     status:{ type: Array, required: true},
-    responsible_id: { type: String },
-    responsible_name: { type: String },
     timestamp: { type: Date, default: Date.now() }
 })
 
