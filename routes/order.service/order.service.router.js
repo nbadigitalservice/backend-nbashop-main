@@ -12,6 +12,8 @@ router.get("/list", auth, OrderStatus.GetAll)
 router.get("/list/:id", auth, OrderStatus.GetById)
 router.get("/allsale", auth, OrderStatus.GetTotalPriceSumByTel)
 
+router.put("/:id", authAdmin, OrderStatus.updateOrder);
+
 // canceled order
 router.get("/cancelorder/list", auth, OrderStatus.GetAllCanceledOrder)
 router.get("/cancelorder/list/:id", auth, OrderStatus.GetCanceledOrderById)

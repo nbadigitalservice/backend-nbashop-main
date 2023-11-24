@@ -761,3 +761,31 @@ async function generatePublicUrl(res) {
     throw error;
   }
 }
+
+module.exports.updateOrder = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const status = {
+      name: req.body.status_name,
+      timestamp: dayjs(Date.now()).format(""),
+    };
+    const data = {
+      total_cost: req.body.total_cost,
+      total_price: req.body.total_price,
+      total_freight: req.body.total_freight,
+      net: req.body.net,
+      status: status
+    };
+    const order = await OrderServiceModel.findByIdAndUpdate(id, data);
+    if (!order) {
+      return res.status(401).send({status: false, message: "ไม่สามารถแก้ไขข้อมูลนี้ได้"});
+    } else {
+      return res.status(200).send({status: true, message: "แก้ไขข้อมูลสำเร็จ", data: order});
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: "ไม่สามารถลบรายการนี้ได้",
+      status: false,
+    });
+  }
+}
