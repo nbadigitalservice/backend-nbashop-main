@@ -134,7 +134,7 @@ module.exports.GetAll = async (req, res) => {
           product_detail: 1,
           paymenttype: 1,
           moneyreceive: 1,
-          total_cosst: 1,
+          total_cost: 1,
           total_price: 1,
           total_freight: 1,
           net: 1,
