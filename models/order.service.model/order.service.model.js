@@ -25,20 +25,21 @@ const orderservice = new mongoose.Schema({
             packagedetail: { type: String, required: true },
             quantity: { type: Number, required: true },
             price: { type: Number, required: true },
-            freight: { type: Number},
-            servicecharge: { type: Number},
+            cost: { type: Number, required: true},
+            freight: { type: Number, required: true},
+            // servicecharge: { type: Number},
         }]
     },
     paymenttype: { type: String, enum: ['เงินสด', 'เงินโอน', 'บัตรเครดิต', 'อื่นๆ'], required: true },
     moneyreceive: { type: Number, required: true },
-    totalCost: { type: Number, required: true },
-    totalprice: { type: Number, required: true },
-    totalFreight: { type: Number },
-    total: { type: Number },
-    change: { type: Number, required: true },
-    employee: { type: Number, required: true},
+    total_cost: { type: Number, required: true },
+    total_price: { type: Number, required: true },
+    total_freight: { type: Number, required: true },
+    net: { type: Number, required: true },
+    // change: { type: Number, required: true },
+    employee: { type: Number, required: false},
     status:{ type: Array, required: true},
-    timestamp: { type: Date, default: Date.now() }
+    timestamp: { type: String}
 })
 
 const OrderServiceModel = new mongoose.model("orderservice", orderservice)

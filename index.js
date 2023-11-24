@@ -76,7 +76,7 @@ app.use("/v1/nba-shop/order_consignment", require("./routes/pos/order.consignmen
 app.use("/v1/nba-shop/product/store", require("./routes/pos/product.store"));
 
 //art work
-app.use("/v1/nba-shop/artwork", require("./routes/artwork/index"));
+// app.use("/v1/nba-shop/artwork", require("./routes/artwork/index"));
 app.use("/v1/nba-shop/artwork/product-graphic", require("./routes/artwork/product.graphic"));
 
 //facebook service

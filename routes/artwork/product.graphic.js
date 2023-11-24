@@ -32,7 +32,7 @@ router.put('/price/:id',auth,ProductGraphicPrice.updatePriceList);
 router.delete('/price/:id',auth,ProductGraphicPrice.DeleteProductGraphicPriceList);
 
 //preorder
-router.post('/preorder',authAdmin,ProductGraphicOrder.PreOrderProductGraphic);
+// router.post('/preorder',authAdmin,ProductGraphicOrder.PreOrderProductGraphic);
 router.post('/order', auth, graphicorder.order);
 
 

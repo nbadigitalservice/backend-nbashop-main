@@ -15,672 +15,335 @@ const {WalletHistory} = require("../../../models/wallet.history.model");
 const {Shop} = require("../../../models/pos.models/shop.model");
 const {Partners} = require("../../../models/pos.models/partner.model");
 const {Employee} = require("../../../models/pos.models/employee.model");
+const {Percent} = require("../../../models/pos.models/percent.profit.model");
 const getmemberteam = require("../../../lib/getPlateformMemberTeam");
 const {Commission} = require("../../../models/commission.model");
-const jwt = require("jsonwebtoken");
 const dayjs = require("dayjs");
-const line = require('../../../lib/line.notify.order');
+const line = require("../../../lib/line.notify.order");
 
 module.exports.order = async (req, res) => {
   try {
-    // const { error } = validate({...req.body,shopid:""});
-    // if (error) {
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: error.details[0].message });
-    // }
-    const graphicpackage = await ProductGraphicPrice.findOne({
-      _id: req.body.product_detail[0].packageid,
-    });
-    if (graphicpackage) {
-      let token = req.headers["auth-token"];
-      token = token.replace(/^Bearer\s+/, "");
-      jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
-        if (err) {
-          jwt.verify(
-            token,
-            process.env.API_PARTNER_KEY,
-            async (err, partner_decoded) => {
-              if (err) {
-                return res.status(403).send({message: "Not have permission "});
-              } else {
-                const productgraphic = await ProductGraphic.findOne({
-                  _id: graphicpackage.product_graphic_id,
-                });
-                if (!productgraphic) {
-                  return res.status(403).send({message: "ไม่พบข้อมูลสินค้า"});
-                }
-                let packagedetail = productgraphic.description;
-                let pricecalculate = graphicpackage.price;
-                let calculatefreight = 0;
-                let totalCost = 0;
-                let totalPriceWithoutFreight = 0;
-
-                if (productgraphic.detail === "ราคาต่อตารางเมตร") {
-                  if (
-                    (req.body.product_detail[0].width / 100) *
-                      (req.body.product_detail[0].hight / 100) <
-                    1
-                  ) {
-                    totalCost +=
-                      (graphicpackage.cost_NBA + graphicpackage.profit_NBA) *
-                      req.body.product_detail[0].quantity;
-                  } else {
-                    totalCost +=
-                      (graphicpackage.cost_NBA + graphicpackage.profit_NBA) *
-                      ((req.body.product_detail[0].width / 100) *
-                        (req.body.product_detail[0].hight / 100)) *
-                      req.body.product_detail[0].quantity;
-                  }
-                } else {
-                  totalCost +=
-                    (graphicpackage.cost_NBA + graphicpackage.profit_NBA) *
-                    req.body.product_detail[0].quantity;
-                }
-
-                if (
-                  (req.body.product_detail[0].width / 100) *
-                    (req.body.product_detail[0].hight / 100) *
-                    req.body.product_detail[0].quantity >
-                  2
-                ) {
-                  calculatefreight =
-                    ((req.body.product_detail[0].width / 100) *
-                      (req.body.product_detail[0].hight / 100) *
-                      req.body.product_detail[0].quantity -
-                      1) *
-                    10;
-                }
-
-                if (productgraphic.detail === "ราคาต่อตารางเมตร") {
-                  packagedetail = `${req.body.product_detail[0].width}*${req.body.product_detail[0].hight} ${productgraphic.description}`;
-                  if (
-                    (req.body.product_detail[0].width / 100) *
-                      (req.body.product_detail[0].hight / 100) <
-                    1
-                  ) {
-                    pricecalculate = graphicpackage.price;
-                  } else {
-                    pricecalculate *=
-                      (req.body.product_detail[0].width / 100) *
-                      (req.body.product_detail[0].hight / 100);
-                  }
-                }
-
-                const freight =
-                  productgraphic.detail === "ราคาต่อตารางเมตร"
-                    ? graphicpackage.freight + calculatefreight
-                    : graphicpackage.freight;
-                totalPriceWithoutFreight +=
-                  pricecalculate * req.body.product_detail[0].quantity;
-                const totalPriceWithFreight =
-                  totalPriceWithoutFreight + freight;
-                const commissioncal = totalPriceWithoutFreight - totalCost;
-
-                const change = req.body.moneyreceive - totalPriceWithFreight;
-
-                //commission
-                //calculation from 100%
-                const commission = commissioncal;
-                const platformCommission = (commission * 80) / 100;
-                const bonus = (commission * 5) / 100; //bonus
-                const allSale = (commission * 15) / 100; //all sale
-
-                //calculation from 80% for member
-                const owner = (platformCommission * 55) / 100;
-                const lv1 = (platformCommission * 20) / 100;
-                const lv2 = (platformCommission * 15) / 100;
-                const lv3 = (platformCommission * 10) / 100;
-
-                //calculation vat 3%
-                const ownervat = (owner * 3) / 100;
-                const lv1vat = (lv1 * 3) / 100;
-                const lv2vat = (lv2 * 3) / 100;
-                const lv3vat = (lv3 * 3) / 100;
-
-                //real commission for member
-                const ownercommission = owner - ownervat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                const lv1commission = lv1 - lv1vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                const lv2commission = lv2 - lv2vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                const lv3commission = lv3 - lv3vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-
-                //generate receipt number
-                const shop_partner_type = req.body.shop_partner_type;
-                const receiptnumber = await GenerateRiceiptNumber(
-                  shop_partner_type,
-                  req.body.shop_branch_id
-                );
-
-                // create order
-                let data = {
-                  receiptnumber: receiptnumber,
-                  customer_contact: req.body.customer_contact,
-                  customer_name: req.body.customer_name,
-                  customer_tel: req.body.customer_tel,
-                  customer_address: req.body.customer_address,
-                  customer_iden_id: req.body.customer_iden_id,
-                  customer_line: req.body.customer_line,
-                  partnername: "platform",
-                  servicename: "Artwork",
-                  shopid: req.body.shopid,
-                  shop_partner_type: req.body.shop_partner_type,
-                  branch_name: req.body.branch_name,
-                  branch_id: req.body.branch_id,
-                  product_detail: [
-                    {
-                      packageid: graphicpackage._id,
-                      packagename: productgraphic.name,
-                      packagedetail: packagedetail,
-                      quantity: req.body.product_detail[0].quantity,
-                      price: graphicpackage.price,
-                      freight: freight,
-                    },
-                  ],
-                  paymenttype: req.body.paymenttype,
-                  moneyreceive: req.body.moneyreceive,
-                  totalCost: totalCost,
-                  totalprice: totalPriceWithFreight,
-                  totalFreight: freight,
-                  total: totalPriceWithFreight + freight,
-                  change: change,
-                  status: ({
-                    name: 'รอการตรวจสอบ',
-                    timestamp: dayjs(Date.now()).format(''),
-                  }),
-                };
-                const order = new OrderServiceModel(data);
-                const getteammember = await getmemberteam.GetTeamMember(
-                  req.body.customer_tel
-                );
-                if (getteammember.status === false) {
-                  return res.status(403).send({message: "ไม่พบข้อมมูลลูกค้า"});
-                } else {
-                  order.save(async (error, data) => {
-                    if (data) {
-                      const findorderid = await OrderServiceModel.findById({
-                        _id: data._id,
-                      });
-
-                      const level = getteammember.data;
-
-                      const validLevel = level.filter((item) => item !== null);
-
-                      const storeData = [];
-
-                      for (const TeamMemberData of validLevel) {
-                        let integratedData;
-
-                        if (TeamMemberData.level == "owner") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: owner,
-                            vat3percent: ownervat,
-                            remainding_commission: ownercommission,
-                          };
-                        }
-                        if (TeamMemberData.level == "1") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: lv1,
-                            vat3percent: lv1vat,
-                            remainding_commission: lv1commission,
-                          };
-                        }
-                        if (TeamMemberData.level == "2") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: lv2,
-                            vat3percent: lv2vat,
-                            remainding_commission: lv2commission,
-                          };
-                        }
-                        if (TeamMemberData.level == "3") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: lv3,
-                            vat3percent: lv2vat,
-                            remainding_commission: lv3commission,
-                          };
-                        }
-                        if (integratedData) {
-                          storeData.push(integratedData);
-                        }
-                      }
-
-                      const commissionData = {
-                        data: storeData,
-                        platformcommission: platformCommission,
-                        bonus: bonus,
-                        allSale: allSale,
-                        orderid: receiptnumber,
-                        code: "Service",
-                      };
-                      const commission = new Commission(commissionData);
-                      commission.save((error, data) => {
-                        if (error) {
-                          console.log(error);
-                          return res
-                            .status(403)
-                            .send({message: "ไม่สามารถบันทึกได้", data: data});
-                        }
-
-                        // create wallet history
-                        const wallethistory = {
-                          shop_id: order.shopid,
-                          partner_id: "platform",
-                          orderid: order._id,
-                          name: `รายการสั่งซื้อ Artwork ใบเสร็จเลขที่ ${order.receiptnumber}`,
-                          type: "เงินออก",
-                          amount: order.totalprice,
-                        };
-                        const walletHistory = new WalletHistory(wallethistory);
-                        walletHistory.save();
-                      });
-                      const message = `
-แจ้งงานเข้า : ${order.servicename}
-เลขที่ทำรายการ : ${order.receiptnumber}
-จาก : ${order.branch_name}
-จำนวน : ${order.totalprice} บาท
-สถานะ : ${order.status}
-ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
-
-*ตั้งใจทำงานการนะคะ/ครับ* `;
-                      await line.linenotify(message);
-                      return res.status(200).send({status: true, data: order});
-                    } else {
-                      console.error(error);
-                      return res
-                        .status(400)
-                        .send({
-                          message: "ไม่สามารถบันทึกได้",
-                          error: error.message,
-                        });
-                    }
-                  });
-                }
-              }
-            }
-          );
+    const checkuser = await Employee.findOne({_id: req.user._id});
+    if (!checkuser) {
+      return res.status(403).send({message: "ไม่พบข้อมูลผู้ใช้"});
+    } else {
+      const findshop = await Shop.findOne({
+        _id: checkuser.employee_shop_id,
+      });
+      if (!findshop) {
+        return res.status(403).send({message: "ไม่พบข้อมูล Shop"});
+      } else {
+        const partner = await Partners.findById({
+          _id: findshop.shop_partner_id,
+        });
+        const amount = req.body.product_detail.length;
+        let product_price = 0;
+        for (let i = 0; i < amount; i++) {
+          const graphicpackage = await ProductGraphicPrice.findOne({
+            _id: req.body.product_detail[i].packageid,
+          });
+          const total = graphicpackage.price + graphicpackage.freight;
+          product_price = product_price + total;
+        }
+        if (partner.partner_wallet < product_price) {
+          return res.status(400).send({
+            status: false,
+            message: "ยอดเงินไม่ในกระเป๋าไม่เพียงพอ",
+          });
         } else {
-          const checkuser = await Employee.findOne({_id: decoded._id});
-          if (!checkuser) {
-            return res.status(403).send({message: "ไม่พบข้อมูลผู้ใช้"});
-          } else {
-            //find shop
-            const findshop = await Shop.findOne({
-              _id: checkuser.employee_shop_id,
+          // getorder
+          const orders = [];
+          let packagedetail;
+          let total_price = 0;
+          let total_cost = 0;
+          let total_freight = 0;
+          for (let item of req.body.product_detail) {
+            const container = await ProductGraphicPrice.findOne({
+              _id: item.packageid,
             });
-            if (!findshop) {
-              return res
-                .status(400)
-                .send({status: false, message: "ไม่พบ shop"});
-            } else {
-              const partner = await Partners.findById({
-                _id: findshop.shop_partner_id,
+            if (container) {
+              const productgraphic = await ProductGraphic.findOne({
+                _id: container.product_graphic_id,
               });
-              //check partner wallet
-              if (partner.partner_wallet < graphicpackage.price) {
-                return res
-                  .status(400)
-                  .send({
-                    status: false,
-                    message: "ยอดเงินไม่ในกระเป๋าไม่เพียงพอ",
-                  });
-              } else {
-                //getorder
-                const orders = [];
-                let totalCost = 0;
-                let totalPriceWithoutFreight = 0;
-                for (let item of req.body.product_detail) {
-                  const container = await ProductGraphicPrice.findOne({
-                    _id: item.packageid,
-                  });
-                  if (container) {
-                    const productgraphic = await ProductGraphic.findOne({
-                      _id: container.product_graphic_id,
-                    });
-                    if (productgraphic) {
-                      const plateformprofit =
-                        container.price -
-                        (container.profit_NBA + container.cost_NBA);
+              if (productgraphic) {
+                const platfromprofit =
+                  container.price - (container.profit_NBA + container.cost_NBA);
+                // let packagedetail = `${productgraphic.description} ${item.detail}`;
 
-                      let packagedetail = `${productgraphic.description} ${item.detail}`;
-                      let pricecalculate = container.price;
-                      let calculatefreight = 0;
-                      if (
-                        (item.width / 100) *
-                          (item.hight / 100) *
-                          item.quantity >
-                        2
-                      ) {
-                        calculatefreight =
-                          ((item.width / 100) *
-                            (item.hight / 100) *
-                            item.quantity -
-                            1) *
-                          10;
-                      }
+                // let calculatefreight = 0;
 
-                      if (productgraphic.detail === "ราคาต่อตารางเมตร") {
-                        packagedetail = `${item.width}*${item.hight} ${productgraphic.description} ${item.detail}`;
-                        if ((item.width / 100) * (item.hight / 100) < 1) {
-                          pricecalculate = container.price;
-                        } else {
-                          pricecalculate *=
-                            (item.width / 100) * (item.hight / 100);
-                        }
-                      } else {
-                        packagedetail = `${productgraphic.description} ${item.detail}`;
-                        pricecalculate = container.price;
-                      }
-
-                      if (productgraphic.detail === "ราคาต่อตารางเมตร") {
-                        if ((item.width / 100) * (item.hight / 100) < 1) {
-                          totalCost +=
-                            (container.cost_NBA + container.profit_NBA) *
-                            item.quantity;
-                        } else {
-                          totalCost +=
-                            (container.cost_NBA + container.profit_NBA) *
-                            ((item.width / 100) * (item.hight / 100)) *
-                            item.quantity;
-                        }
-                      } else {
-                        totalCost +=
-                          (container.cost_NBA + container.profit_NBA) *
-                          item.quantity;
-                      }
-
-                      const freight =
-                        productgraphic.detail === "ราคาต่อตารางเมตร"
-                          ? container.freight + calculatefreight
-                          : container.freight;
-                      totalPriceWithoutFreight = pricecalculate * item.quantity;
-                      // const totalPriceWithFreight = totalPriceWithoutFreight + freight;
-
-                      orders.push({
-                        packageid: container._id,
-                        packagename: productgraphic.name,
-                        packagedetail: packagedetail,
-                        quantity: item.quantity,
-                        plateformprofit: plateformprofit,
-                        price: totalPriceWithoutFreight,
-                        freight: freight,
-                      });
-                    } else {
-                      return res
-                        .status(403)
-                        .send({message: "ไม่พบข้อมูลสินค้า"});
-                    }
+                //ราคาขาย ไม่รวมค่าขนส่ง
+                if (productgraphic.detail === "ราคาต่อตารางเมตร") {
+                  packagedetail = `${item.width}*${item.hight} ${productgraphic.description} ${item.detail}`;
+                  const data = (item.width / 100) * (item.hight / 100);
+                  if (data < 1) {
+                    total_price = container.price;
+                  } else {
+                    total_price =
+                      container.price *
+                      ((item.width / 100) * (item.hight / 100));
                   }
-                }
-
-                const totalFreight = orders.reduce(
-                  (accumulator, currentValue) =>
-                    accumulator + currentValue.freight,
-                  0
-                );
-                const totalprice = orders.reduce(
-                  (accumulator, currentValue) =>
-                    accumulator + currentValue.price,
-                  0
-                );
-                const commissioncal = totalprice - totalCost;
-
-                // debitdata
-                const debitData = [];
-                if (req.body.debit && Array.isArray(req.body.debit)) {
-                  for (const debitItem of req.body.debit) {
-                    debitData.push({
-                      debitname: debitItem.debitname,
-                      debitnumber: debitItem.debitnumber,
-                      debitamount: debitItem.debitamount,
-                    });
-                  }
-                }
-
-                // creditdata
-                const creditData = [];
-                if (req.body.credit && Array.isArray(req.body.credit)) {
-                  for (const creditItem of req.body.credit) {
-                    creditData.push({
-                      creditname: creditItem.creditname,
-                      creditnumber: creditItem.creditnumber,
-                      creditamount: creditItem.creditamount,
-                    });
-                  }
-                }
-
-                //ตัดเงิน
-                const price = totalprice;
-                const newwallet = partner.partner_wallet - price;
-                await Partners.findByIdAndUpdate(partner._id, {
-                  partner_wallet: newwallet,
-                });
-
-                //generate receipt number
-                const receiptnumber = await GenerateRiceiptNumber(
-                  findshop.shop_partner_type,
-                  findshop.shop_branch_id
-                );
-
-                //commission
-                //total profit
-
-                //calculation from 100%
-                const commission = commissioncal;
-                const platformCommission = (commission * 80) / 100;
-                const bonus = (commission * 5) / 100; //bonus
-                const allSale = (commission * 15) / 100; //all sale
-
-                //calculation from 80% for member
-                const owner = (platformCommission * 55) / 100;
-                const lv1 = (platformCommission * 20) / 100;
-                const lv2 = (platformCommission * 15) / 100;
-                const lv3 = (platformCommission * 10) / 100;
-
-                //calculation vat 3%
-                const ownervat = (owner * 3) / 100;
-                const lv1vat = (lv1 * 3) / 100;
-                const lv2vat = (lv2 * 3) / 100;
-                const lv3vat = (lv3 * 3) / 100;
-
-                //real commission for member
-                const ownercommission = owner - ownervat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                const lv1commission = lv1 - lv1vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                const lv2commission = lv2 - lv2vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                const lv3commission = lv3 - lv3vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-
-                //คำนวนเงินทอน
-                const change = req.body.moneyreceive - price;
-
-                const data = {
-                  receiptnumber: receiptnumber,
-                  customer_contact: req.body.customer_contact,
-                  customer_name: req.body.customer_name,
-                  customer_tel: req.body.customer_tel,
-                  customer_address: req.body.customer_address,
-                  customer_iden_id: req.body.customer_iden_id,
-                  customer_line: req.body.customer_line,
-                  partnername: "shop",
-                  servicename: "Artwork",
-                  shopid: findshop._id,
-                  shop_partner_type: findshop.shop_partner_type,
-                  branch_name: findshop.shop_name,
-                  branch_id: findshop.shop_branch_id,
-                  product_detail: orders,
-                  debit: debitData,
-                  credit: creditData,
-                  paymenttype: req.body.paymenttype,
-                  moneyreceive: req.body.moneyreceive,
-                  totalCost: totalCost,
-                  totalprice: price,
-                  totalFreight: totalFreight,
-                  total: price + totalFreight,
-                  change: change,
-                  status: ({
-                    name: 'รอการตรวจสอบ',
-                    timestamp: dayjs(Date.now()).format(''),
-                  }),
-                };
-                console.log(data);
-                const order = new OrderServiceModel(data);
-                const getteammember = await getmemberteam.GetTeamMember(
-                  req.body.customer_tel
-                );
-
-                if (getteammember.status === false) {
-                  return res.status(403).send({message: "ไม่พบข้อมมูลลูกค้า"});
                 } else {
-                  order.save(async (error, data) => {
-                    if (data) {
-                      const findorderid = await OrderServiceModel.findById({
-                        _id: data._id,
-                      });
-
-                      const level = getteammember.data;
-
-                      const validLevel = level.filter((item) => item !== null);
-
-                      const storeData = [];
-
-                      for (const TeamMemberData of validLevel) {
-                        let integratedData;
-
-                        if (TeamMemberData.level == "owner") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: owner,
-                            vat3percent: ownervat,
-                            remainding_commission: ownercommission,
-                          };
-                        }
-                        if (TeamMemberData.level == "1") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: lv1,
-                            vat3percent: lv1vat,
-                            remainding_commission: lv1commission,
-                          };
-                        }
-                        if (TeamMemberData.level == "2") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: lv2,
-                            vat3percent: lv2vat,
-                            remainding_commission: lv2commission,
-                          };
-                        }
-                        if (TeamMemberData.level == "3") {
-                          integratedData = {
-                            lv: TeamMemberData.level,
-                            iden: TeamMemberData.iden,
-                            name: TeamMemberData.name,
-                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                            tel: TeamMemberData.tel,
-                            commission_amount: lv3,
-                            vat3percent: lv2vat,
-                            remainding_commission: lv3commission,
-                          };
-                        }
-                        if (integratedData) {
-                          storeData.push(integratedData);
-                        }
-                      }
-
-                      const commissionData = {
-                        data: storeData,
-                        platformcommission: platformCommission,
-                        bonus: bonus,
-                        allSale: allSale,
-                        orderid: receiptnumber,
-                        code: "Service",
-                      };
-                      const commission = new Commission(commissionData);
-                      commission.save((error, data) => {
-                        if (error) {
-                          console.log(error);
-                          return res
-                            .status(403)
-                            .send({message: "ไม่สามารถบันทึกได้", data: data});
-                        }
-                        // create wallet history
-                        const wallethistory = {
-                          shop_id: findshop._id,
-                          partner_id: partner._id,
-                          orderid: findorderid._id,
-                          name: `รายการสั่งซื้อ Artwork ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
-                          type: "เงินออก",
-                          amount: findorderid.total,
-                        };
-                        const walletHistory = new WalletHistory(wallethistory);
-                        walletHistory.save();
-                      });
-                      const message = `
-แจ้งงานเข้า : ${order.servicename}
-เลขที่ทำรายการ : ${order.receiptnumber}
-จาก : ${order.branch_name}
-จำนวน : ${order.totalprice} บาท
-สถานะ : ${order.status}
-ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
-
-*ตั้งใจทำงานการนะคะ/ครับ* `;
-                      await line.linenotify(message);
-                      return res
-                        .status(200)
-                        .send({
-                          status: true,
-                          data: data,
-                          ยอดเงินคงเหลือ: newwallet,
-                        });
-                    } else {
-                      console.error(error);
-                      return res
-                        .status(400)
-                        .send({
-                          message: "ไม่สามารถบันทึกได้",
-                          error: error.message,
-                        });
-                    }
-                  });
+                  packagedetail = `${productgraphic.description} ${item.detail}`;
+                  total_price = container.price;
                 }
+
+                //ราคาต้นทุน
+                if (productgraphic.detail === "ราคาต่อตารางเมตร") {
+                  const data = (item.width / 100) * (item.hight / 100);
+                  if (data < 1) {
+                    total_cost = container.cost_NBA * item.quantity;
+                  } else {
+                    total_cost =
+                      container.cost_NBA *
+                      ((item.width / 100) * (item.hight / 100)) *
+                      item.quantity;
+                  }
+                } else {
+                  total_cost = container.cost_NBA * item.quantity;
+                }
+
+                //ค่าขนส่ง
+                if (productgraphic.detail === "ราคาต่อตารางเมตร") {
+                  const data = (item.width / 100) * (item.hight / 100);
+                  if (data < 1) {
+                    total_freight = container.freight;
+                  } else {
+                    const freight =
+                      (item.width / 100) * (item.hight / 100) * 10;
+                    total_freight = container.freight + freight;
+                  }
+                } else if (productgraphic.detail === "ราคาต่อชิ้น") {
+                  total_freight = container.freight * item.quantity;
+                } else if (productgraphic.detail === "ราคาต่อชุด") {
+                  total_freight = container.freight;
+                }
+
+                orders.push({
+                  packageid: container._id,
+                  packagename: productgraphic.name,
+                  packagedetail: packagedetail,
+                  quantity: item.quantity,
+                  price: total_price,
+                  cost: total_cost,
+                  freight: total_freight,
+                });
+              } else {
+                return res
+                  .status(403)
+                  .send({status: false, message: "ไม่พบข้อมูลสินค้า"});
               }
             }
           }
+          const totalprice = orders.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.price,
+            0
+          );
+          const totalfreight = orders.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.freight,
+            0
+          );
+
+          const totalcost = orders.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.cost,
+            0
+          );
+
+          //ตัดเงิน
+          const newwallet =
+            partner.partner_wallet - (totalprice + totalfreight);
+          await Partners.findByIdAndUpdate(partner._id, {
+            partner_wallet: newwallet,
+          });
+
+          //generate receipt number
+          const receiptnumber = await GenerateRiceiptNumber(
+            findshop.shop_partner_type,
+            findshop.shop_branch_id
+          );
+
+          const data = {
+            receiptnumber: receiptnumber,
+            customer_contact: req.body.customer_contact,
+            customer_name: req.body.customer_name,
+            customer_tel: req.body.customer_tel,
+            customer_address: req.body.customer_address,
+            customer_iden_id: req.body.customer_iden_id,
+            customer_line: req.body.customer_line,
+            partnername: "shop",
+            servicename: "Artwork",
+            shopid: findshop._id,
+            shop_partner_type: findshop.shop_partner_type,
+            branch_name: findshop.shop_name,
+            branch_id: findshop.shop_branch_id,
+            product_detail: orders,
+            paymenttype: req.body.paymenttype,
+            moneyreceive: req.body.moneyreceive,
+            total_cost: totalcost,
+            total_price: totalprice,
+            total_freight: totalfreight,
+            net: totalprice + totalfreight,
+            status: {
+              name: "รอการตรวจสอบ",
+              timestamp: dayjs(Date.now()).format(""),
+            },
+            timestamp: dayjs(Date.now()).format(""),
+          };
+
+          const order = new OrderServiceModel(data);
+
+          const getteammember = await getmemberteam.GetTeamMember(
+            req.body.customer_tel
+          );
+
+          if (!getteammember) {
+            return res.status(403).send({message: "ไม่พบข้อมมูลลูกค้า"});
+          } else {
+            order.save(async (error, data) => {
+              if (data) {
+                const findorderid = await OrderServiceModel.findById({
+                  _id: data._id,
+                });
+
+                const code = "Service";
+                const percent = await Percent.findOne({code: code});
+
+                const commisstion = totalprice - totalcost;
+                const platfromcommission = (commisstion * 80) / 100;
+                const bonus = (commisstion * 5) / 100;
+                const allSale = (commisstion * 15) / 100;
+
+                const level = getteammember.data;
+                const validLevel = level.filter((item) => item !== null);
+                const storeData = [];
+                const platform = percent.percent_platform;
+                //calculation from 80% for member
+                const owner = (platfromcommission * platform.level_owner) / 100;
+                const lv1 = (platfromcommission * platform.level_one) / 100;
+                const lv2 = (platfromcommission * platform.level_two) / 100;
+                const lv3 = (platfromcommission * platform.level_tree) / 100;
+
+                //calculation vat 3%
+                const ownervat = (owner * 3) / 100;
+                const lv1vat = (lv1 * 3) / 100;
+                const lv2vat = (lv2 * 3) / 100;
+                const lv3vat = (lv3 * 3) / 100;
+
+                //real commission for member
+                const ownercommission = owner - ownervat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                const lv1commission = lv1 - lv1vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                const lv2commission = lv2 - lv2vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                const lv3commission = lv3 - lv3vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+
+                for (const TeamMemberData of validLevel) {
+                  let integratedData;
+
+                  if (TeamMemberData.level == "owner") {
+                    integratedData = {
+                      lv: TeamMemberData.level,
+                      iden: TeamMemberData.iden,
+                      name: TeamMemberData.name,
+                      address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                      tel: TeamMemberData.tel,
+                      commission_amount: owner,
+                      vat3percent: ownervat,
+                      remainding_commission: ownercommission,
+                    };
+                  }
+                  if (TeamMemberData.level == "1") {
+                    integratedData = {
+                      lv: TeamMemberData.level,
+                      iden: TeamMemberData.iden,
+                      name: TeamMemberData.name,
+                      address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                      tel: TeamMemberData.tel,
+                      commission_amount: lv1,
+                      vat3percent: lv1vat,
+                      remainding_commission: lv1commission,
+                    };
+                  }
+                  if (TeamMemberData.level == "2") {
+                    integratedData = {
+                      lv: TeamMemberData.level,
+                      iden: TeamMemberData.iden,
+                      name: TeamMemberData.name,
+                      address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                      tel: TeamMemberData.tel,
+                      commission_amount: lv2,
+                      vat3percent: lv2vat,
+                      remainding_commission: lv2commission,
+                    };
+                  }
+                  if (TeamMemberData.level == "3") {
+                    integratedData = {
+                      lv: TeamMemberData.level,
+                      iden: TeamMemberData.iden,
+                      name: TeamMemberData.name,
+                      address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                      tel: TeamMemberData.tel,
+                      commission_amount: lv3,
+                      vat3percent: lv2vat,
+                      remainding_commission: lv3commission,
+                    };
+                  }
+                  if (integratedData) {
+                    storeData.push(integratedData);
+                  }
+                }
+
+                const commissionData = {
+                  data: storeData,
+                  platformcommission: platfromcommission,
+                  bonus: bonus,
+                  allSale: allSale,
+                  orderid: findorderid,
+                  code: "Service",
+                };
+
+                const commission = new Commission(commissionData);
+                commission.save((error, data) => {
+                  if (error) {
+                    console.log(error);
+                    return res
+                      .status(403)
+                      .send({status: false, message: "ไม่สามารถบันทึกได้"});
+                  }
+                  const wallethistory = {
+                    shop_id: findshop._id,
+                    partner_id: partner._id,
+                    orderid: findorderid._id,
+                    name: `รายการสั่งซื้อ Artwork ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
+                    type: "เงินออก",
+                    amount: findorderid.net,
+                  };
+                  const walletHistory = new WalletHistory(wallethistory);
+                  walletHistory.save();
+                });
+                const message = `
+แจ้งงานเข้า : ${order.servicename}
+เลขที่ทำรายการ : ${order.receiptnumber}
+จาก : ${order.branch_name}
+จำนวน : ${order.total_price} บาท
+ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
+
+*ฝากแอดมินรบกวนตรวจสอบด้วยนะคะ/ครับ* `;
+                await line.linenotify(message);
+                return res.status(200).send({
+                  status: true,
+                  data: data,
+                  ยอดเงินคงเหลือ: newwallet,
+                });
+              } else {
+                console.error(error);
+                return res.status(400).send({
+                  message: "ไม่สามารถบันทึกได้",
+                  error: error.message,
+                });
+              }
+            });
+          }
         }
-      });
-    } else {
-      return res
-        .status(400)
-        .send({status: false, message: "ไม่พบบริการเซอร์วิสต์นี้"});
+      }
     }
   } catch (err) {
     console.log(err);
