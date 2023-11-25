@@ -106,7 +106,7 @@ module.exports.order = async (req, res) => {
                 //ค่าขนส่ง
                 if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                   const data = (item.width / 100) * (item.hight / 100);
-                  if (data < 2) {
+                  if (data < 1) {
                     total_freight = container.freight;
                   } else {
                     const freight =
