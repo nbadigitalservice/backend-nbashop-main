@@ -114,7 +114,7 @@ module.exports.order = async (req, res) => {
                     total_freight = container.freight + freight;
                   }
                 } else if (productgraphic.detail === "ราคาต่อชิ้น") {
-                  if (item.quantity >= 5) {
+                  if (item.quantity > 5) {
                     const value = item.quantity / 5;
                     const result_value = Math.trunc(value);
                     const total_value = result_value * container.freight;
@@ -123,7 +123,7 @@ module.exports.order = async (req, res) => {
                     total_freight = container.freight;
                   }
                 } else if (productgraphic.detail === "ราคาต่อชุด") {
-                  if (item.quantity >= 5) {
+                  if (item.quantity > 5) {
                     const value = item.quantity / 5;
                     const result_value = Math.trunc(value);
                     const total_value = result_value * 10;
