@@ -119,12 +119,18 @@ module.exports.order = async (req, res) => {
                     const result_value = Math.trunc(value);
                     const total_value = result_value * container.freight;
                     total_freight = container.freight + total_value;
-                    console.log(total_freight)
                   } else {
                     total_freight = container.freight;
                   }
                 } else if (productgraphic.detail === "ราคาต่อชุด") {
-                  total_freight = container.freight;
+                  if (item.quantity >= 5) {
+                    const value = item.quantity / 5;
+                    const result_value = Math.trunc(value);
+                    const total_value = result_value * 10;
+                    total_freight = container.freight + total_value;
+                  } else {
+                    total_freight = container.freight;
+                  }
                 }
 
                 orders.push({
