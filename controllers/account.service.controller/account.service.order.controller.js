@@ -20,13 +20,11 @@ module.exports.order = async (req, res) => {
   try {
     const checkuser = await Employee.findOne({_id: req.user._id});
     if (!checkuser) {
-      return res.status(403).send({message: "ไม่พบข้อมูลผู้ใช้"});
+      return res.status(403).send({message: "User not found"});
     } else {
-      const findshop = await Shop.findOne({
-        _id: checkuser.employee_shop_id,
-      });
+      const findshop = await Shop.findOne({_id: checkuser.employee_shop_id});
       if (!findshop) {
-        return res.status(403).send({message: "ไม่พบข้อมูล Shop"});
+        return res.status(403).send({message: "Shop not found"});
       } else {
         const partner = await Partners.findById({
           _id: findshop.shop_partner_id,
@@ -52,6 +50,7 @@ module.exports.order = async (req, res) => {
           let total_price = 0;
           let total_cost = 0;
           let total_freight = 0;
+          let total_platefrom = 0;
           for (let item of req.body.product_detail) {
             const container = await AccountPackageModel.findOne({
               _id: item.packageid,
@@ -68,11 +67,17 @@ module.exports.order = async (req, res) => {
                 // let calculatefreight = 0;
 
                 //ราคาขาย ไม่รวมค่าขนส่ง
-                packagedetail = `${productgraphic.description} ${item.detail}`;
+                packagedetail = `${productgraphic.name} ${productgraphic.detail}`;
                 total_price = container.price;
 
-                //ราคาต้นทุน
+                //ราคาต้นทุน (กำไร NBA)
                 total_cost = container.cost;
+
+                //ค่าบริการ
+                total_freight = container.profitbeforeallocate;
+
+                //แจกค่าคอมมิชชั่น
+                total_platefrom = container.plateformprofit;
 
                 orders.push({
                   packageid: container._id,
@@ -137,7 +142,7 @@ module.exports.order = async (req, res) => {
             total_cost: totalcost,
             total_price: totalprice,
             total_freight: totalfreight,
-            net: totalprice + totalfreight,
+            net: totalprice,
             status: {
               name: "รอการตรวจสอบ",
               timestamp: dayjs(Date.now()).format(""),
@@ -163,10 +168,9 @@ module.exports.order = async (req, res) => {
                 const code = "Service";
                 const percent = await Percent.findOne({code: code});
 
-                const commisstion = totalprice - totalcost;
-                const platfromcommission = (commisstion * 80) / 100;
-                const bonus = (commisstion * 5) / 100;
-                const allSale = (commisstion * 15) / 100;
+                const platfromcommission = (total_platefrom * 80) / 100;
+                const bonus = (total_platefrom * 5) / 100;
+                const allSale = (total_platefrom * 15) / 100;
 
                 const level = getteammember.data;
                 const validLevel = level.filter((item) => item !== null);
@@ -300,9 +304,9 @@ module.exports.order = async (req, res) => {
         }
       }
     }
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message: "Internal Server Error"});
   }
 };
 

@@ -66,12 +66,6 @@ module.exports.order = async (req, res) => {
                 _id: container.product_graphic_id,
               });
               if (productgraphic) {
-                const platfromprofit =
-                  container.price - (container.profit_NBA + container.cost_NBA);
-                // let packagedetail = `${productgraphic.description} ${item.detail}`;
-
-                // let calculatefreight = 0;
-
                 //ราคาขาย ไม่รวมค่าขนส่ง
                 if (productgraphic.detail === "ราคาต่อตารางเมตร") {
                   packagedetail = `${item.width}*${item.hight} ${productgraphic.description} ${item.detail}`;

@@ -1,9 +1,9 @@
 const router = require("express").Router();
-const ActServiceCategory = require('../../controllers/act.service.controller/act.service.category.controller')
-const ActServicePackage = require('../../controllers/act.service.controller/act.service.package.controller')
-const ActOrder = require('../../controllers/act.service.controller/act.service.order.controller')
+const ActServiceCategory = require("../../controllers/act.service.controller/act.service.category.controller");
+const ActServicePackage = require("../../controllers/act.service.controller/act.service.package.controller");
+const ActOrder = require("../../controllers/act.service.controller/act.service.order.controller");
 const auth = require("../../lib/auth");
-const authAdmin = require('../../lib/auth.admin');
+const authAdmin = require("../../lib/auth.admin");
 
 //category
 router.post("/category/create", authAdmin, ActServiceCategory.create);
@@ -21,7 +21,7 @@ router.put("/package/update/:id", authAdmin, ActServicePackage.update);
 router.delete("/package/delete/:id", authAdmin, ActServicePackage.delete);
 
 //order
-router.post("/order", auth, ActOrder.order)
-router.put("/order/updatepicture/:id", auth, ActOrder.updatePictures)
+router.post("/order", auth, ActOrder.order);
+router.put("/order/updatepicture/:id", auth, ActOrder.updatePictures);
 
-module.exports = router
+module.exports = router;
