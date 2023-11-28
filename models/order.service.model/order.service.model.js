@@ -32,12 +32,12 @@ const orderservice = new mongoose.Schema({
     },
     paymenttype: { type: String, enum: ['เงินสด', 'เงินโอน', 'บัตรเครดิต', 'อื่นๆ'], required: true },
     moneyreceive: { type: Number, required: true },
-    total_cost: { type: Number, required: false, default: 0},
-    total_price: { type: Number, required: false, default: 0},
-    total_freight: { type: Number, required: false, default: 0},
-    net: { type: Number, required: false, default: 0},
+    total_cost: { type: Number},
+    total_price: { type: Number},
+    total_freight: { type: Number},
+    net: { type: Number},
     // change: { type: Number, required: true },
-    employee: { type: Number, required: false},
+    employee: { type: String, required: false},
     status:{ type: Array, required: true},
     timestamp: { type: String}
 })
