@@ -111,19 +111,6 @@ module.exports.order = async (req, res) => {
               }
             }
           }
-          const totalprice = orders.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.price,
-            0
-          );
-          const totalfreight = orders.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.freight,
-            0
-          );
-
-          const totalcost = orders.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.cost,
-            0
-          );
 
           //generate receipt number
           const receiptnumber = await GenerateRiceiptNumber(
@@ -148,10 +135,6 @@ module.exports.order = async (req, res) => {
             product_detail: orders,
             paymenttype: req.body.paymenttype,
             moneyreceive: req.body.moneyreceive,
-            total_cost: totalcost,
-            total_price: totalprice,
-            total_freight: totalfreight,
-            net: totalprice + totalfreight,
             status: {
               name: "รอการตรวจสอบ",
               timestamp: dayjs(Date.now()).format(""),
