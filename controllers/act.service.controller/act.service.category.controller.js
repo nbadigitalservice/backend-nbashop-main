@@ -1,7 +1,10 @@
-const { ActCategoryModel, validate } = require('../../models/act.service.model/act.service.category.model')
-const multer = require('multer')
-const fs = require('fs')
-const { google } = require("googleapis");
+const {
+  ActCategoryModel,
+  validate,
+} = require("../../models/act.service.model/act.service.category.model");
+const multer = require("multer");
+const fs = require("fs");
+const {google} = require("googleapis");
 const CLIENT_ID = process.env.GOOGLE_DRIVE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
 const REDIRECT_URI = process.env.GOOGLE_DRIVE_REDIRECT_URI;
@@ -13,7 +16,7 @@ const oauth2Client = new google.auth.OAuth2(
   REDIRECT_URI
 );
 
-oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+oauth2Client.setCredentials({refresh_token: REFRESH_TOKEN});
 const drive = google.drive({
   version: "v3",
   auth: oauth2Client,
@@ -29,151 +32,185 @@ const storage = multer.diskStorage({
 //Create
 module.exports.create = async (req, res) => {
   try {
-
-    let upload = multer({ storage: storage }).array("imgCollection", 20);
+    let upload = multer({storage: storage}).array("imgCollection", 20);
     upload(req, res, async function (err) {
       if (err) {
-        return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
+        return res.status(403).send({message: "มีบางอย่างผิดพลาด", data: err});
       }
       const reqFiles = [];
 
       if (!req.files) {
-        res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
+        res
+          .status(500)
+          .send({
+            message: "มีบางอย่างผิดพลาด",
+            data: "No Request Files",
+            status: false,
+          });
       } else {
         const url = req.protocol + "://" + req.get("host");
         for (var i = 0; i < req.files.length; i++) {
-          await uploadFileCreate(req.files, res, { i, reqFiles });
+          await uploadFileCreate(req.files, res, {i, reqFiles});
         }
 
         //create collection
         const data = {
           picture: reqFiles[0],
           name: req.body.name,
-        }
+        };
         const actcategory = new ActCategoryModel(data);
-        actcategory.save(error => {
+        actcategory.save((error) => {
           if (error) {
-            res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: error })
+            res
+              .status(403)
+              .send({
+                status: false,
+                message: "ไม่สามารถบันทึกได้",
+                data: error,
+              });
           } else {
-            res.status(200).send({ status: true, message: 'บันทึกสำเร็จ' })
+            res.status(200).send({status: true, message: "บันทึกสำเร็จ"});
           }
-        })
+        });
         //end
       }
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ message: "Internal Server Error" });
+    return res.status(500).send({message: "Internal Server Error"});
   }
-}
+};
 
 //get All websitepackage
 module.exports.GetAll = async (req, res) => {
   try {
     const actcategory = await ActCategoryModel.find();
-    return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: actcategory })
-
+    return res
+      .status(200)
+      .send({status: true, message: "ดึงข้อมูลสำเร็จ", data: actcategory});
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: 'server side error' })
+    return res
+      .status(500)
+      .send({message: "มีบางอย่างผิดพลาด", error: "server side error"});
   }
-}
+};
 
 //get websitepackage by id
 module.exports.GetById = async (req, res) => {
   try {
     const actcategory = await ActCategoryModel.findById(req.params.id);
     if (!actcategory) {
-      return res.status(403).send({ status: false, message: 'ไม่พบข้อมูล' });
-
+      return res.status(403).send({status: false, message: "ไม่พบข้อมูล"});
     } else {
-      return res.status(200).send({ status: true, message: 'ดึงข้อมูลสำเร็จ', data: actcategory });
+      return res
+        .status(200)
+        .send({status: true, message: "ดึงข้อมูลสำเร็จ", data: actcategory});
     }
-
   } catch (error) {
     console.error(error);
-    res.status(500).send({ message: "มีบางอย่างผิดพลาด", error: "server side error" })
+    res
+      .status(500)
+      .send({message: "มีบางอย่างผิดพลาด", error: "server side error"});
   }
-}
+};
 
 //change picture
 module.exports.update = async (req, res) => {
   try {
-
     const id = req.params.id;
 
-    const categoryUpdate = await ActCategoryModel.findById(id)
+    const categoryUpdate = await ActCategoryModel.findById(id);
 
-    let upload = multer({ storage: storage }).array("imgCollection", 20);
+    let upload = multer({storage: storage}).array("imgCollection", 20);
     upload(req, res, async function (err) {
-
-      const name = req.body.name ? req.body.name : categoryUpdate.name
+      const name = req.body.name ? req.body.name : categoryUpdate.name;
 
       if (err) {
-        return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
+        return res.status(403).send({message: "มีบางอย่างผิดพลาด", data: err});
       }
       const reqFiles = [];
 
       if (!req.files) {
-        res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
+        res
+          .status(500)
+          .send({
+            message: "มีบางอย่างผิดพลาด",
+            data: "No Request Files",
+            status: false,
+          });
       } else {
         const url = req.protocol + "://" + req.get("host");
         for (var i = 0; i < req.files.length; i++) {
-          await uploadFileCreate(req.files, res, { i, reqFiles });
+          await uploadFileCreate(req.files, res, {i, reqFiles});
         }
 
         //Update collection
         const data = {
           picture: reqFiles[0],
-          name: name
-        }
-        ActCategoryModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
-          if (err) {
-            return res.status(403).send({ message: 'อัพเดทรูปภาพไม่สำเร็จ', data: err })
-          }
-          //delete old picture
-          //* -->
-          //return sucessful response
-          return res.status(200).send({
-            message: 'อัพเดทสำเร็จ', data: {
-              picture: result.picture,
-              name: result.name,
-
+          name: name,
+        };
+        ActCategoryModel.findByIdAndUpdate(
+          id,
+          data,
+          {returnDocument: "after"},
+          (err, result) => {
+            if (err) {
+              return res
+                .status(403)
+                .send({message: "อัพเดทรูปภาพไม่สำเร็จ", data: err});
             }
-          })
-        })
+            //delete old picture
+            //* -->
+            //return sucessful response
+            return res.status(200).send({
+              message: "อัพเดทสำเร็จ",
+              data: {
+                picture: result.picture,
+                name: result.name,
+              },
+            });
+          }
+        );
         //end
       }
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ message: "Internal Server Error" });
+    return res.status(500).send({message: "Internal Server Error"});
   }
-}
+};
 
 //Delete
 module.exports.delete = async (req, res) => {
   try {
     const id = req.params.id;
-    ActCategoryModel.findByIdAndDelete(id, { returnOriginal: true }, (error, result) => {
-      if (error) {
-        return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ', data: error })
+    ActCategoryModel.findByIdAndDelete(
+      id,
+      {returnOriginal: true},
+      (error, result) => {
+        if (error) {
+          return res
+            .status(403)
+            .send({status: false, message: "ลบไม่สำเร็จ", data: error});
+        }
+        if (result) {
+          return res.status(200).send({status: true, message: "ลบสำเร็จ"});
+        } else {
+          return res
+            .status(403)
+            .send({status: false, message: "ลบไม่สำเร็จ กรุณาลองอีกครั้ง"});
+        }
       }
-      if (result) {
-        return res.status(200).send({ status: true, message: 'ลบสำเร็จ' });
-      } else {
-        return res.status(403).send({ status: false, message: 'ลบไม่สำเร็จ กรุณาลองอีกครั้ง' });
-      }
-    })
-
+    );
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ message: "Internal Server Error" });
+    return res.status(500).send({message: "Internal Server Error"});
   }
-}
+};
 
 //update image
-async function uploadFileCreate(req, res, { i, reqFiles }) {
+async function uploadFileCreate(req, res, {i, reqFiles}) {
   const filePath = req[i].path;
   let fileMetaData = {
     name: req.originalname,
@@ -190,9 +227,8 @@ async function uploadFileCreate(req, res, { i, reqFiles }) {
 
     generatePublicUrl(response.data.id);
     reqFiles.push(response.data.id);
-
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error" });
+    res.status(500).send({message: "Internal Server Error"});
   }
 }
 
@@ -214,6 +250,6 @@ async function generatePublicUrl(res) {
     console.log(result.data);
   } catch (error) {
     console.log(error);
-    return res.status(500).send({ message: "Internal Server Error" });
+    return res.status(500).send({message: "Internal Server Error"});
   }
 }

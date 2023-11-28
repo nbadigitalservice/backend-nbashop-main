@@ -51,6 +51,7 @@ module.exports.create = async (req, res) => {
           code: req.body.code,
           picture: reqFiles[0],
           type: req.body.type,
+          type_car: req.body.type_car,
           name: req.body.name,
           detail: req.body.detail,
           price: Number(req.body.price),
@@ -139,6 +140,7 @@ module.exports.update = async (req, res) => {
       const categoryid = req.body.categoryid?req.body.categoryid:packageUpdate.categoryid
       const code = req.body.code ? req.body.code : packageUpdate.code
       const type = req.body.type ? req.body.type : packageUpdate.type
+      const type_car = req.body.type_car ? req.body.type_car : packageUpdate.type_car
       const name = req.body.name ? req.body.name : packageUpdate.name
       const detail = req.body.detail ? req.body.detail : packageUpdate.detail
       const price = req.body.price ? Number(req.body.price) : packageUpdate.price
@@ -167,6 +169,7 @@ module.exports.update = async (req, res) => {
           code: code,
           picture: reqFiles[0],
           type: type,
+          type_car: type_car,
           name: name,
           detail: detail,
           price: price,
@@ -190,6 +193,7 @@ module.exports.update = async (req, res) => {
               code: result.code,
               picture: result.picture,
               type: result.type,
+              type_car: result.type_car,
               name: result.name,
               detail: result.detail,
               price: result.price,
