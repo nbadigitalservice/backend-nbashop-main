@@ -1,11 +1,11 @@
 const router = require("express").Router();
-const TaxServiceCategory = require('../../controllers/tax.service.controller/tax.service.category.controller')
-const TaxServicePackage = require('../../controllers/tax.service.controller/tax.service.package.controller')
-const TaxOrder = require('../../controllers/tax.service.controller/tax.service.order.controller')
-const TaxReverse = require('../../controllers/tax.service.controller/taxreverse.controller')
+const TaxServiceCategory = require("../../controllers/tax.service.controller/tax.service.category.controller");
+const TaxServicePackage = require("../../controllers/tax.service.controller/tax.service.package.controller");
+const TaxOrder = require("../../controllers/tax.service.controller/tax.service.order.controller");
+const TaxReverse = require("../../controllers/tax.service.controller/taxreverse.controller");
 // const InsuranceOrder = require('../../controllers/insurance.service.controller/insurance.service.order.controller')
 const auth = require("../../lib/auth");
-const authAdmin = require('../../lib/auth.admin');
+const authAdmin = require("../../lib/auth.admin");
 
 //category
 router.post("/category/create", authAdmin, TaxServiceCategory.create);
@@ -23,16 +23,16 @@ router.put("/package/update/:id", authAdmin, TaxServicePackage.update);
 router.delete("/package/delete/:id", authAdmin, TaxServicePackage.delete);
 
 //order
-router.post("/order", auth, TaxOrder.order)
-router.put("/order/updatepicture/:id", auth, TaxOrder.updatePictures)
-router.post("/order/confirm/:id", authAdmin, TaxOrder.confirm)
-router.post("/order/cusconfirm/:id", auth, TaxOrder.ConfirmByCustomer)
+router.post("/order", auth, TaxOrder.order);
+router.put("/order/updatepicture/:id", auth, TaxOrder.updatePictures);
+router.post("/order/confirm/:id", authAdmin, TaxOrder.confirm);
+router.post("/order/cusconfirm/:id",auth, TaxOrder.ConfirmByCustomer);
 
 // tax reverse
-router.get("/taxreverse/list/:id", auth, TaxReverse.GetByOrderId)
-router.get("/taxreverse/list", auth, TaxReverse.GetByShopId)
+router.get("/taxreverse/list/:id", auth, TaxReverse.GetByOrderId);
+router.get("/taxreverse/list", auth, TaxReverse.GetByShopId);
 
 // cancel by customer
-router.put("/taxreverse/cancel/:id", auth, TaxOrder.CancelByCustomer)
+router.put("/taxreverse/cancel/:id", auth, TaxOrder.CancelByCustomer);
 
-module.exports = router
+module.exports = router;

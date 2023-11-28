@@ -12,7 +12,7 @@ const taxreverse = new mongoose.Schema({
     tax_mulct_value: { type: Number },
     traffic_mulct_value: { type: Number },
     other: { type: Number },
-    status: { type: String, enum: ['รอการยืนยันจากลูกค้า', 'ลูกค้ายืนยันแล้ว', 'ลูกค้ายกเลิกใบเสนอราคานี้'], default: 'รอการยืนยันจากลูกค้า' }
+    status:{ type: Array, required: true},
 },{timestamps:true});
 
 const TaxReverseModel = new mongoose.model("taxreverse", taxreverse)

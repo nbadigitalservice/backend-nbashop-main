@@ -5,6 +5,9 @@ const {
   TaxReverseModel,
 } = require("../../models/tax.service.model/tax.service.reverse.model");
 const {
+  TaxCategoryModel,
+} = require("../../models/tax.service.model/tax.service.category.model");
+const {
   OrderServiceModel,
   validate,
 } = require("../../models/order.service.model/order.service.model");
@@ -13,6 +16,7 @@ const line = require("../../lib/line.notify.order");
 const {Shop} = require("../../models/pos.models/shop.model");
 const {Partners} = require("../../models/pos.models/partner.model");
 const {Employee} = require("../../models/pos.models/employee.model");
+const {Percent} = require("../../models/pos.models/percent.profit.model");
 const getmemberteam = require("../../lib/getPlateformMemberTeam");
 const {Commission} = require("../../models/commission.model");
 const axios = require("axios");
@@ -47,246 +51,144 @@ const storage = multer.diskStorage({
 
 module.exports.order = async (req, res) => {
   try {
-    // const { error } = validate({...req.body,shopid:""});
-    // if (error) {
-    //   return res
-    //     .status(400)
-    //     .send({ status: false, message: error.details[0].message });
-    // }
-    const taxpackage = await TaxPackageModel.findOne({
-      _id: req.body.product_detail[0].packageid,
-    });
-    console.log(taxpackage);
-    if (taxpackage) {
-      let token = req.headers["auth-token"];
-      token = token.replace(/^Bearer\s+/, "");
-      jwt.verify(token, process.env.JWTPRIVATEKEY, async (err, decoded) => {
-        if (err) {
-          jwt.verify(
-            token,
-            process.env.API_PARTNER_KEY,
-            async (err, partner_decoded) => {
-              if (err) {
-                return res.status(403).send({message: "Not have permission "});
-              } else {
-                const totalprice =
-                  taxpackage.price * req.body.product_detail[0].quantity;
-                const change = req.body.moneyreceive - totalprice;
-
-                //generate receipt number
-                const shop_partner_type = req.body.shop_partner_type;
-                const receiptnumber = await GenerateRiceiptNumber(
-                  shop_partner_type,
-                  req.body.shop_branch_id
-                );
-
-                // create order
-                let data = {
-                  receiptnumber: receiptnumber,
-                  customer_contact: req.body.customer_contact,
-                  customer_name: req.body.customer_name,
-                  customer_tel: req.body.customer_tel,
-                  customer_address: req.body.customer_address,
-                  customer_iden_id: req.body.customer_iden_id,
-                  customer_line: req.body.customer_line,
-                  partnername: "platform",
-                  servicename: "Tax Service(ภาษี)",
-                  shopid: req.body.shopid,
-                  shop_partner_type: req.body.shop_partner_type,
-                  branch_name: req.body.branch_name,
-                  branch_id: req.body.branch_id,
-                  product_detail: [
-                    {
-                      packageid: taxpackage._id,
-                      packagename: taxpackage.name,
-                      packagedetail: taxpackage.detail,
-                      quantity: req.body.product_detail[0].quantity,
-                      price: taxpackage.price,
-                    },
-                  ],
-                  paymenttype: req.body.paymenttype,
-                  moneyreceive: req.body.moneyreceive,
-                  totalCost: taxpackage.cost + taxpackage.nbaprofit,
-                  totalprice: totalprice,
-                  change: change,
-                  status: {
-                    name: "รอการตรวจสอบ",
-                    timestamp: dayjs(Date.now()).format(""),
-                  },
-                };
-                const order = new OrderServiceModel(data);
-                await order.save((err) => {
-                  if (err) {
-                    console.error(err);
-                    return res
-                      .status(403)
-                      .send({message: "ไม่สามารถบันทึกได้", data: err});
-                  } else {
-                    return res
-                      .status(200)
-                      .send({message: "บันทึกข้อมูลสำเร็จ", data: order});
-                  }
-                });
-              }
-            }
-          );
+    const checkuser = await Employee.findOne({_id: req.user._id});
+    if (!checkuser) {
+      return res.status(403).send({message: "User not found"});
+    } else {
+      const findshop = await Shop.findOne({_id: checkuser.employee_shop_id});
+      if (!findshop) {
+        return res.status(403).send({message: "Shop not found"});
+      } else {
+        const partner = await Partners.findById({
+          _id: findshop.shop_partner_id,
+        });
+        const amount = req.body.product_detail.length;
+        let product_price = 0;
+        for (let i = 0; i < amount; i++) {
+          const graphicpackage = await TaxPackageModel.findOne({
+            _id: req.body.product_detail[i].packageid,
+          });
+          const total = graphicpackage.price;
+          product_price = product_price + total;
+        }
+        if (partner.partner_wallet < product_price) {
+          return res.status(400).send({
+            status: false,
+            message: "ยอดเงินไม่ในกระเป๋าไม่เพียงพอ",
+          });
         } else {
-          const checkuser = await Employee.findOne({_id: decoded._id});
-          if (!checkuser) {
-            return res.status(403).send({message: "ไม่พบข้อมูลผู้ใช้"});
-          } else {
-            //find shop
-            const findshop = await Shop.findOne({
-              _id: checkuser.employee_shop_id,
+          // getorder
+          const orders = [];
+          let packagedetail;
+          let total_price = 0;
+          let total_cost = 0;
+          let total_freight = 0;
+          for (let item of req.body.product_detail) {
+            const container = await TaxPackageModel.findOne({
+              _id: item.packageid,
             });
-            if (!findshop) {
-              return res
-                .status(400)
-                .send({status: false, message: "ไม่พบ shop"});
-            } else {
-              const partner = await Partners.findById({
-                _id: findshop.shop_partner_id,
+            if (container) {
+              const productgraphic = await TaxPackageModel.findOne({
+                _id: container._id,
               });
-              //check partner wallet
-              if (partner.partner_wallet < taxpackage.price) {
-                return res
-                  .status(400)
-                  .send({
-                    status: false,
-                    message: "ยอดเงินไม่ในกระเป๋าไม่เพียงพอ",
-                  });
-              } else {
-                //getorder
-                const orders = [];
-                let totalCost = 0;
-                for (let item of req.body.product_detail) {
-                  const container = await TaxPackageModel.findOne({
-                    _id: item.packageid,
-                  });
-                  if (container) {
-                    orders.push({
-                      packageid: container._id,
-                      packagename: container.name,
-                      packagedetail: container.detail,
-                      quantity: item.quantity,
-                      plateformprofit: container.plateformprofit,
-                      price: container.price,
-                      productcost: container.cost + container.nbaprofit,
-                    });
-                    totalCost +=
-                      (container.cost + container.nbaprofit) * item.quantity;
-                  }
-                }
+              if (productgraphic) {
+                //ราคาขาย ไม่รวมค่าขนส่ง
+                packagedetail = `${productgraphic.name} ${productgraphic.type} ${item.detail}`;
 
-                const totalprice = orders.reduce(
-                  (accumulator, currentValue) =>
-                    accumulator + currentValue.price * currentValue.quantity,
-                  0
-                );
-
-                // debitdata
-                const debitData = [];
-                if (req.body.debit && Array.isArray(req.body.debit)) {
-                  for (const debitItem of req.body.debit) {
-                    debitData.push({
-                      debitname: debitItem.debitname,
-                      debitnumber: debitItem.debitnumber,
-                      debitamount: debitItem.debitamount,
-                    });
-                  }
-                }
-
-                // creditdata
-                const creditData = [];
-                if (req.body.credit && Array.isArray(req.body.credit)) {
-                  for (const creditItem of req.body.credit) {
-                    creditData.push({
-                      creditname: creditItem.creditname,
-                      creditnumber: creditItem.creditnumber,
-                      creditamount: creditItem.creditamount,
-                    });
-                  }
-                }
-
-                //ตัดเงิน
-                const price = totalprice;
-                // const newwallet = partner.partner_wallet - price
-                // await Partners.findByIdAndUpdate(partner._id, { partner_wallet: newwallet });
-
-                //generate recipt number
-                const receiptnumber = await GenerateRiceiptNumber(
-                  findshop.shop_partner_type,
-                  findshop.shop_branch_id
-                );
-
-                //คำนวนเงินทอน
-                const change = req.body.moneyreceive - price;
-
-                //create order
-                const data = {
-                  receiptnumber: receiptnumber,
-                  customer_contact: req.body.customer_contact,
-                  customer_name: req.body.customer_name,
-                  customer_tel: req.body.customer_tel,
-                  customer_address: req.body.customer_address,
-                  customer_iden_id: req.body.customer_iden_id,
-                  customer_line: req.body.customer_line,
-                  partnername: "shop",
-                  servicename: "Tax Service(ภาษี)",
-                  shopid: findshop._id,
-                  shop_partner_type: findshop.shop_partner_type,
-                  branch_name: findshop.shop_name,
-                  branch_id: findshop.shop_branch_id,
-                  product_detail: orders,
-                  debit: debitData,
-                  credit: creditData,
-                  paymenttype: req.body.paymenttype,
-                  moneyreceive: 0,
-                  totalCost: totalCost,
-                  totalprice: price,
-                  change: change,
-                  status: ({
-                    name: 'รอการตรวจสอบ',
-                    timestamp: dayjs(Date.now()).format(''),
-                  }),
-                };
-                console.log(data);
-                const order = new OrderServiceModel(data);
-                const message = `
-แจ้งงานเข้า : ${order.servicename}
-เลขที่ทำรายการ : ${order.receiptnumber}
-จาก : ${order.branch_name}
-จำนวน : ${order.totalprice} บาท
-สถานะ : ${order.status}
-ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
-
-*ตั้งใจทำงานการนะคะ/ครับ* `;
-                await line.linenotify(message);
-                await order.save((err) => {
-                  if (err) {
-                    console.log(err);
-                    return res
-                      .status(403)
-                      .send({message: "ไม่สมรถบันทึกได้", data: err});
-                  } else {
-                    return res
-                      .status(200)
-                      .send({message: "บันทึกสำเร็จ", data: order});
-                  }
+                orders.push({
+                  packageid: container._id,
+                  packagename: productgraphic.name,
+                  packagedetail: packagedetail,
+                  quantity: item.quantity,
+                  price: total_price,
+                  cost: total_cost,
+                  freight: total_freight,
                 });
+              } else {
+                return res
+                  .status(403)
+                  .send({status: false, message: "ไม่พบข้อมูลสินค้า"});
               }
             }
           }
+          const totalprice = orders.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.price,
+            0
+          );
+          const totalfreight = orders.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.freight,
+            0
+          );
+
+          const totalcost = orders.reduce(
+            (accumulator, currentValue) => accumulator + currentValue.cost,
+            0
+          );
+
+          //generate receipt number
+          const receiptnumber = await GenerateRiceiptNumber(
+            findshop.shop_partner_type,
+            findshop.shop_branch_id
+          );
+
+          const data = {
+            receiptnumber: receiptnumber,
+            customer_contact: req.body.customer_contact,
+            customer_name: req.body.customer_name,
+            customer_tel: req.body.customer_tel,
+            customer_address: req.body.customer_address,
+            customer_iden_id: req.body.customer_iden_id,
+            customer_line: req.body.customer_line,
+            partnername: "shop",
+            servicename: "Tax Service(ภาษี)",
+            shopid: findshop._id,
+            shop_partner_type: findshop.shop_partner_type,
+            branch_name: findshop.shop_name,
+            branch_id: findshop.shop_branch_id,
+            product_detail: orders,
+            paymenttype: req.body.paymenttype,
+            moneyreceive: req.body.moneyreceive,
+            total_cost: totalcost,
+            total_price: totalprice,
+            total_freight: totalfreight,
+            net: totalprice + totalfreight,
+            status: {
+              name: "รอการตรวจสอบ",
+              timestamp: dayjs(Date.now()).format(""),
+            },
+            timestamp: dayjs(Date.now()).format(""),
+          };
+
+          const order = new OrderServiceModel(data);
+          order.save(async (error, data) => {
+            if (data) {
+              const message = `
+แจ้งงานเข้า : ${order.servicename}
+เลขที่ทำรายการ : ${order.receiptnumber}
+จาก : ${order.branch_name}
+จำนวน : ${order.total_price} บาท
+ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
+
+*ฝากแอดมินรบกวนตรวจสอบด้วยนะคะ/ครับ* `;
+              await line.linenotify(message);
+              return res.status(200).send({
+                status: true,
+                data: data,
+              });
+            } else {
+              console.error(error);
+              return res.status(400).send({
+                message: "ไม่สามารถบันทึกได้",
+                error: error.message,
+              });
+            }
+          });
         }
-      });
-    } else {
-      return res
-        .status(400)
-        .send({status: false, message: "ไม่พบบริการเซอร์วิสต์นี้"});
+      }
     }
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({message: "Internal Server Error"});
   }
 };
 
@@ -305,13 +207,11 @@ module.exports.updatePictures = async (req, res) => {
       const reqFiles = [];
 
       if (!req.files) {
-        return res
-          .status(500)
-          .send({
-            message: "มีบางอย่างผิดพลาด",
-            data: "No Request Files",
-            status: false,
-          });
+        return res.status(500).send({
+          message: "มีบางอย่างผิดพลาด",
+          data: "No Request Files",
+          status: false,
+        });
       }
 
       const url = req.protocol + "://" + req.get("host");
@@ -359,52 +259,58 @@ module.exports.updatePictures = async (req, res) => {
 module.exports.confirm = async (req, res) => {
   try {
     const updateStatus = await OrderServiceModel.findOne({_id: req.params.id});
-
-    if (updateStatus.status === "กำลังดำเนินการ") {
+    const status = updateStatus.status[0].name;
+    if (status === "กำลังดำเนินการ") {
       return res
         .status(403)
         .send({message: "แอดมินได้ทำการคอนเฟิร์มออเดอร์นี้ไปแล้ว"});
-    }
-
-    if (updateStatus) {
-      const taxpackage = await TaxPackageModel.findById(
-        updateStatus.product_detail[0].packageid
-      );
-      let servicecharge = 0;
-      if (taxpackage.categoryid === "รถจักรยานยนต์") {
-        servicecharge = 50;
-      } else {
-        servicecharge = 100;
-      }
-      let reverse_price = 0;
-      reverse_price =
-        req.body.price +
-        req.body.tax_value +
-        req.body.tax_mulct_value +
-        req.body.traffic_mulct_value +
-        req.body.other +
-        servicecharge;
-      const data = {
-        orderid: updateStatus._id,
-        shopid: updateStatus.shopid,
-        name: updateStatus.product_detail[0].packagename,
-        price: req.body.price,
-        reverse_price: reverse_price,
-        servicecharge: servicecharge,
-        tax_value: req.body.tax_value,
-        tax_mulct_value: req.body.tax_mulct_value,
-        traffic_mulct_value: req.body.traffic_mulct_value,
-        other: req.body.other,
-      };
-      const taxrevers = new TaxReverseModel(data);
-      await taxrevers.save();
-      await OrderServiceModel.findByIdAndUpdate(updateStatus._id, {
-        status: "กำลังดำเนินการ",
-      });
     } else {
-      return res.status(403).send({message: "เกิดข้อผิดพลาด"});
+      if (updateStatus) {
+        for (let item of updateStatus.product_detail) {
+          const taxpackage = await TaxPackageModel.findOne({
+            _id: item.packageid,
+          });
+          const service_free = await TaxCategoryModel.findOne({
+            _id: taxpackage.categoryid,
+          });
+          let servicecharge = service_free.service_free;
+          let reverse_price = 0;
+          reverse_price =
+            req.body.price +
+            req.body.tax_value +
+            req.body.tax_mulct_value +
+            req.body.traffic_mulct_value +
+            req.body.other +
+            servicecharge;
+          const data = {
+            orderid: updateStatus._id,
+            shopid: updateStatus.shopid,
+            name: item.packagename,
+            price: req.body.price,
+            reverse_price: reverse_price,
+            servicecharge: servicecharge,
+            tax_value: req.body.tax_value,
+            tax_mulct_value: req.body.tax_mulct_value,
+            traffic_mulct_value: req.body.traffic_mulct_value,
+            other: req.body.other,
+            status: {
+              name: "รอการตรวจสอบจากลูกค้า",
+              timestamp: dayjs(Date.now()).format(""),
+            },
+          };
+          const taxrevers = new TaxReverseModel(data);
+          await taxrevers.save();
+          updateStatus.status.push({
+            name: "รอการตรวจสอบจากลูกค้า",
+            timestamp: dayjs(Date.now()).format(""),
+          });
+          updateStatus.save();
+        }
+      } else {
+        return res.status(403).send({message: "เกิดข้อผิดพลาด"});
+      }
+      return res.status(200).send({message: "คอนเฟิร์มออร์เดอร์สำเร็จ"});
     }
-    return res.status(200).send({message: "คอนเฟิร์มออร์เดอร์สำเร็จ"});
   } catch (error) {
     console.log(error);
     return res.status(500).send({message: "Internal Server", data: error});
@@ -413,225 +319,245 @@ module.exports.confirm = async (req, res) => {
 
 module.exports.ConfirmByCustomer = async (req, res) => {
   try {
-    // Find the taxreverse document by ID
-    const taxreverse = await TaxReverseModel.findById(req.params.id);
+    const checkuser = await Employee.findOne({_id: req.user._id});
+    if (!checkuser) {
+      return res.status(403).send({message: "User not found"});
+    } else {
+      const findshop = await Shop.findOne({_id: checkuser.employee_shop_id});
+      if (!findshop) {
+        return res.status(403).send({message: "Shop not found"});
+      } else {
+        // Find the taxreverse document by ID
+        const taxreverse = await TaxReverseModel.findById(req.params.id);
+        const status = taxreverse.status[0].name;
+        if (status === "ลูกค้ายืนยันแล้ว") {
+          return res.status(403).send({message: "ลูกค้าได้ทำการยืนยันไปแล้ว"});
+        } else {
+          if (!taxreverse) {
+            return res
+              .status(404)
+              .send({message: "Tax reverse document not found"});
+          } else {
+            // Calculate the new price based on tax values and other fields
+            let price = 0;
+            price +=
+              taxreverse.price +
+              (taxreverse.tax_value || 0) +
+              (taxreverse.tax_mulct_value || 0) +
+              (taxreverse.traffic_mulct_value || 0) +
+              (taxreverse.other || 0);
 
-    if (taxreverse.status === "ลูกค้ายืนยันแล้ว") {
-      return res.status(403).send({message: "ลูกค้าได้ทำการยืนยันไปแล้ว"});
-    }
+            // Calculate the new totalprice (if needed)
+            const charge = taxreverse.servicecharge;
 
-    if (!taxreverse) {
-      return res.status(404).send({message: "Tax reverse document not found"});
-    }
+            // Find and update the corresponding orderservice document
+            const orderServiceIdToUpdate = taxreverse.orderid;
+            const orderServiceToUpdate = await OrderServiceModel.findById(
+              orderServiceIdToUpdate
+            );
+            if (!orderServiceToUpdate) {
+              return res
+                .status(404)
+                .send({message: "Order service document not found"});
+            } else {
+              for (let item of orderServiceToUpdate.product_detail) {
+                item.price = price;
+                item.cost = price;
+                item.freight = charge;
+              }
 
-    // Calculate the new price based on tax values and other fields
-    let price = 0;
-    price +=
-      taxreverse.price +
-      (taxreverse.tax_value || 0) +
-      (taxreverse.tax_mulct_value || 0) +
-      (taxreverse.traffic_mulct_value || 0) +
-      (taxreverse.other || 0);
+              const totalprice = orderServiceToUpdate.product_detail.reduce(
+                (accumulator, currentValue) => accumulator + currentValue.price,
+                0
+              );
+              const totalfreight = orderServiceToUpdate.product_detail.reduce(
+                (accumulator, currentValue) =>
+                  accumulator + currentValue.freight,
+                0
+              );
 
-    // Calculate the new totalprice (if needed)
-    const totalprice = taxreverse.reverse_price;
+              const totalcost = orderServiceToUpdate.product_detail.reduce(
+                (accumulator, currentValue) => accumulator + currentValue.cost,
+                0
+              );
 
-    // Find and update the corresponding orderservice document
-    const orderServiceIdToUpdate = taxreverse.orderid;
-    const orderServiceToUpdate = await OrderServiceModel.findById(
-      orderServiceIdToUpdate
-    );
+              const partner = await Partners.findById({
+                _id: findshop.shop_partner_id,
+              });
 
-    if (!orderServiceToUpdate) {
-      return res
-        .status(404)
-        .send({message: "Order service document not found"});
-    }
+              // ตัดเงิน;
+              const newwallet =
+                partner.partner_wallet - (totalprice + totalfreight);
+              await Partners.findByIdAndUpdate(partner._id, {
+                partner_wallet: newwallet,
+              });
 
-    orderServiceToUpdate.product_detail[0].price = price;
-    orderServiceToUpdate.totalCost = price;
-    orderServiceToUpdate.totalprice = totalprice;
+              orderServiceToUpdate.total_cost = totalcost;
+              orderServiceToUpdate.total_price = totalprice;
+              orderServiceToUpdate.total_freight = totalfreight;
+              orderServiceToUpdate.net = totalprice + totalfreight;
 
-    // Deduct money from wallet
-    if (orderServiceToUpdate.partnername === "platform") {
-      let tel = orderServiceToUpdate.customer_tel;
-      let data = {
-        servicename: orderServiceToUpdate.servicename,
-        receiptnumber: orderServiceToUpdate.receiptnumber,
-        totalprice: orderServiceToUpdate.totalprice,
-      };
-      const request = {
-        method: "post",
-        headers: {
-          token: process.env.NBA_PLATFORM_PUBLIC_KEY,
-          "Content-Type": "application/json",
-        },
-        url: `${process.env.NBA_PLATFORM}member/confirm`,
-        data: {tel: tel, data: data},
-      };
-      try {
-        const response = await axios(request);
-        if (response) {
-          // create wallet history
-          const wallethistory = {
-            shop_id: orderServiceToUpdate.shopid,
-            partner_id: "platform",
-            orderid: orderServiceToUpdate._id,
-            name: `รายการสั่งซื้อ ${orderServiceToUpdate.servicename} ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
-            type: "เงินออก",
-            amount: totalprice,
-          };
-          const walletHistory = new WalletHistory(wallethistory);
-          walletHistory.save();
+              orderServiceToUpdate.status.push({
+                name: "รอการตรวจสอบ",
+                timestamp: dayjs(Date.now()).format(""),
+              })
+
+              const getteammember = await getmemberteam.GetTeamMember(
+                orderServiceToUpdate.customer_tel
+              );
+              if (!getteammember) {
+                return res.status(403).send({message: "ไม่พบข้อมมูลลูกค้า"});
+              } else {
+                orderServiceToUpdate.save(async (error, data) => {
+                  if (data) {
+                    const findorderid = await OrderServiceModel.findById({
+                      _id: data._id,
+                    });
+
+                    const code = "Service";
+                    const percent = await Percent.findOne({code: code});
+
+                    const commisstion = (totalfreight * 20) / 100;
+                    const platfromcommission = (commisstion * 80) / 100;
+                    const bonus = (commisstion * 5) / 100;
+                    const allSale = (commisstion * 15) / 100;
+
+                    const level = getteammember.data;
+                    const validLevel = level.filter((item) => item !== null);
+                    const storeData = [];
+                    const platform = percent.percent_platform;
+                    //calculation from 80% for member
+                    const owner =
+                      (platfromcommission * platform.level_owner) / 100;
+                    const lv1 = (platfromcommission * platform.level_one) / 100;
+                    const lv2 = (platfromcommission * platform.level_two) / 100;
+                    const lv3 =
+                      (platfromcommission * platform.level_tree) / 100;
+
+                    //calculation vat 3%
+                    const ownervat = (owner * 3) / 100;
+                    const lv1vat = (lv1 * 3) / 100;
+                    const lv2vat = (lv2 * 3) / 100;
+                    const lv3vat = (lv3 * 3) / 100;
+
+                    //real commission for member
+                    const ownercommission = owner - ownervat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                    const lv1commission = lv1 - lv1vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                    const lv2commission = lv2 - lv2vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                    const lv3commission = lv3 - lv3vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+
+                    for (const TeamMemberData of validLevel) {
+                      let integratedData;
+
+                      if (TeamMemberData.level == "owner") {
+                        integratedData = {
+                          lv: TeamMemberData.level,
+                          iden: TeamMemberData.iden,
+                          name: TeamMemberData.name,
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                          tel: TeamMemberData.tel,
+                          commission_amount: owner,
+                          vat3percent: ownervat,
+                          remainding_commission: ownercommission,
+                        };
+                      }
+                      if (TeamMemberData.level == "1") {
+                        integratedData = {
+                          lv: TeamMemberData.level,
+                          iden: TeamMemberData.iden,
+                          name: TeamMemberData.name,
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                          tel: TeamMemberData.tel,
+                          commission_amount: lv1,
+                          vat3percent: lv1vat,
+                          remainding_commission: lv1commission,
+                        };
+                      }
+                      if (TeamMemberData.level == "2") {
+                        integratedData = {
+                          lv: TeamMemberData.level,
+                          iden: TeamMemberData.iden,
+                          name: TeamMemberData.name,
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                          tel: TeamMemberData.tel,
+                          commission_amount: lv2,
+                          vat3percent: lv2vat,
+                          remainding_commission: lv2commission,
+                        };
+                      }
+                      if (TeamMemberData.level == "3") {
+                        integratedData = {
+                          lv: TeamMemberData.level,
+                          iden: TeamMemberData.iden,
+                          name: TeamMemberData.name,
+                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                          tel: TeamMemberData.tel,
+                          commission_amount: lv3,
+                          vat3percent: lv2vat,
+                          remainding_commission: lv3commission,
+                        };
+                      }
+                      if (integratedData) {
+                        storeData.push(integratedData);
+                      }
+                    }
+
+                    const commissionData = {
+                      data: storeData,
+                      platformcommission: platfromcommission,
+                      bonus: bonus,
+                      allSale: allSale,
+                      orderid: findorderid,
+                      code: "Service",
+                    };
+
+                    const commission = new Commission(commissionData);
+                    commission.save((error, data) => {
+                      if (error) {
+                        console.log(error);
+                        return res
+                          .status(403)
+                          .send({status: false, message: "ไม่สามารถบันทึกได้"});
+                      }
+                      // Create wallet history
+                      const wallethistory = {
+                        shop_id: orderServiceToUpdate.shopid,
+                        partner_id: partner._id,
+                        orderid: orderServiceToUpdate._id,
+                        name: `รายการสั่งซื้อ Tax Service(ภาษี) ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
+                        type: "เงินออก",
+                        amount: orderServiceToUpdate.net,
+                      };
+                      const walletHistory = new WalletHistory(wallethistory);
+                      walletHistory.save();
+                    });
+                    const message = `
+แจ้งงานเข้า : ${orderServiceToUpdate.servicename}
+เลขที่ทำรายการ : ${orderServiceToUpdate.receiptnumber}
+จาก : ${orderServiceToUpdate.branch_name}
+จำนวน : ${orderServiceToUpdate.net} บาท
+ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
+    
+*ฝากแอดมินรบกวนตรวจสอบด้วยนะคะ/ครับ* `;
+                    await line.linenotify(message);
+                    return res.status(200).send({
+                      status: true,
+                      data: data,
+                    });
+                  } else {
+                    console.error(error);
+                    return res.status(400).send({
+                      message: "ไม่สามารถบันทึกได้",
+                      error: error.message,
+                    });
+                  }
+                });
+              }
+            }
+          }
         }
-      } catch (error) {
-        console.log(error);
-        return res
-          .status(400)
-          .send({message: "มีบางอย่างผิดพลาด", data: error.message});
-      }
-    } else {
-      const findShop = await Shop.findOne({_id: orderServiceToUpdate.shopid});
-      const partner = await Partners.findOne({_id: findShop.shop_partner_id});
-      const newWallet = partner.partner_wallet - totalprice;
-      await Partners.findByIdAndUpdate(partner._id, {
-        partner_wallet: newWallet,
-      });
-
-      // Create wallet history
-      const wallethistory = {
-        shop_id: orderServiceToUpdate.shopid,
-        partner_id: partner._id,
-        orderid: orderServiceToUpdate._id,
-        name: `รายการสั่งซื้อ Tax Service(ภาษี) ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
-        type: "เงินออก",
-        amount: totalprice,
-      };
-
-      const walletHistory = new WalletHistory(wallethistory);
-      await walletHistory.save();
-    }
-
-    // Calculate commissions
-    let taxcal = taxreverse.servicecharge;
-    if (taxcal == 50) {
-      taxcal -= 10;
-    } else {
-      taxcal -= 20;
-    }
-    const commission = taxcal;
-    const platformCommission = (commission * 80) / 100;
-    const bonus = (commission * 5) / 100;
-    const allSale = (commission * 15) / 100;
-
-    const owner = (platformCommission * 55) / 100;
-    const lv1 = (platformCommission * 20) / 100;
-    const lv2 = (platformCommission * 15) / 100;
-    const lv3 = (platformCommission * 10) / 100;
-
-    const ownervat = (owner * 3) / 100;
-    const lv1vat = (lv1 * 3) / 100;
-    const lv2vat = (lv2 * 3) / 100;
-    const lv3vat = (lv3 * 3) / 100;
-
-    const ownerCommission = owner - ownervat;
-    const lv1commission = lv1 - lv1vat;
-    const lv2commission = lv2 - lv2vat;
-    const lv3commission = lv3 - lv3vat;
-
-    // Calculate and store commission data
-    const getteammember = await getmemberteam.GetTeamMember(
-      orderServiceToUpdate.customer_tel
-    );
-    if (!getteammember) {
-      return res.status(403).send({message: "No customer data found"});
-    }
-
-    const validLevel = getteammember.data.filter((item) => item !== null);
-    const storeData = [];
-
-    for (const TeamMemberData of validLevel) {
-      let integratedData;
-
-      if (TeamMemberData.level === "owner") {
-        integratedData = {
-          lv: TeamMemberData.level,
-          iden: TeamMemberData.iden,
-          name: TeamMemberData.name,
-          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-          tel: TeamMemberData.tel,
-          commission_amount: owner,
-          vat3percent: ownervat,
-          remainding_commission: ownerCommission,
-        };
-      }
-      if (TeamMemberData.level == "1") {
-        integratedData = {
-          lv: TeamMemberData.level,
-          iden: TeamMemberData.iden,
-          name: TeamMemberData.name,
-          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-          tel: TeamMemberData.tel,
-          commission_amount: lv1,
-          vat3percent: lv1vat,
-          remainding_commission: lv1commission,
-        };
-      }
-      if (TeamMemberData.level == "2") {
-        integratedData = {
-          lv: TeamMemberData.level,
-          iden: TeamMemberData.iden,
-          name: TeamMemberData.name,
-          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-          tel: TeamMemberData.tel,
-          commission_amount: lv2,
-          vat3percent: lv2vat,
-          remainding_commission: lv2commission,
-        };
-      }
-      if (TeamMemberData.level == "3") {
-        integratedData = {
-          lv: TeamMemberData.level,
-          iden: TeamMemberData.iden,
-          name: TeamMemberData.name,
-          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-          tel: TeamMemberData.tel,
-          commission_amount: lv3,
-          vat3percent: lv2vat,
-          remainding_commission: lv3commission,
-        };
-      }
-
-      if (integratedData) {
-        storeData.push(integratedData);
       }
     }
-
-    const commissionData = {
-      data: storeData,
-      platformcommission: platformCommission,
-      bonus: bonus,
-      allSale: allSale,
-      orderid: orderServiceToUpdate.receiptnumber,
-      code: "Service",
-    };
-
-    // Create and save commission data
-    const givecommission = new Commission(commissionData);
-    await givecommission.save();
-
-    // Save the updated orderservice document
-    await orderServiceToUpdate.save();
-    await TaxReverseModel.findByIdAndUpdate(taxreverse._id, {
-      status: "ลูกค้ายืนยันแล้ว",
-    });
-
-    return res
-      .status(200)
-      .send({
-        message: "Order service document updated successfully",
-        data: orderServiceToUpdate,
-      });
   } catch (error) {
     console.error(error);
     return res
