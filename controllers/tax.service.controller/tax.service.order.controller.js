@@ -328,9 +328,8 @@ module.exports.ConfirmByCustomer = async (req, res) => {
         return res.status(403).send({message: "Shop not found"});
       } else {
         // Find the taxreverse document by ID
-        const taxreverse = await TaxReverseModel.findById(req.params.id);
-        const status = taxreverse.status[0].name;
-        if (status === "ลูกค้ายืนยันแล้ว") {
+        const taxreverse = await TaxReverseModel.findOne({_id: req.params.id});
+        if (taxreverse.status[0].name === "ยืนยันจากลูกค้า") {
           return res.status(403).send({message: "ลูกค้าได้ทำการยืนยันไปแล้ว"});
         } else {
           if (!taxreverse) {
@@ -402,6 +401,11 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                 timestamp: dayjs(Date.now()).format(""),
               })
 
+              taxreverse.status.push({
+                name: "ยืนยันจากลูกค้า",
+                timestamp: dayjs(Date.now()).format(""),
+              })
+              taxreverse.save();
               const getteammember = await getmemberteam.GetTeamMember(
                 orderServiceToUpdate.customer_tel
               );
