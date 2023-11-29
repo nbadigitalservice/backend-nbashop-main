@@ -120,7 +120,7 @@ app.use("/v1/nba-shop/regsimtrue", require("./routes/regsim/true"));
 app.use("/v1/nba-shop/regsimais", require("./routes/regsim/ais"));
 
 //get member team
-app.use("/v1/nba-shop/getmemberteam", require("./routes/getMemberTeam"));
+// app.use("/v1/nba-shop/getmemberteam", require("./routes/getMember"));
 
 // commission
 app.use("/v1/nba-shop/commission", require("./routes/commission.router"));
