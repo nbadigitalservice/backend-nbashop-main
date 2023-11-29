@@ -397,7 +397,7 @@ module.exports.ConfirmByCustomer = async (req, res) => {
               orderServiceToUpdate.net = totalprice + totalfreight;
 
               orderServiceToUpdate.status.push({
-                name: "รอตรวจสอบ",
+                name: "รอการตรวจสอบ",
                 timestamp: dayjs(Date.now()).format(""),
               })
 
