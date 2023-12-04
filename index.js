@@ -162,7 +162,7 @@ app.use("/v1/nba-shop/more/debit_history", require("./routes/more/debit.history"
 app.use("/v1/nba-shop/more/platform", require("./routes/more/platform"));
 
 //จองตั๋ว
-app.use("/v1/nba-shop/aoc/book", require("./routes/aoc/index"))
+app.use("/v1/nba-shop/aoc", require("./routes/aoc/booking.aoc"))
 
 //จัดการหมวดหมู่สินค้า
 app.use("/v1/nba-shop/category", require("./routes/pos/category"));

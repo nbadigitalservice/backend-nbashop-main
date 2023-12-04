@@ -48,9 +48,13 @@ exports.getIATA = async (req, res) => {
 //get ticket
 exports.getFlightTicket = async (req, res) => {
   try {
-    let token = req.headers["auth-aoc"];
-    if (token) {
-      token = token.replace(/^Bearer\s+/, "");
+    const Token = await axios.post(process.env.AOC_URL + "Token", {
+      username: process.env.AOC_USERNAME,
+      password: process.env.AOC_PASSWORD,
+      grantType: "password",
+    });
+    if (Token) {
+      let token = Token.data.accessToken;
       const ticketFlight = await axios.post(
         process.env.AOC_URL + "FlightSearchMultiTicket",
         {
@@ -60,7 +64,6 @@ exports.getFlightTicket = async (req, res) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            Cookie: process.env.AOC_COOKIE,
           },
         }
       );
@@ -72,7 +75,7 @@ exports.getFlightTicket = async (req, res) => {
           );
           return res.status(200).send({
             status: true,
-            message: "ดึงข้อมูลเที่ยวบินสำเร็จ",
+            origin_data: req.body,
             data: ticket,
             pgSearchOID: ticketFlight.data.pgSearchOID,
           });
@@ -82,7 +85,7 @@ exports.getFlightTicket = async (req, res) => {
           );
           return res.status(200).send({
             status: true,
-            message: "ดึงข้อมูลเที่ยวบินสำเร็จ",
+            origin_data: req.body,
             data: ticket,
             pgSearchOID: ticketFlight.data.pgSearchOID,
           });
@@ -102,9 +105,13 @@ exports.getFlightTicket = async (req, res) => {
 //get Price Ticket
 exports.getPriceTicket = async (req, res) => {
   try {
-    let token = req.headers["auth-aoc"];
-    if (token) {
-      token = token.replace(/^Bearer\s+/, "");
+    const Token = await axios.post(process.env.AOC_URL + "Token", {
+      username: process.env.AOC_USERNAME,
+      password: process.env.AOC_PASSWORD,
+      grantType: "password",
+    });
+    if (Token) {
+      let token = Token.data.accessToken;
       const ticketPrice = await axios.post(
         process.env.AOC_URL + "FlightMultiTicketPricing",
         {
@@ -114,7 +121,6 @@ exports.getPriceTicket = async (req, res) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            Cookie: process.env.AOC_COOKIE,
           },
         }
       );
@@ -139,9 +145,13 @@ exports.getPriceTicket = async (req, res) => {
 
 exports.getBooking = async (req, res) => {
   try {
-    let token = req.headers["auth-aoc"];
-    if (token) {
-      token = token.replace(/^Bearer\s+/, "");
+    const Token = await axios.post(process.env.AOC_URL + "Token", {
+      username: process.env.AOC_USERNAME,
+      password: process.env.AOC_PASSWORD,
+      grantType: "password",
+    });
+    if (Token) {
+      let token = Token.data.accessToken;
       const flight_booking = await axios.post(
         process.env.AOC_URL + "FlightBooking",
         {
@@ -151,40 +161,35 @@ exports.getBooking = async (req, res) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            Cookie: process.env.AOC_COOKIE,
           },
         }
       );
-      if (!flight_booking) {
+      if (!flight_booking.data.TransactionID) {
         return res
           .status(401)
           .send({status: false, message: "จองตั๋วไม่สำเร็จ"});
-      } else {
-        return res
-          .status(200)
-          .send({
-            status: true,
-            message: "จองตั๋วสำเร็จ",
-            data: flight_booking.data,
-          });
       }
-
-      // const order_flightticket = new OrderFlightTicket(data);
-      // order_flightticket.save(async (error, data) => {
-      //   if (data) {
-      //     return res.status(200).send({
-      //       message: "จองตั๋วเครื่องบินสำเร็จ",
-      //       status: true,
-      //       data: data,
-      //     });
-      //   } else {
-      //     return res.status(400).send({
-      //       message: "จองตั๋วเครื่องบินไม่สำเร็จ",
-      //       status: false,
-      //       error,
-      //     });
-      //   }
-      // });
+      const invoice = await GenerateRiceiptNumber();
+      const data = {
+        invoice: invoice,
+        transaction_id: flight_booking.data.TransactionID,
+        contactInfo: req.body.contactInfo,
+        total_cost: req.body.totalFare - req.body.totalCommission,
+        total_commission: req.body.totalCommission,
+        total: req.body.totalFare,
+        status: {
+          name: "รอการยืนยันจากลูกค้า",
+          timestamp: dayjs(Date.now()).format(""),
+        },
+        timestamp: dayjs(Date.now()).format(""),
+      };
+      const new_ticket = new OrderFlightTicket(data);
+      new_ticket.save();
+      return res.status(200).send({
+        status: true,
+        message: "ทำรายการทำเร็จ",
+        data: new_ticket,
+      });
     }
   } catch (err) {
     console.log(err);
@@ -194,9 +199,13 @@ exports.getBooking = async (req, res) => {
 
 exports.getFlightBooking = async (req, res) => {
   try {
-    let token = req.headers["auth-aoc"];
-    if (token) {
-      token = token.replace(/^Bearer\s+/, "");
+    const Token = await axios.post(process.env.AOC_URL + "Token", {
+      username: process.env.AOC_USERNAME,
+      password: process.env.AOC_PASSWORD,
+      grantType: "password",
+    });
+    if (Token) {
+      let token = Token.data.accessToken;
       const FlightBooking = await axios.post(
         process.env.AOC_URL + "GetFlightBooking",
         {
@@ -206,7 +215,6 @@ exports.getFlightBooking = async (req, res) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            Cookie: process.env.AOC_COOKIE,
           },
         }
       );
@@ -231,9 +239,13 @@ exports.getFlightBooking = async (req, res) => {
 
 exports.updatePayment = async (req, res) => {
   try {
-    let token = req.headers["auth-aoc"];
-    if (token) {
-      token = token.replace(/^Bearer\s+/, "");
+    const Token = await axios.post(process.env.AOC_URL + "Token", {
+      username: process.env.AOC_USERNAME,
+      password: process.env.AOC_PASSWORD,
+      grantType: "password",
+    });
+    if (Token) {
+      let token = Token.data.accessToken;
       const payment = await axios.post(
         process.env.AOC_URL + "UpdatePayment",
         {
@@ -243,11 +255,10 @@ exports.updatePayment = async (req, res) => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            Cookie: process.env.AOC_COOKIE,
           },
         }
       );
-      console.log(payment.data);
+      console.log(payment);
     }
 
     // const data = payment.data;
@@ -268,16 +279,38 @@ exports.updatePayment = async (req, res) => {
   }
 };
 
-exports.getOrderTicket = async (req, res) => {
+exports.confirmAOC = async (req, res) => {
   try {
-    const order_ticket = await OrderFlightTicket.find();
-    return res
-      .status(200)
-      .send({status: true, message: "ดึงข้อมูลสำเร็จ", data: order_ticket});
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .send({message: "มีบางอย่างผิดพลาด", error: "server side error"});
+    const id = req.params.id;
+    const updateStatus = await OrderFlightTicket.findOne({_id: id});
+    if (updateStatus) {
+      updateStatus.shop_id = req.body.shop_id;
+      updateStatus.platform = req.body.platform;
+      updateStatus.employee = req.body.employee;
+      updateStatus.status.push({
+        name: "รอตรวจสอบ",
+        timestamp: dayjs(Date.now()).format(""),
+      });
+      updateStatus.save();
+    } else {
+      return res.status(403).send({message: "เกิดข้อผิดพลาด"});
+    }
+    return res.status(200).send({
+      status: true,
+      message: "คอนเฟิร์มออร์เดอร์สำเร็จ",
+      data: updateStatus,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
   }
 };
+
+async function GenerateRiceiptNumber() {
+  const order_ticket = await OrderFlightTicket.find();
+  const count = order_ticket.lenght > 0 ? order_ticket[0].count + 1 : 1;
+  const data = `AOC${dayjs(Date.now()).format("YYYYMMDD")}${count
+    .toString()
+    .padStart(5, "0")}`;
+  return data;
+}
