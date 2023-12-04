@@ -1,11 +1,17 @@
 const router = require('express').Router();
 const service = require("../../controllers/aoc.controller/aoc.order.service.controller");
+const IATA = require("../../controllers/aoc.controller/aoc.api.iata.controller");
 const api = require("../../controllers/aoc.controller/aoc.api.service.controller.js");
 const auth = require("../../lib/auth");
 const authAdmin = require('../../lib/auth.admin');
-const aoc = require("../../lib/auth.aoc");
 
-router.get('/iata',auth, service.getIATA);
+//api IATA สนามบิน
+router.post('/createiata', IATA.createIATA);
+router.get('/iata', IATA.getIATA);
+router.get('/iata/:id', IATA.getIATAById);
+router.put('/iata/:id', IATA.updateIATAById);
+router.delete('/iata/:id', IATA.deleteIATA);
+
 
 router.post('/token',auth, service.getToken); //ดึง token ก่อน
 router.post('/admin/token',authAdmin, service.getToken);
