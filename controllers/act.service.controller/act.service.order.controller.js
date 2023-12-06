@@ -82,25 +82,30 @@ module.exports.order = async (req, res) => {
               _id: item.packageid,
             });
             if (container) {
-              const productgraphic = await ActPackageModel.findOne({
+              const product = await ActPackageModel.findOne({
                 _id: container._id,
               });
-              if (productgraphic) {
+              if (product) {
                 //ราคาขาย ไม่รวมค่าขนส่ง
-                packagedetail = `${productgraphic.name} ${productgraphic.type} ${item.detail}`;
-                total_price = container.price;
+                packagedetail = `${product.name} ${product.type} ${item.detail}`;
+                total_price = product.price;
 
                 //ราคาต้นทุน (กำไร NBA)
-                total_cost = container.nbaprofit;
+                total_cost = product.cost;
 
+                if (product.price === product.cost) {
+                  total_freight = product.profitbeforeallocate;
+                } else {
+                  total_freight = 0;
+                }
                 //ค่าบริการ
-                total_freight = container.profitbeforeallocate;
+                // total_freight = container.profitbeforeallocate;
 
-                total_platefrom = container.plateformprofit;
+                total_platefrom = product.plateformprofit;
 
                 orders.push({
                   packageid: container._id,
-                  packagename: productgraphic.name,
+                  packagename: product.name,
                   packagedetail: packagedetail,
                   quantity: item.quantity,
                   price: total_price,
