@@ -399,12 +399,12 @@ module.exports.ConfirmByCustomer = async (req, res) => {
               orderServiceToUpdate.status.push({
                 name: "รอการตรวจสอบ",
                 timestamp: dayjs(Date.now()).format(""),
-              })
+              });
 
               taxreverse.status.push({
                 name: "ยืนยันจากลูกค้า",
                 timestamp: dayjs(Date.now()).format(""),
-              })
+              });
               taxreverse.save();
               const getteammember = await getmemberteam.GetTeamMember(
                 orderServiceToUpdate.customer_tel

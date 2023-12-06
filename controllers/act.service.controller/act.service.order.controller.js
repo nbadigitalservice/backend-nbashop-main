@@ -299,6 +299,8 @@ module.exports.order = async (req, res) => {
                     orderid: findorderid._id,
                     name: `รายการสั่งซื้อ Act of legislation Service (พรบ.) ใบเสร็จเลขที่ ${findorderid.receiptnumber}`,
                     type: "เงินออก",
+                    before: partner.partner_wallet,
+                    after: newwallet,
                     amount: findorderid.net,
                   };
                   const walletHistory = new WalletHistory(wallethistory);
