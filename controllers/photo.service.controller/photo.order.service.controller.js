@@ -228,12 +228,10 @@ module.exports.order = async (req, res) => {
                       return res.status(200).send({status: true, data: order});
                     } else {
                       console.error(error);
-                      return res
-                        .status(400)
-                        .send({
-                          message: "ไม่สามารถบันทึกได้",
-                          error: error.message,
-                        });
+                      return res.status(400).send({
+                        message: "ไม่สามารถบันทึกได้",
+                        error: error.message,
+                      });
                     }
                   });
                 }
@@ -259,12 +257,10 @@ module.exports.order = async (req, res) => {
               });
               //check partner wallet
               if (partner.partner_wallet < photopackage.price) {
-                return res
-                  .status(400)
-                  .send({
-                    status: false,
-                    message: "ยอดเงินไม่ในกระเป๋าไม่เพียงพอ",
-                  });
+                return res.status(400).send({
+                  status: false,
+                  message: "ยอดเงินไม่ในกระเป๋าไม่เพียงพอ",
+                });
               } else {
                 // getorder
                 const orders = [];
@@ -513,21 +509,17 @@ module.exports.order = async (req, res) => {
 
 *ตั้งใจทำงานการนะคะ/ครับ* `;
                       await line.linenotify(message);
-                      return res
-                        .status(200)
-                        .send({
-                          status: true,
-                          data: data,
-                          ยอดเงินคงเหลือ: newwallet,
-                        });
+                      return res.status(200).send({
+                        status: true,
+                        data: data,
+                        ยอดเงินคงเหลือ: newwallet,
+                      });
                     } else {
                       console.error(error);
-                      return res
-                        .status(400)
-                        .send({
-                          message: "ไม่สามารถบันทึกได้",
-                          error: error.message,
-                        });
+                      return res.status(400).send({
+                        message: "ไม่สามารถบันทึกได้",
+                        error: error.message,
+                      });
                     }
                   });
                 }
