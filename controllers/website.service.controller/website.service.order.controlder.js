@@ -74,7 +74,7 @@ module.exports.order = async (req, res) => {
                 total_cost = container.cost;
 
                 //ค่าบริการ
-                total_freight = container.profitbeforeallocate;
+                total_freight = 0;
 
                 //แจกค่าคอมมิชชั่น
                 total_platefrom = container.plateformprofit;
