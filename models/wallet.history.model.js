@@ -8,6 +8,8 @@ const wallethistory = new mongoose.Schema({
     name: { type: String, required: true },
     type: { type: String, enum: ['เงินเข้า', 'เงินออก'], required: true },
     amount: { type: Number, required: true },
+    before: { type: String, required: true},
+    after: { type: String, required: true},
     timestamp: { type: Date, default: Date.now }
 }, { timestamps: true })
 

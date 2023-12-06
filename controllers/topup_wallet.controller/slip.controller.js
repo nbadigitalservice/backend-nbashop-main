@@ -131,17 +131,21 @@ exports.update = async (req, res) => {
     }
     const topup_wallet = await TopupWallet.findByIdAndUpdate(id, req.body);
     if (topup_wallet) {
+      const partner = await Partners.findById(topup_wallet.partner_id)
+      console.log(partner)
       const history_data = {
         shop_id: topup_wallet.shop_id,
         partner_id: topup_wallet.partner_id,
         orderid: `เติมเงินแนบสลิป เลขที่ ${topup_wallet.invoice}`,
         type: "เงินเข้า",
+        before: partner.partner_wallet,
+        after: partner.partner_wallet + topup_wallet.amount,
         amount: topup_wallet.amount,
         name: `เงินเข้ากระเป๋าสุทธิ ${topup_wallet.amount} บาท`,
         timestamp: dayjs(Date.now()).format(""),
       };
       const new_history = new WalletHistory(history_data);
-      new_history.save();
+      // new_history.save();
       return res
         .status(200)
         .send({status: true, message: "อัพเดตข้อมูลสำเร็จ"});
