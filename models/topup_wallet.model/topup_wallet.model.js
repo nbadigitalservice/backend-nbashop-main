@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 
 const TopupWalletSchema = new mongoose.Schema({
+    shop_id : {type: String, required: true},
     partner_id : {type: String, required: true},
     invoice : {type: String, required: false},
     amount : {type:Number, required: true},
@@ -20,6 +21,7 @@ const TopupWallet = mongoose.model('topup_wallet', TopupWalletSchema);
 
 const validate_topup_wallet = (data)=>{
     const schema = Joi.object({
+        shop_id : Joi.string().required().label('ไม่มี shop_id'),
         partner_id : Joi.string().required().label('ไม่มี parter_id'),
         invoice : Joi.string(),
         amount : Joi.number().required().label('ไม่มียอดเติมเงิน'),

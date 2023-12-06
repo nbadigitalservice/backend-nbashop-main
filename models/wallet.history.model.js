@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 const Joi = require("joi")
 
 const wallethistory = new mongoose.Schema({
-    shop_id: { type: String, required: true},
+    shop_id: { type: String, required: false},
     partner_id: { type: String, required: true},
     orderid: { type: String },
     name: { type: String, required: true },

@@ -2,7 +2,7 @@ const {
   TopupWallet,
   validate_topup_wallet,
 } = require("../../models/topup_wallet.model/topup_wallet.model");
-const {MoneyHistory} = require("../../models/more.model/money.history.model");
+const {WalletHistory} = require("../../models/wallet.history.model");
 const {Partners} = require("../../models/pos.models/partner.model");
 const line = require("../../lib/line.notify");
 const dayjs = require("dayjs");
@@ -132,14 +132,16 @@ exports.update = async (req, res) => {
     const topup_wallet = await TopupWallet.findByIdAndUpdate(id, req.body);
     if (topup_wallet) {
       const history_data = {
+        shop_id: topup_wallet.shop_id,
         partner_id: topup_wallet.partner_id,
-        name: `เติมเงินแนบสลิป เลขที่ ${topup_wallet.invoice}`,
+        orderid: `เติมเงินแนบสลิป เลขที่ ${topup_wallet.invoice}`,
         type: "เงินเข้า",
-        amount: numberFormat(topup_wallet.amount),
-        detail: `เงินเข้ากระเป๋าสุทธิ ${topup_wallet.amount} บาท`,
-        timestamp: dayjs(Date.now()).format(),
+        amount: topup_wallet.amount,
+        name: `เงินเข้ากระเป๋าสุทธิ ${topup_wallet.amount} บาท`,
+        timestamp: dayjs(Date.now()).format(""),
       };
-      await MoneyHistory.create(history_data);
+      const new_history = new WalletHistory(history_data);
+      new_history.save();
       return res
         .status(200)
         .send({status: true, message: "อัพเดตข้อมูลสำเร็จ"});
@@ -153,6 +155,14 @@ exports.update = async (req, res) => {
     return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
   }
 };
+
+//num Format
+async function numberFormat(number) {
+  return number.toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+  });
+}
 
 async function generatePublicUrl(res) {
   try {
