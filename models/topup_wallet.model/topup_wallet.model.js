@@ -31,7 +31,6 @@ const validate_topup_wallet = (data)=>{
         employee : Joi.string().default('ไม่มี'),
         status: Joi.string().label('รอตรวจสอบ'),
         remark : Joi.string().default(''),
-        timestamp : Joi.date().required().label('ไม่มีวันที่ทำรายการ')
     });
     return schema.validate(data);
 }
