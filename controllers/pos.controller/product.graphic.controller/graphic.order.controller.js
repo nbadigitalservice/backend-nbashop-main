@@ -191,6 +191,7 @@ module.exports.order = async (req, res) => {
             total_price: totalprice,
             total_freight: totalfreight,
             net: totalprice + totalfreight,
+            platfrom: total_platfrom,
             status: {
               name: "รอการตรวจสอบ",
               timestamp: dayjs(Date.now()).format(""),

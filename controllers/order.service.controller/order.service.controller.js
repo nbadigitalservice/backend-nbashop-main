@@ -86,13 +86,11 @@ module.exports.confirm = async (req, res) => {
   } else {
     return res.status(403).send({message: "เกิดข้อผิดพลาด"});
   }
-  return res
-    .status(200)
-    .send({
-      status: true,
-      message: "คอนเฟิร์มออร์เดอร์สำเร็จ",
-      data: updateStatus,
-    });
+  return res.status(200).send({
+    status: true,
+    message: "คอนเฟิร์มออร์เดอร์สำเร็จ",
+    data: updateStatus,
+  });
 };
 
 //get All order
@@ -151,13 +149,11 @@ module.exports.GetAll = async (req, res) => {
       pipeline
     ).exec();
 
-    return res
-      .status(200)
-      .send({
-        status: true,
-        message: "ดึงข้อมูลสำเร็จ",
-        data: orderiwithdeliver,
-      });
+    return res.status(200).send({
+      status: true,
+      message: "ดึงข้อมูลสำเร็จ",
+      data: orderiwithdeliver,
+    });
   } catch (error) {
     console.error(error);
     return res
@@ -356,12 +352,10 @@ module.exports.cancel = async (req, res) => {
           };
           const walletHistory = new WalletHistory(wallethistory);
           walletHistory.save();
-          return res
-            .status(200)
-            .send({
-              message: "ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย",
-              data: response.data,
-            });
+          return res.status(200).send({
+            message: "ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย",
+            data: response.data,
+          });
         }
       } catch (error) {
         console.log(error);
@@ -381,12 +375,10 @@ module.exports.cancel = async (req, res) => {
     };
     const walletHistory = new WalletHistory(wallethistory);
     walletHistory.save();
-    return res
-      .status(200)
-      .send({
-        message: "ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย",
-        data: canceledOrder,
-      });
+    return res.status(200).send({
+      message: "ยกเลิกออร์เดอร์ และทำการคืนเงินเรียบร้อย",
+      data: canceledOrder,
+    });
   } catch (error) {
     console.error(error);
     return res
@@ -623,12 +615,10 @@ module.exports.DeliverOrder = async (req, res) => {
     }
 
     if (order.status === "เรียบร้อย") {
-      return res
-        .status(403)
-        .send({
-          message:
-            "ไม่สามารถอัพเดทสถานะออร์เดอร์ได้เนื่องจากออร์เดอร์เรียบร้อยแล้ว",
-        });
+      return res.status(403).send({
+        message:
+          "ไม่สามารถอัพเดทสถานะออร์เดอร์ได้เนื่องจากออร์เดอร์เรียบร้อยแล้ว",
+      });
     }
 
     await OrderServiceModel.findByIdAndUpdate(orderId, {status: "เรียบร้อย"});
@@ -686,22 +676,18 @@ module.exports.DeliverOrder = async (req, res) => {
       orderDeliver.save(async (error) => {
         if (error) {
           console.error(error);
-          return res
-            .status(403)
-            .send({
-              status: false,
-              message: "ไม่สามารถบันทึกข้อมูลได้",
-              data: error,
-            });
-        }
-        res
-          .status(200)
-          .send({
-            status: true,
-            message:
-              'อัพเดทสถานะออร์เดอร์เป็น "เรียบร้อย" และบันทึกข้อมูลการจัดส่งสำเร็จ',
-            data: orderDeliver,
+          return res.status(403).send({
+            status: false,
+            message: "ไม่สามารถบันทึกข้อมูลได้",
+            data: error,
           });
+        }
+        res.status(200).send({
+          status: true,
+          message:
+            'อัพเดทสถานะออร์เดอร์เป็น "เรียบร้อย" และบันทึกข้อมูลการจัดส่งสำเร็จ',
+          data: orderDeliver,
+        });
       });
     });
   } catch (error) {
@@ -774,13 +760,17 @@ module.exports.updateOrder = async (req, res) => {
       total_price: req.body.total_price,
       total_freight: req.body.total_freight,
       net: req.body.net,
-      status: status
+      status: status,
     };
     const order = await OrderServiceModel.findByIdAndUpdate(id, data);
     if (!order) {
-      return res.status(401).send({status: false, message: "ไม่สามารถแก้ไขข้อมูลนี้ได้"});
+      return res
+        .status(401)
+        .send({status: false, message: "ไม่สามารถแก้ไขข้อมูลนี้ได้"});
     } else {
-      return res.status(200).send({status: true, message: "แก้ไขข้อมูลสำเร็จ", data: order});
+      return res
+        .status(200)
+        .send({status: true, message: "แก้ไขข้อมูลสำเร็จ", data: order});
     }
   } catch (error) {
     res.status(500).send({
@@ -788,4 +778,4 @@ module.exports.updateOrder = async (req, res) => {
       status: false,
     });
   }
-}
+};

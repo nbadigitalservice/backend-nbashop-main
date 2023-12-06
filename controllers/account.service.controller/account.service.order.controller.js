@@ -143,6 +143,7 @@ module.exports.order = async (req, res) => {
             total_price: totalprice,
             total_freight: totalfreight,
             net: totalprice,
+            platfrom: total_platefrom,
             status: {
               name: "รอการตรวจสอบ",
               timestamp: dayjs(Date.now()).format(""),
