@@ -145,7 +145,7 @@ exports.update = async (req, res) => {
         timestamp: dayjs(Date.now()).format(""),
       };
       const new_history = new WalletHistory(history_data);
-      // new_history.save();
+      new_history.save();
       return res
         .status(200)
         .send({status: true, message: "อัพเดตข้อมูลสำเร็จ"});
