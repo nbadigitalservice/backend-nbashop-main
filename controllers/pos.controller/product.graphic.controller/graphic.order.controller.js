@@ -128,7 +128,7 @@ module.exports.order = async (req, res) => {
                 }
 
                 orders.push({
-                  packageid: container._id,
+                  packageid: container.product_graphic_id,
                   packagename: productgraphic.name,
                   packagedetail: packagedetail,
                   quantity: item.quantity,
