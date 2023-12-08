@@ -269,6 +269,7 @@ module.exports.confirm = async (req, res) => {
             price: req.body.price,
             reverse_price: reverse_price,
             servicecharge: servicecharge,
+            detail: req.body.detail,
             status: {
               name: "รอการตรวจสอบจากลูกค้า",
               timestamp: dayjs(Date.now()).format(""),
