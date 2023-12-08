@@ -59,131 +59,117 @@ module.exports.order = async (req, res) => {
       if (!findshop) {
         return res.status(403).send({message: "Shop not found"});
       } else {
-        const partner = await Partners.findById({
-          _id: findshop.shop_partner_id,
-        });
-        const amount = req.body.product_detail.length;
-        let product_price = 0;
-        for (let i = 0; i < amount; i++) {
-          const graphicpackage = await TaxPackageModel.findOne({
-            _id: req.body.product_detail[i].packageid,
+        const orders = [];
+        let packagedetail;
+        let total_price = 0;
+        let total_cost = 0;
+        let total_freight = 0;
+        let total_platfrom = 0;
+        for (let item of req.body.product_detail) {
+          const container = await TaxPackageModel.findOne({
+            _id: item.packageid,
           });
-          const total = graphicpackage.price;
-          product_price = product_price + total;
-        }
-        if (partner.partner_wallet < product_price) {
-          return res.status(400).send({
-            status: false,
-            message: "ยอดเงินไม่ในกระเป๋าไม่เพียงพอ",
-          });
-        } else {
-          // getorder
-          const orders = [];
-          let packagedetail;
-          let total_price = 0;
-          let total_cost = 0;
-          let total_freight = 0;
-          for (let item of req.body.product_detail) {
-            const container = await TaxPackageModel.findOne({
-              _id: item.packageid,
+          if (container) {
+            const taxpackage = await TaxCategoryModel.findOne({
+              _id: container.categoryid,
             });
-            if (container) {
-              const productgraphic = await TaxPackageModel.findOne({
-                _id: container._id,
-              });
-              if (productgraphic) {
-                //ราคาขาย ไม่รวมค่าขนส่ง
-                packagedetail = `${productgraphic.name} ${productgraphic.type} ${item.detail}`;
+            packagedetail = `${container.name} ${container.detail} ${taxpackage.name} ${item.detail}`;
+            total_price = container.price;
 
-                orders.push({
-                  packageid: container._id,
-                  packagename: productgraphic.name,
-                  packagedetail: packagedetail,
-                  quantity: item.quantity,
-                  price: total_price,
-                  cost: total_cost,
-                  freight: total_freight,
-                });
-              } else {
-                return res
-                  .status(403)
-                  .send({status: false, message: "ไม่พบข้อมูลสินค้า"});
-              }
-            }
+            total_cost = container.cost;
+
+            total_freight = 0;
+
+            total_platfrom = 0;
+
+            orders.push({
+              packageid: container._id,
+              packagename: container.name,
+              packagedetail: packagedetail,
+              quantity: item.quantity,
+              price: total_price,
+              cost: total_cost,
+              freight: total_freight,
+            });
+          } else {
+            return res
+              .status(403)
+              .send({status: false, message: "ไม่พบข้อมูลสินค้า"});
           }
-          const totalprice = orders.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.price,
-            0
-          );
-          const totalfreight = orders.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.freight,
-            0
-          );
+        }
+        const totalprice = orders.reduce(
+          (accumulator, currentValue) => accumulator + currentValue.price,
+          0
+        );
+        const totalfreight = orders.reduce(
+          (accumulator, currentValue) => accumulator + currentValue.freight,
+          0
+        );
 
-          const totalcost = orders.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.cost,
-            0
-          );
+        const totalcost = orders.reduce(
+          (accumulator, currentValue) => accumulator + currentValue.cost,
+          0
+        );
 
-          //generate receipt number
-          const receiptnumber = await GenerateRiceiptNumber(
-            findshop.shop_partner_type,
-            findshop.shop_branch_id
-          );
+        //generate receipt number
+        const receiptnumber = await GenerateRiceiptNumber(
+          findshop.shop_partner_type,
+          findshop.shop_branch_id
+        );
 
-          const data = {
-            receiptnumber: receiptnumber,
-            customer_contact: req.body.customer_contact,
-            customer_name: req.body.customer_name,
-            customer_tel: req.body.customer_tel,
-            customer_address: req.body.customer_address,
-            customer_iden_id: req.body.customer_iden_id,
-            customer_line: req.body.customer_line,
-            partnername: "shop",
-            servicename: "Tax Service(ภาษี)",
-            shopid: findshop._id,
-            shop_partner_type: findshop.shop_partner_type,
-            branch_name: findshop.shop_name,
-            branch_id: findshop.shop_branch_id,
-            product_detail: orders,
-            paymenttype: req.body.paymenttype,
-            moneyreceive: req.body.moneyreceive,
-            total_cost: totalcost,
-            total_price: totalprice,
-            total_freight: totalfreight,
-            net: totalprice + totalfreight,
-            status: {
-              name: "รอการตรวจสอบ",
-              timestamp: dayjs(Date.now()).format(""),
-            },
+        const data = {
+          receiptnumber: receiptnumber,
+          customer_contact: req.body.customer_contact,
+          customer_name: req.body.customer_name,
+          customer_tel: req.body.customer_tel,
+          customer_address: req.body.customer_address,
+          customer_iden_id: req.body.customer_iden_id,
+          customer_line: req.body.customer_line,
+          partnername: "shop",
+          servicename: "Tax Service (ภาษี)",
+          shopid: findshop._id,
+          shop_partner_type: findshop.shop_partner_type,
+          branch_name: findshop.shop_name,
+          branch_id: findshop.shop_branch_id,
+          product_detail: orders,
+          paymenttype: req.body.paymenttype,
+          moneyreceive: req.body.moneyreceive,
+          total_cost: totalcost,
+          total_price: totalprice,
+          total_freight: totalfreight,
+          net: totalprice + totalfreight,
+          platfrom: total_platfrom,
+          status: {
+            name: "รอการตรวจสอบราคา",
             timestamp: dayjs(Date.now()).format(""),
-          };
+          },
+          timestamp: dayjs(Date.now()).format(""),
+        };
 
-          const order = new OrderServiceModel(data);
-          order.save(async (error, data) => {
-            if (data) {
-              const message = `
+        const order = new OrderServiceModel(data);
+        order.save(async (error, data) => {
+          if (data) {
+            const message = `
 แจ้งงานเข้า : ${order.servicename}
 เลขที่ทำรายการ : ${order.receiptnumber}
 จาก : ${order.branch_name}
 จำนวน : ${order.total_price} บาท
 ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
-
+            
 *ฝากแอดมินรบกวนตรวจสอบด้วยนะคะ/ครับ* `;
-              await line.linenotify(message);
-              return res.status(200).send({
-                status: true,
-                data: data,
-              });
-            } else {
-              console.error(error);
-              return res.status(400).send({
-                message: "ไม่สามารถบันทึกได้",
-                error: error.message,
-              });
-            }
-          });
-        }
+            await line.linenotify(message);
+            return res.status(200).send({
+              status: true,
+              data: data,
+            });
+          } else {
+            console.error(error);
+            return res.status(400).send({
+              message: "ไม่สามารถบันทึกได้",
+              error: error.message,
+            });
+          }
+        });
       }
     }
   } catch (error) {
@@ -275,13 +261,7 @@ module.exports.confirm = async (req, res) => {
           });
           let servicecharge = service_free.service_free;
           let reverse_price = 0;
-          reverse_price =
-            req.body.price +
-            req.body.tax_value +
-            req.body.tax_mulct_value +
-            req.body.traffic_mulct_value +
-            req.body.other +
-            servicecharge;
+          reverse_price = req.body.price + servicecharge;
           const data = {
             orderid: updateStatus._id,
             shopid: updateStatus.shopid,
@@ -289,10 +269,6 @@ module.exports.confirm = async (req, res) => {
             price: req.body.price,
             reverse_price: reverse_price,
             servicecharge: servicecharge,
-            tax_value: req.body.tax_value,
-            tax_mulct_value: req.body.tax_mulct_value,
-            traffic_mulct_value: req.body.traffic_mulct_value,
-            other: req.body.other,
             status: {
               name: "รอการตรวจสอบจากลูกค้า",
               timestamp: dayjs(Date.now()).format(""),
@@ -337,22 +313,9 @@ module.exports.ConfirmByCustomer = async (req, res) => {
               .status(404)
               .send({message: "Tax reverse document not found"});
           } else {
-            // Calculate the new price based on tax values and other fields
-            let price = 0;
-            price +=
-              taxreverse.price +
-              (taxreverse.tax_value || 0) +
-              (taxreverse.tax_mulct_value || 0) +
-              (taxreverse.traffic_mulct_value || 0) +
-              (taxreverse.other || 0);
-
-            // Calculate the new totalprice (if needed)
-            const charge = taxreverse.servicecharge;
-
             // Find and update the corresponding orderservice document
-            const orderServiceIdToUpdate = taxreverse.orderid;
             const orderServiceToUpdate = await OrderServiceModel.findById(
-              orderServiceIdToUpdate
+              taxreverse.orderid
             );
             if (!orderServiceToUpdate) {
               return res
@@ -360,9 +323,9 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                 .send({message: "Order service document not found"});
             } else {
               for (let item of orderServiceToUpdate.product_detail) {
-                item.price = price;
-                item.cost = price;
-                item.freight = charge;
+                item.price = taxreverse.price;
+                item.cost = taxreverse.price;
+                item.freight = taxreverse.servicecharge;
               }
 
               const totalprice = orderServiceToUpdate.product_detail.reduce(
@@ -391,10 +354,13 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                 partner_wallet: newwallet,
               });
 
+              let platfrom = (totalfreight * 80) / 100;
+
               orderServiceToUpdate.total_cost = totalcost;
               orderServiceToUpdate.total_price = totalprice;
               orderServiceToUpdate.total_freight = totalfreight;
               orderServiceToUpdate.net = totalprice + totalfreight;
+              orderServiceToUpdate.platfrom = platfrom;
 
               orderServiceToUpdate.status.push({
                 name: "รอการตรวจสอบ",
@@ -421,10 +387,9 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                     const code = "Service";
                     const percent = await Percent.findOne({code: code});
 
-                    const commisstion = (totalfreight * 20) / 100;
-                    const platfromcommission = (commisstion * 80) / 100;
-                    const bonus = (commisstion * 5) / 100;
-                    const allSale = (commisstion * 15) / 100;
+                    const platfromcommission = (platfrom * 80) / 100;
+                    const bonus = (platfrom * 5) / 100;
+                    const allSale = (platfrom * 15) / 100;
 
                     const level = getteammember.data;
                     const validLevel = level.filter((item) => item !== null);
@@ -530,6 +495,8 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                         orderid: orderServiceToUpdate._id,
                         name: `รายการสั่งซื้อ Tax Service(ภาษี) ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
                         type: "เงินออก",
+                        before: partner.partner_wallet,
+                        after: newwallet,
                         amount: orderServiceToUpdate.net,
                       };
                       const walletHistory = new WalletHistory(wallethistory);

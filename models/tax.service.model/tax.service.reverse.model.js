@@ -8,10 +8,6 @@ const taxreverse = new mongoose.Schema({
     price: { type: Number, required: true },
     reverse_price: { type: Number, required: true },
     servicecharge: { type: Number, required: true },
-    tax_value: { type: Number },
-    tax_mulct_value: { type: Number },
-    traffic_mulct_value: { type: Number },
-    other: { type: Number },
     status:{ type: Array, required: true},
 },{timestamps:true});
 
