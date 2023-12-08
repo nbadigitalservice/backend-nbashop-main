@@ -410,100 +410,122 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                     const lv2vat = (lv2 * 3) / 100;
                     const lv3vat = (lv3 * 3) / 100;
 
-                    //real commission for member
-                    const ownercommission = owner - ownervat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                    const lv1commission = lv1 - lv1vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                    const lv2commission = lv2 - lv2vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-                    const lv3commission = lv3 - lv3vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
-
-                    for (const TeamMemberData of validLevel) {
-                      let integratedData;
-
-                      if (TeamMemberData.level == "owner") {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: owner,
-                          vat3percent: ownervat,
-                          remainding_commission: ownercommission,
-                        };
-                      }
-                      if (TeamMemberData.level == "1") {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: lv1,
-                          vat3percent: lv1vat,
-                          remainding_commission: lv1commission,
-                        };
-                      }
-                      if (TeamMemberData.level == "2") {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: lv2,
-                          vat3percent: lv2vat,
-                          remainding_commission: lv2commission,
-                        };
-                      }
-                      if (TeamMemberData.level == "3") {
-                        integratedData = {
-                          lv: TeamMemberData.level,
-                          iden: TeamMemberData.iden,
-                          name: TeamMemberData.name,
-                          address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
-                          tel: TeamMemberData.tel,
-                          commission_amount: lv3,
-                          vat3percent: lv2vat,
-                          remainding_commission: lv3commission,
-                        };
-                      }
-                      if (integratedData) {
-                        storeData.push(integratedData);
-                      }
-                    }
-
-                    const commissionData = {
-                      data: storeData,
-                      platformcommission: platfromcommission,
-                      bonus: bonus,
-                      allSale: allSale,
-                      orderid: findorderid,
-                      code: "Service",
+                    const givecommission = {
+                      invoice: receiptnumber,
+                      tel: req.body.customer_tel,
+                      platform: {
+                        owner: owner,
+                        lv1: lv1,
+                        lv2: lv2,
+                        lv3: lv3,
+                      },
+                      central: {
+                        allsale: (allSale * 50) / 100,
+                        central: (allSale * 50) / 100,
+                      },
+                      emp_bonus: bonus,
                     };
 
-                    const commission = new Commission(commissionData);
-                    commission.save((error, data) => {
-                      if (error) {
-                        console.log(error);
-                        return res
-                          .status(403)
-                          .send({status: false, message: "ไม่สามารถบันทึกได้"});
+                    const give_commission = await getmemberteam.GiveCommission(
+                      givecommission
+                    );
+
+                    if (give_commission.status === true) {
+                      //real commission for member
+                      const ownercommission = owner - ownervat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                      const lv1commission = lv1 - lv1vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                      const lv2commission = lv2 - lv2vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+                      const lv3commission = lv3 - lv3vat; //ใช้ค่านี้เพื่อจ่ายค่าคอมมิสชัน
+
+                      for (const TeamMemberData of validLevel) {
+                        let integratedData;
+
+                        if (TeamMemberData.level == "owner") {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: owner,
+                            vat3percent: ownervat,
+                            remainding_commission: ownercommission,
+                          };
+                        }
+                        if (TeamMemberData.level == "1") {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: lv1,
+                            vat3percent: lv1vat,
+                            remainding_commission: lv1commission,
+                          };
+                        }
+                        if (TeamMemberData.level == "2") {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: lv2,
+                            vat3percent: lv2vat,
+                            remainding_commission: lv2commission,
+                          };
+                        }
+                        if (TeamMemberData.level == "3") {
+                          integratedData = {
+                            lv: TeamMemberData.level,
+                            iden: TeamMemberData.iden,
+                            name: TeamMemberData.name,
+                            address: `${TeamMemberData.address.address}${TeamMemberData.address.subdistrict}${TeamMemberData.address.district}${TeamMemberData.address.province}${TeamMemberData.address.postcode}`,
+                            tel: TeamMemberData.tel,
+                            commission_amount: lv3,
+                            vat3percent: lv2vat,
+                            remainding_commission: lv3commission,
+                          };
+                        }
+                        if (integratedData) {
+                          storeData.push(integratedData);
+                        }
                       }
-                      // Create wallet history
-                      const wallethistory = {
-                        shop_id: orderServiceToUpdate.shopid,
-                        partner_id: partner._id,
-                        orderid: orderServiceToUpdate._id,
-                        name: `รายการสั่งซื้อ Tax Service(ภาษี) ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
-                        type: "เงินออก",
-                        before: partner.partner_wallet,
-                        after: newwallet,
-                        amount: orderServiceToUpdate.net,
+
+                      const commissionData = {
+                        data: storeData,
+                        platformcommission: platfromcommission,
+                        bonus: bonus,
+                        allSale: allSale,
+                        orderid: findorderid,
+                        code: "Service",
                       };
-                      const walletHistory = new WalletHistory(wallethistory);
-                      walletHistory.save();
-                    });
-                    const message = `
+
+                      const commission = new Commission(commissionData);
+                      commission.save((error, data) => {
+                        if (error) {
+                          console.log(error);
+                          return res.status(403).send({
+                            status: false,
+                            message: "ไม่สามารถบันทึกได้",
+                          });
+                        }
+                        // Create wallet history
+                        const wallethistory = {
+                          shop_id: orderServiceToUpdate.shopid,
+                          partner_id: partner._id,
+                          orderid: orderServiceToUpdate._id,
+                          name: `รายการสั่งซื้อ Tax Service(ภาษี) ใบเสร็จเลขที่ ${orderServiceToUpdate.receiptnumber}`,
+                          type: "เงินออก",
+                          before: partner.partner_wallet,
+                          after: newwallet,
+                          amount: orderServiceToUpdate.net,
+                        };
+                        const walletHistory = new WalletHistory(wallethistory);
+                        walletHistory.save();
+                      });
+                      const message = `
 แจ้งงานเข้า : ${orderServiceToUpdate.servicename}
 เลขที่ทำรายการ : ${orderServiceToUpdate.receiptnumber}
 จาก : ${orderServiceToUpdate.branch_name}
@@ -511,11 +533,17 @@ module.exports.ConfirmByCustomer = async (req, res) => {
 ตรวจสอบได้ที่ : http://shop-admin.nbadigitalservice.com/
     
 *ฝากแอดมินรบกวนตรวจสอบด้วยนะคะ/ครับ* `;
-                    await line.linenotify(message);
-                    return res.status(200).send({
-                      status: true,
-                      data: data,
-                    });
+                      await line.linenotify(message);
+                      return res.status(200).send({
+                        status: true,
+                        data: data,
+                      });
+                    } else {
+                      return res.status(400).send({
+                        message: "จ่ายค่าคอมมิชชั่นไม่สำเร็จ",
+                        error: error.message,
+                      });
+                    }
                   } else {
                     console.error(error);
                     return res.status(400).send({
