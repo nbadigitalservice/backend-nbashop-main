@@ -411,8 +411,8 @@ module.exports.ConfirmByCustomer = async (req, res) => {
                     const lv3vat = (lv3 * 3) / 100;
 
                     const givecommission = {
-                      invoice: receiptnumber,
-                      tel: req.body.customer_tel,
+                      invoice: orderServiceToUpdate.receiptnumber,
+                      tel: orderServiceToUpdate.customer_tel,
                       platform: {
                         owner: owner,
                         lv1: lv1,
