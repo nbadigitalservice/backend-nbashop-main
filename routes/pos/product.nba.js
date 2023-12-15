@@ -16,4 +16,6 @@ router.put("/:id", auth, updateProduct.update);
 router.get('/by/credit', product.findByCredit);
 router.get('/by/consignment', product.findByConsignment);
 
+router.get('/demo', product.findAll);
+
 module.exports = router;
