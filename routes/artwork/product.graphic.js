@@ -15,7 +15,7 @@ router.get('/category/:id',auth,ProductGraphicCategory.GetCategoryById);
 router.delete('/category/:id',auth,ProductGraphicCategory.deleteCategory);
 
 //product graphic
-router.get('/',ProductGraphic.GetProductGraphic);
+router.get('/',auth,ProductGraphic.GetProductGraphic);
 router.get('/:id',auth,ProductGraphic.GetProductGraphicById);
 router.post('/',authAdmin,ProductGraphic.Create);
 router.put('/:id',authAdmin,ProductGraphic.UpdateProductGraphicById);
