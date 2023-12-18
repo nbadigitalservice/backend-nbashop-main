@@ -13,10 +13,8 @@ router.delete("/separate/:id", separate.delete);
 router.put("/separate/:id", separate.update);
 
 router.post("/", auth, ponba.create);
-
 router.get("/", auth, ponba.findAll);
 router.get("/:id", auth, ponba.findOne);
-
 router.delete("/:id", auth, ponba.delete);
 router.put("/:id", auth, ponba.update);
 

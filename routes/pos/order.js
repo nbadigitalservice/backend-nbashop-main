@@ -10,4 +10,5 @@ router.get("/shop-id/:shop_id", auth, order.findByShopId);
 router.get("/dealer-id/:dealer_id", auth, order.findByDealerId);
 router.get("/store-id/:store_id", auth, order.findByStoreId);
 router.get('/ponba/:ponba_id', auth, order.findByPoNbaId);
+
 module.exports = router;

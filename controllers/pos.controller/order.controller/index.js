@@ -85,6 +85,7 @@ exports.findByPoNbaId = async (req, res)=>{
         return res.status(500).send({message: 'มีบางอย่างผิดพลาด'})
     }
 }
+
 exports.findByStoreId = async(req, res)=>{
     try{
         const store_id = req.params.store_id;

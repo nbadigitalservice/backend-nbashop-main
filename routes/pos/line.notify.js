@@ -32,7 +32,7 @@ router.post("/", async (req, res) => {
       }
     );
   } catch (error) {
-    res.status(401).send({ message: "ไม่สามารถทำรายการนี้ได้", status: false });
+    res.status(401).send({message: "ไม่สามารถทำรายการนี้ได้", status: false});
   }
 });
 
