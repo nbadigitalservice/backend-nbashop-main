@@ -51,10 +51,10 @@ module.exports.GetCommissionByTel = async (req, res) => {
 module.exports.GetUnsummedCommissionsByTel = async (req, res) => {
   try {
     console.log(req.user);
-    let tel = req.user.partner_phone;
-    if (req.user.partner_name === "NBA_PLATEFORM") {
-      tel = req.body.tel;
-    }
+    let tel = req.user.tel;
+    // if (req.user.partner_name === "NBA_PLATEFORM") {
+    //   tel = req.body.tel;
+    // }
     const pipeline = [
       {
         $unwind: "$data",
