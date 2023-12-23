@@ -8,7 +8,7 @@ const PreOrderShopFullSchema = new mongoose.Schema({
   poshopf_detail: { type: Array, required: false, default: [] },
   poshopf_total: { type: Number, required: true },
   poshopf_type_price: { type: String, required: false, default: "เงินสด" },
-  // poshopf_total_price: { type: Number, required: true },
+  poshopf_total_price: { type: Number, required: true },
   poshopf_discount: { type: Number, required: false, default: 0 },
   poshopf_status: { type: Boolean, required: false, default: true },
 
@@ -37,7 +37,7 @@ const validate = (data) => {
     poshopf_detail: Joi.array().default([]),
     poshopf_total: Joi.number().required(),
     poshopf_type_price: Joi.string().default("เงินสด"),
-    // poshopf_total_price: Joi.number().default(0),
+    poshopf_total_price: Joi.number().default(0),
     poshopf_discount: Joi.number().default(0),
     poshopf_status: Joi.boolean().default(true),
 
