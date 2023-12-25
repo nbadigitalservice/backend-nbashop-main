@@ -154,7 +154,7 @@ exports.createCommission = async (req, res) => {
     const getteammember = await getmemberteam.GetTeamMember(
       req.body.tel_platform
     );
-    const code = 'POS';
+    const code = "POS";
     const percent = await Percent.findOne({code: code});
 
     if (getteammember.status === false) {
@@ -245,7 +245,7 @@ exports.createCommission = async (req, res) => {
         bonus: req.body.bonus,
         allSale: req.body.allSale,
         orderid: req.body.orderid,
-        code: 'POS'
+        code: "POS",
       };
       const commission = new Commission(commissionData);
       commission.save((error, data) => {
@@ -346,8 +346,11 @@ exports.cutoff = async (req, res) => {
             const new_data = {
               ...check,
               amount: check.amount + pd.amount,
-              summary:
-                check.summary + pd.product_ref.productNBA_cost * pd.amount,
+              summary_cost:
+                check.summary_cost + pd.product_ref.productNBA_cost * pd.amount,
+              summary_price:
+                check.summary_price + pd.product_ref.productNBA_price * pd.amount,
+              profit: check.summary_cost - check.summary_price,
             };
             invoice_detail.splice(position, 1, new_data);
           } else {
