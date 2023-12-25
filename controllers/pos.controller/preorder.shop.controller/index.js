@@ -352,13 +352,18 @@ exports.cutoff = async (req, res) => {
             invoice_detail.splice(position, 1, new_data);
           } else {
             //นำเข้าใหม่
+            const summary_cost = pd.product_ref.productNBA_cost * pd.amount;
+            const summary_price = pd.product_ref.productNBA_price * pd.amount;
             const new_data = {
               productShop_barcode: pd.productShop_barcode,
               productNBA_id: pd.product_ref._id,
               name: pd.product_ref.productNBA_name,
               amount: pd.amount,
               cost: pd.product_ref.productNBA_cost,
-              summary: pd.product_ref.productNBA_cost * pd.amount,
+              price: pd.product_ref.productNBA_price,
+              summary_cost: summary_cost,
+              summary_price: summary_price,
+              profit: summary_price - summary_cost,
             };
 
             invoice_detail.push(new_data);
