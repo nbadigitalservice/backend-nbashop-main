@@ -109,6 +109,7 @@ exports.update = async (req, res) => {
     res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
   }
 };
+
 exports.create = async (req, res) => {
   console.log("สร้าง");
   try {
