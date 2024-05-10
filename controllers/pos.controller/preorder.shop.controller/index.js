@@ -420,7 +420,7 @@ exports.cutoff = async (req, res) => {
 };
 
 //ค้นหาและสร้างเลข invoice
-async function invoiceNumber(shop_id, date) {
+async function invoiceNumber(agent_id, date) {
   const shop = await Shop.findById(shop_id);
   if (shop) {
     const order = await InvoiceShop.find({invoice_shop_id: shop_id});

@@ -2,18 +2,18 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 
 const facebookPackage = new mongoose.Schema({
-    picture: {type: String, required: true},
-    name: {type: String, required: true, unique: true},
-    detail: {type:  String},
-    price: {type: Number, required: true},
-    cost: {type: Number, required: true},
-    profitbeforeallocate: {type: Number, required: true},
-    nbaprofit: {type: Number, required: true},
-    plateformprofit: {type: Number, required: true},
-    status: {type: String, default: 'เปิดให้บริการ'},
+    picture: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
+    detail: { type: String },
+    price: { type: Number, required: true },
+    cost: { type: Number, required: true },
+    profitbeforeallocate: { type: Number, required: true },
+    nbaprofit: { type: Number, required: true },
+    plateformprofit: { type: Number, required: true },
+    status: { type: String, default: 'เปิดให้บริการ' },
 })
 
-const FacebookPackage = new mongoose.model("facebookpackage",facebookPackage)
+const FacebookPackage = new mongoose.model("facebookpackage", facebookPackage)
 
 const validate = (data) => {
     const Schema = Joi.object({
@@ -29,4 +29,4 @@ const validate = (data) => {
     return Schema.validate(data);
 }
 
-module.exports = { FacebookPackage,validate }
+module.exports = { FacebookPackage, validate }

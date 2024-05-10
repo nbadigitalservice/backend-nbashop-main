@@ -5,9 +5,9 @@ const {
 const {
   OrderExpress,
 } = require("../../models/express.model/order.express.model");
-const {Shop} = require("../../models/pos.models/shop.model");
-const {Partners} = require("../../models/pos.models/partner.model");
-const {MoneyHistory} = require("../../models/more.model/money.history.model");
+const { Shop } = require("../../models/pos.models/shop.model");
+const { Partners } = require("../../models/pos.models/partner.model");
+const { MoneyHistory } = require("../../models/more.model/money.history.model");
 const {
   BookingParcel,
   validate_parcel,
@@ -34,11 +34,11 @@ exports.pricelist = async (req, res) => {
       `${process.env.SHIPPOP_URL}/pricelist/`,
       value,
       {
-        headers: {"Accept-Encoding": "gzip,deflate,compress"},
+        headers: { "Accept-Encoding": "gzip,deflate,compress" },
       }
     );
     if (!resp.data.status) {
-      return res.status(400).send({status: false, message: resp.data.message});
+      return res.status(400).send({ status: false, message: resp.data.message });
     }
     const obj = resp.data.data[0];
     const new_data = [];
@@ -70,10 +70,10 @@ exports.pricelist = async (req, res) => {
     });
     return res
       .status(200)
-      .send({status: true, origin_data: req.body, data: new_data});
+      .send({ status: true, origin_data: req.body, data: new_data });
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: err._message});
+    return res.status(500).send({ message: err._message });
   }
 };
 
@@ -134,12 +134,12 @@ exports.booking = async (req, res) => {
       `${process.env.SHIPPOP_URL}/booking/`,
       value,
       {
-        headers: {"Accept-Encoding": "gzip,deflate,compress"},
+        headers: { "Accept-Encoding": "gzip,deflate,compress" },
       }
     );
 
     if (!resp.data.status) {
-      return res.status(400).send({status: false, message: resp.data.message});
+      return res.status(400).send({ status: false, message: resp.data.message });
     }
 
     //ค่าตอบกลับจาก shippop
@@ -191,18 +191,18 @@ exports.booking = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: err._message});
+    return res.status(500).send({ message: err._message });
   }
 };
 
 //Confrim purchase_id
 exports.confirm = async (req, res) => {
   try {
-    const {purchase_id, shop_id} = req.body;
+    const { purchase_id, shop_id } = req.body;
     if (purchase_id === undefined || shop_id === undefined) {
       return res
         .status(500)
-        .send({status: false, message: "รับข้อมูลไม่ครบถ้วน"});
+        .send({ status: false, message: "รับข้อมูลไม่ครบถ้วน" });
     }
 
     const booking = await BookingParcel.find({
@@ -219,12 +219,12 @@ exports.confirm = async (req, res) => {
       `${process.env.SHIPPOP_URL}/confirm/`,
       value,
       {
-        headers: {"Accept-Encoding": "gzip,deflate,compress"},
+        headers: { "Accept-Encoding": "gzip,deflate,compress" },
       }
     );
 
     if (!resp.data.status) {
-      return res.status(400).send({status: false, message: resp.data.message});
+      return res.status(400).send({ status: false, message: resp.data.message });
     }
     for (let i = 0; i < booking.length; i++) {
       await BookingParcel.findByIdAndUpdate(booking[i]._id, {
@@ -234,18 +234,18 @@ exports.confirm = async (req, res) => {
     console.log("ยืนยันใบสั่งซื้อ : " + purchase_id);
     return res
       .status(200)
-      .send({status: true, message: "ยืนยันใบสั่งซื้อเรียบร้อยแล้ว"});
+      .send({ status: true, message: "ยืนยันใบสั่งซื้อเรียบร้อยแล้ว" });
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: err._message});
+    return res.status(500).send({ message: err._message });
   }
 };
 
 exports.cancel = async (req, res) => {
   try {
-    const {purchase_id, shop_id} = req.body;
+    const { purchase_id, shop_id } = req.body;
     if (!purchase_id || !shop_id) {
-      return res.status(400).send({status: false, message: "ไม่พบข้อมูล"});
+      return res.status(400).send({ status: false, message: "ไม่พบข้อมูล" });
     }
 
     //ค้นหา order express
@@ -255,7 +255,7 @@ exports.cancel = async (req, res) => {
     });
 
     if (!order_express) {
-      return res.status(400).send({message: "ไม่มีใบสั่งซื้อที่ต้องการยกเลิก"});
+      return res.status(400).send({ message: "ไม่มีใบสั่งซื้อที่ต้องการยกเลิก" });
     }
     console.log("Order Express : ", order_express);
     //หา partner ของร้านค้า
@@ -291,7 +291,7 @@ exports.cancel = async (req, res) => {
               tracking_code: booking[i].tracking_code,
             },
             {
-              headers: {"Accept-Encoding": "gzip,deflate,compress"},
+              headers: { "Accept-Encoding": "gzip,deflate,compress" },
             }
           )
           .then(async () => {
@@ -352,22 +352,22 @@ exports.cancel = async (req, res) => {
 
       return res
         .status(200)
-        .send({status: true, message: "ยกเลิกพัสดุเรียบร้อย"});
+        .send({ status: true, message: "ยกเลิกพัสดุเรียบร้อย" });
     } else {
       return res
         .status(400)
-        .send({status: false, messgae: "ดึงข้อมูลไม่สำเร็จ"});
+        .send({ status: false, messgae: "ดึงข้อมูลไม่สำเร็จ" });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
 };
 
 exports.checkTrackingCode = async (req, res) => {
   try {
     if (req.body.tracking_code === undefined) {
-      return res.status(400).send({message: "กรุณากรอกเลข tracking code"});
+      return res.status(400).send({ message: "กรุณากรอกเลข tracking code" });
     }
     const value = {
       tracking_code: req.body.tracking_code,
@@ -380,22 +380,22 @@ exports.checkTrackingCode = async (req, res) => {
     if (shippop) {
       return res.status(200).send(shippop.data);
     } else {
-      return res.status(400).send({message: "ตรวจสอบข้อมูลไม่สำเร็จ"});
+      return res.status(400).send({ message: "ตรวจสอบข้อมูลไม่สำเร็จ" });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
 };
 
 exports.label = async (req, res) => {
   try {
     console.log(req.body);
-    const {shop_id, purchase_id} = req.body;
+    const { shop_id, purchase_id } = req.body;
     if (shop_id === undefined || purchase_id === undefined) {
       return res
         .status(400)
-        .send({status: false, message: "รับข้อมูลไม่ครบถ้วน"});
+        .send({ status: false, message: "รับข้อมูลไม่ครบถ้วน" });
     }
 
     const booking = await BookingParcel.find({
@@ -409,7 +409,7 @@ exports.label = async (req, res) => {
         tracking_code.push(booking[i].tracking_code);
       }
       option[booking[i].tracking_code] = {
-        replaceOrigin: {...booking[i].origin},
+        replaceOrigin: { ...booking[i].origin },
       };
     }
 
@@ -427,12 +427,12 @@ exports.label = async (req, res) => {
       `${process.env.SHIPPOP_URL}/v2/label/`,
       value,
       {
-        headers: {"Accept-Encoding": "gzip,deflate,compress"},
+        headers: { "Accept-Encoding": "gzip,deflate,compress" },
       }
     );
     return res.status(200).send(resp.data);
   } catch (err) {
-    return res.status(500).send({message: err._message});
+    return res.status(500).send({ message: err._message });
   }
 };
 
@@ -441,15 +441,15 @@ exports.getAllBooking = async (req, res) => {
   try {
     const booking = await BookingParcel.find();
     if (booking) {
-      return res.status(200).send({status: true, data: booking});
+      return res.status(200).send({ status: true, data: booking });
     } else {
       return res
         .status(400)
-        .send({status: false, message: "ดึงข้อมูลไม่สำเร็จ"});
+        .send({ status: false, message: "ดึงข้อมูลไม่สำเร็จ" });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
 };
 
@@ -457,17 +457,17 @@ exports.getAllBooking = async (req, res) => {
 exports.getBooking = async (req, res) => {
   try {
     const shop_id = req.params.shop_id;
-    const booking_parcel = await BookingParcel.find({shop_id: shop_id});
+    const booking_parcel = await BookingParcel.find({ shop_id: shop_id });
     if (booking_parcel) {
-      return res.status(200).send({status: true, data: booking_parcel});
+      return res.status(200).send({ status: true, data: booking_parcel });
     } else {
       return res
         .status(400)
-        .send({status: false, message: "ดึงข้อมูลไม่สำเร็จ"});
+        .send({ status: false, message: "ดึงข้อมูลไม่สำเร็จ" });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: err._message});
+    return res.status(500).send({ message: err._message });
   }
 };
 
@@ -485,9 +485,9 @@ exports.callback = async (req, res) => {
           "---ถูกยกเลิกพัสดุ tracking_code : " + req.body.tracking_code
         );
         if (parcel.order_status !== "cancel") {
-          const shop = await Shop.findOne({_id: parcel.shop_id});
+          const shop = await Shop.findOne({ _id: parcel.shop_id });
           const partner_id = shop.shop_partner_id;
-          const partner = await Partners.findOne({_id: partner_id});
+          const partner = await Partners.findOne({ _id: partner_id });
           //คืนต้นทุนต่อชิ้น
           const new_wallet = partner.partner_wallet + parcel.cost;
           //อัพเดตกระเป๋า partner
@@ -559,26 +559,26 @@ exports.callback = async (req, res) => {
                 'token': `${process.env.PLATFORM_PUBLIC_KEY}`,
               },
             }
-          ).catch((err)=>{
+          ).catch((err) => {
             console.log(err.response.data);
           })
 
-        if(platform){
+        if (platform) {
           const data_point = {
-            tel : parcel.origin.tel,
-            point : parcel.price
+            tel: parcel.origin.tel,
+            point: parcel.price
           }
-          
-          await axios.post(`${process.env.NBA_PLATFORM}public/member/givehappypoint`, data_point,{
-            headers : {
-              'token' : process.env.PLATFORM_PUBLIC_KEY
+
+          await axios.post(`${process.env.NBA_PLATFORM}public/member/givehappypoint`, data_point, {
+            headers: {
+              'token': process.env.PLATFORM_PUBLIC_KEY
             }
-          }).then(()=>{
+          }).then(() => {
             console.log('ให้คะแนนเรียบร้อย : ', parcel.price)
-          }).catch((err)=>{
+          }).catch((err) => {
             console.log(err);
           })
-          
+
         }
       }
 
@@ -589,22 +589,22 @@ exports.callback = async (req, res) => {
         console.log('อัพเดตพัสดุสำเร็จสถานะสำเร็จ')
         return res
           .status(200)
-          .send({status: true, message: "อัพเดตสถานะสำเร็จ"});
+          .send({ status: true, message: "อัพเดตสถานะสำเร็จ" });
       });
     } else {
       return res
         .status(400)
-        .send({status: false, message: "ไม่สามารถใช้งานได้"});
+        .send({ status: false, message: "ไม่สามารถใช้งานได้" });
     }
   } catch (err) {
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
 };
 
 exports.updateCourierTrackingCode = async (req, res) => {
   try {
     if (req.body.tracking_code === undefined) {
-      return res.status(400).send({message: "ไม่พบ traking_code"});
+      return res.status(400).send({ message: "ไม่พบ traking_code" });
     }
 
     const parcel = await BookingParcel.findOne({
@@ -621,31 +621,31 @@ exports.updateCourierTrackingCode = async (req, res) => {
           });
           if (update) {
             const new_data = await BookingParcel.findById(parcel._id);
-            return res.status(200).send({status: true, data: new_data});
+            return res.status(200).send({ status: true, data: new_data });
           } else {
             return res
               .status(400)
-              .send({message: "อัพเดต Courier Tracking Code ไม่สำเร็จ"});
+              .send({ message: "อัพเดต Courier Tracking Code ไม่สำเร็จ" });
           }
         } else {
-          return res.status(400).send({message: "ไม่พบ tracking code"});
+          return res.status(400).send({ message: "ไม่พบ tracking code" });
         }
       } else {
-        return res.status(400).send({message: "ตรวจสอบข้อมูลไม่สำเร็จ"});
+        return res.status(400).send({ message: "ตรวจสอบข้อมูลไม่สำเร็จ" });
       }
     } else {
-      return res.status(400).send({message: "ไม่พบ Tracking Code ในฐานข้อมูล"});
+      return res.status(400).send({ message: "ไม่พบ Tracking Code ในฐานข้อมูล" });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
 };
 
 exports.callToPickup = async (req, res) => {
   try {
     if (req.body.courier_tracking_code === undefined) {
-      return res.status(400).send({message: "ไม่พบเลขติดตามพัสดุ"});
+      return res.status(400).send({ message: "ไม่พบเลขติดตามพัสดุ" });
     }
 
     const shippop = await axios.post(
@@ -662,6 +662,6 @@ exports.callToPickup = async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
 };

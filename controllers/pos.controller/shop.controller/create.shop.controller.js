@@ -29,13 +29,13 @@ const storage = multer.diskStorage({
 
 exports.create = async (req, res) => {
   try {
-    
+
     let upload = multer({ storage: storage }).single("shop_logo");
     upload(req, res, async function (err) {
 
       const checkPartner = await Partners.findOne({ _id: req.body.shop_partner_id })
       console.log('partnerpartnerpartnerpartner', checkPartner)
-      
+
       if (!req.file) {
         const { error } = validate(req.body);
         // const shopFunction = JSON.parse(req.body.shop_function);
@@ -46,7 +46,7 @@ exports.create = async (req, res) => {
           return res.status(400).send({ message: error.details[0].message });
         await new Shop({
           ...req.body,
-          shop_partner_type:checkPartner.partner_type
+          shop_partner_type: checkPartner.partner_type
         }).save();
 
         res.status(201).send({ message: "สร้างรายงานใหม่เเล้ว", status: true });

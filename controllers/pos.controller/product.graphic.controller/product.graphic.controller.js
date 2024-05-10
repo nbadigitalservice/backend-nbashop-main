@@ -30,53 +30,53 @@ const storage = multer.diskStorage({
   },
 });
 
-module.exports.Create = async (req,res) => {
-    try {
+module.exports.Create = async (req, res) => {
+  try {
 
-        
 
-        let upload = multer({ storage: storage }).array("imgCollection", 20);
+
+    let upload = multer({ storage: storage }).array("imgCollection", 20);
     upload(req, res, async function (err) {
-        if(err){
-            return res.status(403).send({message:'มีบางอย่างผิดพลาด',data:err});
-        }
+      if (err) {
+        return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
+      }
       const reqFiles = [];
 
       if (!req.files) {
-        res.status(500).send({ message: "มีบางอย่างผิดพลาด",data:'No Request Files', status: false });
+        res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
       } else {
- 
+
         for (var i = 0; i < req.files.length; i++) {
           await uploadFileCreate(req.files, res, { i, reqFiles });
-            
+
         }
 
         //create collection
-        
+
         console.log(reqFiles);
 
         //condition
-   
-    
+
+
         const data = {
-            name: req.body.name,
-            category:req.body.category,
-            detail:req.body.detail,
-            description:req.body.description,
-            imgUrl:reqFiles,
-    
-      
+          name: req.body.name,
+          category: req.body.category,
+          detail: req.body.detail,
+          description: req.body.description,
+          imgUrl: reqFiles,
+
+
         }
 
         console.log(data);
 
         const productGraphic = new ProductGraphic(data);
-        productGraphic.save(error =>{
-            if(error){
-                res.status(403).send({status:false,message:'ไม่สามารถบันทึกได้',data:error})
-            }else{
-                res.status(200).send({status:true,message:'บันทึกสำเร็จ'})
-            }
+        productGraphic.save(error => {
+          if (error) {
+            res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: error })
+          } else {
+            res.status(200).send({ status: true, message: 'บันทึกสำเร็จ' })
+          }
         })
 
         //end
@@ -85,193 +85,194 @@ module.exports.Create = async (req,res) => {
 
     });
 
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({message: "Internal Server Error"});
-    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
 }
 
 //get all product graphic
-module.exports.GetProductGraphic = async (req,res) => {
-    try {
-        const productGraphic = await ProductGraphic.find();
-        if(!productGraphic){
-            return res.status(403).send({message:'ยังไม่มีสินค้า'})
-        }
-        return res.status(200).send({status:true,message:'ค้นหาสำเร็จ',data:productGraphic});
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({message: "Internal Server Error"});
+module.exports.GetProductGraphic = async (req, res) => {
+  try {
+    const productGraphic = await ProductGraphic.find();
+    if (!productGraphic) {
+      return res.status(403).send({ message: 'ยังไม่มีสินค้า' })
     }
+    return res.status(200).send({ status: true, message: 'ค้นหาสำเร็จ', data: productGraphic });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: "Internal Server Error" });
+  }
 }
 
 //get product graphic by id
-module.exports.GetProductGraphicById = async (req,res) => {
+module.exports.GetProductGraphicById = async (req, res) => {
   try {
     const productGraphic = await ProductGraphic.findById(req.params.id);
-    if(!productGraphic){
-        return res.status(403).send({message:'ยังไม่มีสินค้า'})
+    if (!productGraphic) {
+      return res.status(403).send({ message: 'ยังไม่มีสินค้า' })
     }
-    return res.status(200).send({status:true,message:'ค้นหาสำเร็จ',data:productGraphic});
-    
+    return res.status(200).send({ status: true, message: 'ค้นหาสำเร็จ', data: productGraphic });
+
   } catch (error) {
     console.error(error);
-    return res.status(500).send({message: "Internal Server Error"});
+    return res.status(500).send({ message: "Internal Server Error" });
   }
 }
 
 //get price list by category id
-module.exports.GetPricelistByCategoryId =  async (req,res) => {
+module.exports.GetPricelistByCategoryId = async (req, res) => {
   try {
-      const categoryId = req.params.id;
+    const categoryId = req.params.id;
 
-      if(!mongoose.isValidObjectId(categoryId)){
-        return res.status(403).send({message:"Invalid category id"});
-      }
+    if (!mongoose.isValidObjectId(categoryId)) {
+      return res.status(403).send({ message: "Invalid category id" });
+    }
 
-      const category= await ProductGraphicCategory.findById(categoryId);
+    const category = await ProductGraphicCategory.findById(categoryId);
 
-      if(!category){
-        return res.status(403).send({message:"category not found"});
-      }
+    if (!category) {
+      return res.status(403).send({ message: "category not found" });
+    }
 
-      console.log(category);
+    console.log(category);
 
-      const productGraphic = await ProductGraphic.find({category:category.name});
+    const productGraphic = await ProductGraphic.find({ category: category.name });
 
-      console.log(productGraphic);
+    console.log(productGraphic);
 
-      const productPrice = await ProductGraphicPrice.find();
+    const productPrice = await ProductGraphicPrice.find();
 
-      const pricelist = productGraphic.map(el=>({
-        product:el,
-        pricelist:productPrice.filter(price=>price.product_graphic_id==el._id)}))
+    const pricelist = productGraphic.map(el => ({
+      product: el,
+      pricelist: productPrice.filter(price => price.product_graphic_id == el._id)
+    }))
 
-  return res.status(200).send({message:"ดึงข้อมูลสำเร็จ",data:pricelist});
-      
+    return res.status(200).send({ message: "ดึงข้อมูลสำเร็จ", data: pricelist });
+
   } catch (error) {
-      console.error(error);
-      return res.status(500).send({message:'Internal Server Error'});
+    console.error(error);
+    return res.status(500).send({ message: 'Internal Server Error' });
   }
 }
 
 
 //update product graphic by id
-module.exports.UpdateProductGraphicById = async (req,res) => {
+module.exports.UpdateProductGraphicById = async (req, res) => {
   try {
     const id = req.params.id;
 
-    if(!mongoose.isValidObjectId(id)){
-      return res.status(403).send({message:"Invalid id"});
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(403).send({ message: "Invalid id" });
     }
 
     const dataUpdate = {
-      name:req.body.name?req.body.name:null,
-      category:req.body.category?req.body.category:null,
-      detail:req.body.detail?req.body.detail:null,
-      description:req.body.description?req.body.description:null,
+      name: req.body.name ? req.body.name : null,
+      category: req.body.category ? req.body.category : null,
+      detail: req.body.detail ? req.body.detail : null,
+      description: req.body.description ? req.body.description : null,
     }
     console.log(dataUpdate);
-    ProductGraphic.findByIdAndUpdate(id,dataUpdate,{returnDocument:'after'},(err,result) => {
-      if(err){
-        return res.status(403).send({status:false,message:'ไม่สามารถบันทึกได้',data:err});
+    ProductGraphic.findByIdAndUpdate(id, dataUpdate, { returnDocument: 'after' }, (err, result) => {
+      if (err) {
+        return res.status(403).send({ status: false, message: 'ไม่สามารถบันทึกได้', data: err });
       }
-      if(result){
+      if (result) {
 
-        return res.status(200).send({status:true,message:'บันทึกสำเร็จ',data:result});
-      }else{
-        return res.status(403).send({status:false,message:'บันทึกไม่สำเร็จ'});
+        return res.status(200).send({ status: true, message: 'บันทึกสำเร็จ', data: result });
+      } else {
+        return res.status(403).send({ status: false, message: 'บันทึกไม่สำเร็จ' });
       }
     });
 
-    
+
   } catch (error) {
     console.error(error);
-    return res.status(500).send({message: "Internal Server Error"});
+    return res.status(500).send({ message: "Internal Server Error" });
   }
 }
 
 //delete product graphic by id 
-module.exports.DeleteProductGraphicById = async ( req,res) => {
+module.exports.DeleteProductGraphicById = async (req, res) => {
   try {
     const id = req.params.id;
 
-    if(!mongoose.isValidObjectId(id)){
-      return res.status(403).send({message:"Invalid id"});
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(403).send({ message: "Invalid id" });
     }
 
 
-     const result = await ProductGraphic.findByIdAndDelete(id);
-     
+    const result = await ProductGraphic.findByIdAndDelete(id);
 
-     return res.status(200).send({status:true,message:'ลบสินค้าเรียบร้อยแล้ว',data:result})
-    
+
+    return res.status(200).send({ status: true, message: 'ลบสินค้าเรียบร้อยแล้ว', data: result })
+
   } catch (error) {
     console.error(error);
-    return res.status(500).send({message: "Internal Server Error"});
+    return res.status(500).send({ message: "Internal Server Error" });
   }
 }
 
 //change product graphic image by id
-module.exports.ChangeProductGraphicImage = async (req,res) => {
+module.exports.ChangeProductGraphicImage = async (req, res) => {
   try {
 
-      const id = req.params.id;
+    const id = req.params.id;
 
-      if(!mongoose.isValidObjectId(id)){
-        return res.status(403).send({message:"Invalid id"});
-      }
-  
-
-      let upload = multer({ storage: storage }).array("imgCollection", 20);
-  upload(req, res, async function (err) {
-      if(err){
-          return res.status(403).send({message:'มีบางอย่างผิดพลาด',data:err});
-      }
-    const reqFiles = [];
-
-    if (!req.files) {
-      res.status(500).send({ message: "มีบางอย่างผิดพลาด",data:'No Request Files', status: false });
-    } else {
-
-      for (var i = 0; i < req.files.length; i++) {
-        await uploadFileCreate(req.files, res, { i, reqFiles });
-          
-      }
-
-      //create collection
-      
-      console.log(reqFiles);
-
-      //condition
- 
-  
-      const data = {
-      
-          imgUrl:reqFiles,
-  
-    
-      }
-
-      console.log(data);
-
-    ProductGraphic.findByIdAndUpdate(id,data,{returnDocument:'after'},(err,result)=>{
-      if(err){
-        return res.status(403).send({message:'เปลี่ยนรูปภาพไม่สำเร็จ',data:err})
-      }
-      return res.status(200).send({message:'เปลี่ยนรูปภาพสำเร็จ',data:{imgUrl:result.imgUrl}});
-    })
-
-      //end
-
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(403).send({ message: "Invalid id" });
     }
 
-  });
+
+    let upload = multer({ storage: storage }).array("imgCollection", 20);
+    upload(req, res, async function (err) {
+      if (err) {
+        return res.status(403).send({ message: 'มีบางอย่างผิดพลาด', data: err });
+      }
+      const reqFiles = [];
+
+      if (!req.files) {
+        res.status(500).send({ message: "มีบางอย่างผิดพลาด", data: 'No Request Files', status: false });
+      } else {
+
+        for (var i = 0; i < req.files.length; i++) {
+          await uploadFileCreate(req.files, res, { i, reqFiles });
+
+        }
+
+        //create collection
+
+        console.log(reqFiles);
+
+        //condition
+
+
+        const data = {
+
+          imgUrl: reqFiles,
+
+
+        }
+
+        console.log(data);
+
+        ProductGraphic.findByIdAndUpdate(id, data, { returnDocument: 'after' }, (err, result) => {
+          if (err) {
+            return res.status(403).send({ message: 'เปลี่ยนรูปภาพไม่สำเร็จ', data: err })
+          }
+          return res.status(200).send({ message: 'เปลี่ยนรูปภาพสำเร็จ', data: { imgUrl: result.imgUrl } });
+        })
+
+        //end
+
+      }
+
+    });
 
   } catch (error) {
-      console.error(error);
-      return res.status(500).send({message: "Internal Server Error"});
+    console.error(error);
+    return res.status(500).send({ message: "Internal Server Error" });
   }
 }
 
@@ -320,6 +321,6 @@ async function generatePublicUrl(res) {
     console.log(result.data);
   } catch (error) {
     console.log(error);
-    return res.status(500).send({ message: "Internal Server Error"});
+    return res.status(500).send({ message: "Internal Server Error" });
   }
 }

@@ -2,13 +2,13 @@ const {
   Percent,
   validate,
 } = require("../../../models/pos.models/percent.profit.model");
-const {ProductNBA} = require("../../../models/pos.models/product.nba.model");
+const { ProductNBA } = require("../../../models/pos.models/product.nba.model");
 
 exports.findAll = async (req, res) => {
   try {
     Percent.find()
       .then(async (data) => {
-        res.send({data: data, message: "success", status: true});
+        res.send({ data: data, message: "success", status: true });
       })
       .catch((err) => {
         res.status(500).send({
@@ -16,7 +16,7 @@ exports.findAll = async (req, res) => {
         });
       });
   } catch (error) {
-    res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
+    res.status(500).send({ message: "มีบางอย่างผิดพลาด", status: false });
   }
 };
 exports.findOne = async (req, res) => {
@@ -27,8 +27,8 @@ exports.findOne = async (req, res) => {
         if (!data)
           res
             .status(404)
-            .send({message: "ไม่สามารถหารายการนี้ได้", status: false});
-        else res.send({data, status: true});
+            .send({ message: "ไม่สามารถหารายการนี้ได้", status: false });
+        else res.send({ data, status: true });
       })
       .catch((err) => {
         res.status(500).send({
@@ -47,7 +47,7 @@ exports.findOne = async (req, res) => {
 exports.delete = async (req, res) => {
   const id = req.params.id;
   try {
-    Percent.findByIdAndRemove(id, {useFindAndModify: false})
+    Percent.findByIdAndRemove(id, { useFindAndModify: false })
       .then((data) => {
         console.log(data);
         if (!data) {
@@ -85,7 +85,7 @@ exports.update = async (req, res) => {
     }
     const id = req.params.id;
 
-    Percent.findByIdAndUpdate(id, req.body, {useFindAndModify: false})
+    Percent.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
       .then((data) => {
         console.log(data);
         if (!data) {
@@ -106,19 +106,19 @@ exports.update = async (req, res) => {
         });
       });
   } catch (error) {
-    res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
+    res.status(500).send({ message: "มีบางอย่างผิดพลาด", status: false });
   }
 };
 
 exports.create = async (req, res) => {
   console.log("สร้าง");
   try {
-    const {error} = validate(req.body);
+    const { error } = validate(req.body);
 
     if (error)
       return res
         .status(400)
-        .send({message: error.details[0].message, status: false});
+        .send({ message: error.details[0].message, status: false });
     const result = await new Percent({
       ...req.body,
     })
@@ -131,13 +131,13 @@ exports.create = async (req, res) => {
       result: result,
     });
   } catch (error) {
-    res.status(500).send({message: "มีบางอย่างผิดพลาด", status: false});
+    res.status(500).send({ message: "มีบางอย่างผิดพลาด", status: false });
   }
 };
 
 exports.vatUpdate = async (req, res) => {
   try {
-    const product = await ProductNBA.find({productNBA_vat_status: true});
+    const product = await ProductNBA.find({ productNBA_vat_status: true });
     for (let i = 0; i < product.length; i++) {
       const vat_sell = (product[i].productNBA_cost * 7) / 107; //ภาษีขาย
       const vat_buy = (product[i].productNBA_cost_nba * 7) / 107; //ภาษีซื้อ
@@ -151,15 +151,15 @@ exports.vatUpdate = async (req, res) => {
         vat_buy: Number(vat_buy.toFixed(2)),
       };
       await ProductNBA.findByIdAndUpdate(product[i]._id, {
-        productNBA_more: {...productNBA_more},
+        productNBA_more: { ...productNBA_more },
       });
     }
     return res
       .status(200)
-      .send({status: true, message: "อัพเดตภาษีซื้อภาษีขายเรียบร้อยแล้ว"});
+      .send({ status: true, message: "อัพเดตภาษีซื้อภาษีขายเรียบร้อยแล้ว" });
   } catch (err) {
     console.log(err);
-    return res.status(500).send({message: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ message: "มีบางอย่างผิดพลาด" });
   }
 };
 
@@ -169,7 +169,7 @@ exports.updateShare = async (req, res) => {
     if (!per) {
       return res
         .status(400)
-        .send({status: false, message: "ไม่พบอัตราส่วนแบ่งในฐานข้อมูล"});
+        .send({ status: false, message: "ไม่พบอัตราส่วนแบ่งในฐานข้อมูล" });
     }
     const product = await ProductNBA.find();
     for (let i = 0; i < product.length; i++) {
@@ -201,9 +201,9 @@ exports.updateShare = async (req, res) => {
       const data = {
         productNBA_profit: {
           nba: product[i].productNBA_profit.nba,
-          platform: {...pf},
-          terrestrial: {...ter},
-          central: {...cent},
+          platform: { ...pf },
+          terrestrial: { ...ter },
+          central: { ...cent },
         },
       };
       await ProductNBA.findByIdAndUpdate(product[i]._id, data);
@@ -211,9 +211,9 @@ exports.updateShare = async (req, res) => {
 
     return res
       .status(200)
-      .send({status: true, message: "อัพเดตการแบ่งปันเรียบร้อยแล้ว"});
+      .send({ status: true, message: "อัพเดตการแบ่งปันเรียบร้อยแล้ว" });
   } catch (err) {
     console.log(err);
-    return res.status(500).send({messsage: "มีบางอย่างผิดพลาด"});
+    return res.status(500).send({ messsage: "มีบางอย่างผิดพลาด" });
   }
 };
