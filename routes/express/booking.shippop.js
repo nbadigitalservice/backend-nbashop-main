@@ -14,4 +14,5 @@ router.post("/shippop/callback", BookingShippop.callback);
 router.post('/tracking', auth, BookingShippop.checkTrackingCode);
 router.post('/tracking/update/courier_tracking_code', authAdmin, BookingShippop.updateCourierTrackingCode);
 router.post('/calltopickup', authAdmin, BookingShippop.callToPickup);
+
 module.exports = router;
